@@ -7,6 +7,8 @@
 
 package com.android.bluetooth.bthelper.pods;
 
+import android.bluetooth.BluetoothDevice;
+
 import android.view.View;
 
 import com.android.bluetooth.bthelper.R;
@@ -31,8 +33,13 @@ public class Pod {
         return status;
     }
 
+    public int parseArgStatus () {
+        return (status == MAX_CONNECTED_STATUS || (status < MAX_CONNECTED_STATUS && status > 0)) ? 
+                status - 1 : BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+    }
+
     public String parseStatus () {
-        return (status == MAX_CONNECTED_STATUS) ? "100%" : ((status < MAX_CONNECTED_STATUS) ? ((status * 10 + 5) + "%") : "");
+        return (status == MAX_CONNECTED_STATUS) ? "100" : ((status < MAX_CONNECTED_STATUS) ? ((status * 10 + 5) + "") : "");
     }
 
     public boolean isCharging () {

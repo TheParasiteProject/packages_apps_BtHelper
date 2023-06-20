@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Copyright (C) 2019-2022 Federico Dossena
-  Copyright (C) 2023 someone5678
+                2019 The MoKee Open Source Project
+                2023 someone5678
   SPDX-License-Identifier: GPL-3.0-or-later
   License-Filename: LICENSE
 -->
@@ -13,9 +14,12 @@
     android:sharedUserId="android.uid.system">
 
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.BATTERY_STATS"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
     <uses-permission
@@ -45,7 +49,7 @@
             android:exported="true" />
 
         <receiver
-            android:name=".receivers.StartupReceiver"
+            android:name=".StartupReceiver"
             android:enabled="true"
             android:exported="true"
             android:label="@string/app_name">

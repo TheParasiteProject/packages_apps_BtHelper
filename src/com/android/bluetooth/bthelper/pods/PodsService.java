@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2019-2022 Federico Dossena
+ *               2019 The MoKee Open Source Project
  *               2023 someone5678
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
@@ -8,53 +9,85 @@
 package com.android.bluetooth.bthelper.pods;
 
 import android.annotation.SuppressLint;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothAssignedNumbers;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources.NotFoundException;
+import android.Manifest;
+import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.ParcelUuid;
+import android.os.UserHandle;
 import android.provider.Settings;
-import androidx.annotation.RequiresApi;
-
-import com.android.bluetooth.bthelper.R;
-import com.android.bluetooth.bthelper.notification.NotificationThread;
-import com.android.bluetooth.bthelper.receivers.BluetoothListener;
-import com.android.bluetooth.bthelper.receivers.BluetoothReceiver;
-import com.android.bluetooth.bthelper.receivers.ScreenReceiver;
 
 import java.util.Objects;
 
+import com.android.bluetooth.bthelper.R;
+
+import com.android.bluetooth.bthelper.pods.models.IPods;
+import com.android.bluetooth.bthelper.pods.models.RegularPods;
+import com.android.bluetooth.bthelper.pods.models.SinglePods;
 import static com.android.bluetooth.bthelper.pods.PodsStatusScanCallback.getScanFilters;
 
 /**
  * This is the class that does most of the work. It has 3 functions:
  * - Detect when AirPods are detected
  * - Receive beacons from AirPods and decode them (easier said than done thanks to google's autism)
- * - Display the notification with the status
  */
 public class PodsService extends Service {
 
     private BluetoothLeScanner btScanner;
     private PodsStatus status = PodsStatus.DISCONNECTED;
 
-    private static NotificationThread n = null;
-    private static boolean maybeConnected = false;
-
     private BroadcastReceiver btReceiver = null;
-    private BroadcastReceiver screenReceiver = null;
     private PodsStatusScanCallback scanCallback = null;
+
+    private BluetoothDevice mCurrentDevice;
+    
+    private boolean statusChanged = false;
+    private boolean isModelSet = false;
+    private boolean isModelIconSet = false;
+    private boolean isModelLowBattThresholdSet = false;
+
+    private static final byte[] TRUE = "true".getBytes();
+    private static final byte[] FALSE = "false".getBytes();
+
+    public PodsService () {
+    }
+
+    @Override
+    public IBinder onBind (Intent intent) {
+        return null;
+    }
+
+    @Override
+    public int onStartCommand (Intent intent, int flags, int startId) {
+        final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+        if (device != null) {
+            mCurrentDevice = device;
+            startAirPodsScanner();
+        }
+        return START_STICKY;
+    }
+
+    @Override
+    public void onDestroy () {
+        super.onDestroy();
+        mCurrentDevice = null;
+        stopAirPodsScanner();
+    }
 
     /**
      * The following method (startAirPodsScanner) creates a bluetooth LE scanner.
@@ -63,9 +96,8 @@ public class PodsService extends Service {
      * - Make sure that it is YOUR pair of AirPods
      * - Decode the beacon to get the status
      *
-     * After decoding a beacon, the status is written to PodsStatus so that the NotificationThread can use the information
+     * After decoding a beacon, the status is written to PodsStatus.
      */
-    @SuppressLint("MissingPermission")
     private void startAirPodsScanner () {
         try {
             BluetoothManager btManager = (BluetoothManager)getSystemService(Context.BLUETOOTH_SERVICE);
@@ -94,7 +126,9 @@ public class PodsService extends Service {
             scanCallback = new PodsStatusScanCallback() {
                 @Override
                 public void onStatus (PodsStatus newStatus) {
+                    setStatusChanged(status, newStatus);
                     status = newStatus;
+                    updatePodsStatus(status, mCurrentDevice);
                 }
             };
 
@@ -103,7 +137,6 @@ public class PodsService extends Service {
         }
     }
 
-    @SuppressLint("MissingPermission")
     private void stopAirPodsScanner () {
         try {
             if (btScanner != null && scanCallback != null) {
@@ -116,181 +149,266 @@ public class PodsService extends Service {
         }
     }
 
-    public PodsService () {
+    private void setStatusChanged (PodsStatus status, PodsStatus newStatus) {
+        if (!Objects.equals(status, newStatus)) {
+            statusChanged = true;
+        }
     }
 
-    @Override
-    public IBinder onBind (Intent intent) {
-        return null;
-    }
+    public void updatePodsStatus (PodsStatus status, BluetoothDevice device) {
+        IPods airpods = status.getAirpods();
+        boolean single = airpods.isSingle();
 
-    /**
-     * When the service is created, we register to get as many bluetooth and airpods related events as possible.
-     * ACL_CONNECTED and ACL_DISCONNECTED should have been enough, but you never know with android these days.
-     */
-    @Override
-    public void onCreate () {
-        super.onCreate();
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-            startForeground(101, createBackgroundNotification());
-
-        unregisterBtReceiver();
-
-        btReceiver = new BluetoothReceiver() {
-            @Override
-            public void onStart () {
-                // Bluetooth turned on, start/restart scanner.
-                startAirPodsScanner();
-            }
-
-            @Override
-            public void onStop () {
-                // Bluetooth turned off, stop scanner and remove notification.
-                maybeConnected = false;
-                stopAirPodsScanner();
-            }
-
-            @Override
-            public void onConnect (BluetoothDevice bluetoothDevice) {
-                // Airpods filter
-                if (checkUUID(bluetoothDevice)) {
-                    // Airpods connected, show notification.
-                    maybeConnected = true;
+        if (!isModelSet) {
+            boolean isManufacturerSet = false;
+            boolean isNameSet = false;
+            boolean isTypeSet = false;
+            
+            if (!single) {
+                if (device.getMetadata(device.METADATA_MANUFACTURER_NAME) == null) {
+                    isManufacturerSet = device.setMetadata(device.METADATA_MANUFACTURER_NAME,
+                                            ((RegularPods)airpods).getMenufacturer().getBytes());
+                } else {
+                    isManufacturerSet = true;
+                }
+                if (device.getMetadata(device.METADATA_MODEL_NAME) == null) {
+                    isNameSet = device.setMetadata(device.METADATA_MODEL_NAME,
+                                            ((RegularPods)airpods).getModel().getBytes());
+                } else {
+                    isNameSet = true;
+                }
+            } else {
+                if (device.getMetadata(device.METADATA_MANUFACTURER_NAME) == null) {
+                    isManufacturerSet = device.setMetadata(device.METADATA_MANUFACTURER_NAME,
+                                            ((SinglePods)airpods).getMenufacturer().getBytes());
+                } else {
+                    isManufacturerSet = true;
+                }
+                if (device.getMetadata(device.METADATA_MODEL_NAME) == null) {
+                    isNameSet = device.setMetadata(device.METADATA_MODEL_NAME,
+                                            ((SinglePods)airpods).getModel().getBytes());
+                } else {
+                    isNameSet = true;
                 }
             }
-
-            @Override
-            public void onDisconnect (BluetoothDevice bluetoothDevice) {
-                // Airpods filter
-                if (checkUUID(bluetoothDevice)) {
-                    // Airpods disconnected, remove notification but leave the scanner going.
-                    maybeConnected = false;
-                }
+            if (device.getMetadata(device.METADATA_DEVICE_TYPE) == null) {
+                isTypeSet = device.setMetadata(device.METADATA_DEVICE_TYPE,
+                                        device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes()
+                                    );
+            } else {
+                isTypeSet = true;
             }
-        };
-
-        try {
-            registerReceiver(btReceiver, BluetoothReceiver.buildFilter());
-        } catch (Throwable t) {
+            isModelSet = isManufacturerSet
+                         && isNameSet
+                         && isTypeSet;
         }
 
-        // This BT Profile Proxy allows us to know if airpods are already connected when the app is started.
-        // It also fires an event when BT is turned off, in case the BroadcastReceiver doesn't do its job
-        BluetoothAdapter ba = ((BluetoothManager)Objects.requireNonNull(getSystemService(Context.BLUETOOTH_SERVICE))).getAdapter();
-        ba.getProfileProxy(getApplicationContext(), new BluetoothListener() {
-            @Override
-            public boolean onConnect (BluetoothDevice device) {
-                if (checkUUID(device)) {
-                    maybeConnected = true;
-                    return true;
-                }
+        if (!isModelLowBattThresholdSet) {
+            boolean isMainLowBatterySet = false;
+            boolean isLeftLowBatterySet = false;
+            boolean isRightLowBatterySet = false;
+            boolean isCaseLowBatterySet = false;
 
-                return false;
+            if (!single) {
+                if (device.getMetadata(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD) == null) {
+                    isMainLowBatterySet =
+                        device.setMetadata(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
+                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
+                } else {
+                    isMainLowBatterySet = true;
+                }
+                if (device.getMetadata(device.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD) == null) {
+                    isLeftLowBatterySet = 
+                        device.setMetadata(device.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD,
+                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
+                } else {
+                    isLeftLowBatterySet = true;
+                }
+                if (device.getMetadata(device.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD) == null) {
+                    isRightLowBatterySet =
+                        device.setMetadata(device.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD,
+                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
+                } else {
+                    isRightLowBatterySet = true;
+                }
+                if (device.getMetadata(device.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD) == null) {
+                    isCaseLowBatterySet =
+                        device.setMetadata(device.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD,
+                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
+                } else {
+                    isCaseLowBatterySet = true;
+                }
+                isModelLowBattThresholdSet = isMainLowBatterySet
+                                             && isLeftLowBatterySet
+                                             && isRightLowBatterySet
+                                             && isCaseLowBatterySet;
+            } else {
+                if (device.getMetadata(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD) == null) {
+                    isMainLowBatterySet =
+                        device.setMetadata(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
+                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
+                } else {
+                    isMainLowBatterySet = true;
+                }
+                isModelLowBattThresholdSet = isMainLowBatterySet;
+            }
+        }
+
+        if (!isModelIconSet) {
+            byte[] MODEL_ICON_URI = null;
+            byte[] MODEL_ICON_URI_LEFT = null;
+            byte[] MODEL_ICON_URI_RIGHT = null;
+            byte[] MODEL_ICON_URI_CASE = null;
+
+            boolean isMainIconset = false;
+            boolean isLeftIconset = false;
+            boolean isRightIconset = false;
+            boolean isCaseIconset = false;
+
+            if (!single) {
+                MODEL_ICON_URI = 
+                        resToUri(((RegularPods)airpods).getDrawable()).toString().getBytes();
+                MODEL_ICON_URI_LEFT = 
+                        resToUri(((RegularPods)airpods).getLeftDrawable()).toString().getBytes();
+                MODEL_ICON_URI_RIGHT = 
+                        resToUri(((RegularPods)airpods).getRightDrawable()).toString().getBytes();
+                MODEL_ICON_URI_CASE = 
+                        resToUri(((RegularPods)airpods).getCaseDrawable()).toString().getBytes();
+            } else {
+                MODEL_ICON_URI = 
+                        resToUri(((SinglePods)airpods).getDrawable()).toString().getBytes();
             }
 
-            @Override
-            public void onDisconnect () {
-                maybeConnected = false;
+            if (device.getMetadata(device.METADATA_MAIN_ICON) == null) {
+                isMainIconset = device.setMetadata(device.METADATA_MAIN_ICON,
+                                                    MODEL_ICON_URI);
+            } else {
+                isMainIconset = true;
             }
-        }, BluetoothProfile.HEADSET);
-
-        if (ba.isEnabled())
-            startAirPodsScanner(); // If BT is already on when the app is started, start the scanner without waiting for an event to happen
-
-        // Screen on/off listener to suspend scanning when the screen is off, to save battery
-        unregisterScreenReceiver();
-    }
-
-    @SuppressLint("MissingPermission")
-    private static boolean checkUUID (BluetoothDevice bluetoothDevice) {
-        ParcelUuid[] AIRPODS_UUIDS = {
-                ParcelUuid.fromString("74ec2172-0bad-4d01-8f77-997b2be0722a"),
-                ParcelUuid.fromString("2a72e02b-7b99-778f-014d-ad0b7221ec74")
-        };
-        ParcelUuid[] uuids = bluetoothDevice.getUuids();
-
-        if (uuids == null)
-            return false;
-
-        for (ParcelUuid u : uuids)
-            for (ParcelUuid v : AIRPODS_UUIDS)
-                if (u.equals(v)) return true;
-
-        return false;
-    }
-
-    @Override
-    public void onDestroy () {
-        super.onDestroy();
-        unregisterBtReceiver();
-        unregisterScreenReceiver();
-    }
-
-    @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
-        if (n == null || !n.isAlive()) {
-            n = new NotificationThread(this) {
-                @Override
-                public boolean isConnected () {
-                    return maybeConnected;
+            if (!single) {
+                if (device.getMetadata(device.METADATA_UNTETHERED_LEFT_ICON) == null) {
+                    isLeftIconset = device.setMetadata(device.METADATA_UNTETHERED_LEFT_ICON,
+                                                        MODEL_ICON_URI_LEFT);
+                } else {
+                    isLeftIconset = true;
                 }
-
-                @Override
-                public PodsStatus getStatus () {
-                    return status;
+                if (device.getMetadata(device.METADATA_UNTETHERED_RIGHT_ICON) == null) {
+                    isRightIconset = device.setMetadata(device.METADATA_UNTETHERED_RIGHT_ICON,
+                                                         MODEL_ICON_URI_RIGHT);
+                } else {
+                    isRightIconset = true;
                 }
+                if (device.getMetadata(device.METADATA_UNTETHERED_CASE_ICON) == null) {
+                    isCaseIconset = device.setMetadata(device.METADATA_UNTETHERED_CASE_ICON,
+                                                        MODEL_ICON_URI_CASE);
+                } else {
+                    isCaseIconset = true;
+                }
+            }
+            if (!single) {
+                isModelIconSet = isMainIconset
+                                 && isLeftIconset
+                                 && isRightIconset
+                                 && isCaseIconset;
+            } else {
+                isModelIconSet = isMainIconset;
+            }
+        }
+
+        if (statusChanged) {
+            int batteryUnified = 0;
+
+            boolean chargingMain = false;
+
+            if (!single) {
+                RegularPods regularPods = (RegularPods)airpods;
+
+                device.setMetadata(device.METADATA_UNTETHERED_LEFT_CHARGING,
+                                    regularPods.isCharging(RegularPods.LEFT) == true ? TRUE : FALSE);
+                device.setMetadata(device.METADATA_UNTETHERED_LEFT_BATTERY,
+                                    regularPods.getParsedStatus(RegularPods.LEFT).getBytes());
+        
+                device.setMetadata(device.METADATA_UNTETHERED_RIGHT_CHARGING,
+                                    regularPods.isCharging(RegularPods.RIGHT) == true ? TRUE : FALSE);
+                device.setMetadata(device.METADATA_UNTETHERED_RIGHT_BATTERY,
+                                    regularPods.getParsedStatus(RegularPods.RIGHT).getBytes());
+        
+                device.setMetadata(device.METADATA_UNTETHERED_CASE_CHARGING,
+                                    regularPods.isCharging(RegularPods.CASE) == true ? TRUE : FALSE);
+                device.setMetadata(device.METADATA_UNTETHERED_CASE_BATTERY,
+                                    regularPods.getParsedStatus(RegularPods.CASE).getBytes());
+
+                chargingMain = regularPods.isCharging(RegularPods.LEFT) 
+                               && regularPods.isCharging(RegularPods.RIGHT);
+
+                batteryUnified = Math.min(regularPods.getParsedArgStatus(RegularPods.LEFT), 
+                                          regularPods.getParsedArgStatus(RegularPods.RIGHT));
+
+            } else {
+                SinglePods singlePods = (SinglePods)airpods;
+
+                chargingMain = singlePods.isCharging();
+
+                batteryUnified = singlePods.getParsedArgStatus();
+            }
+
+            device.setMetadata(device.METADATA_MAIN_CHARGING,
+                                chargingMain == true ? TRUE : FALSE);
+
+            final Object[] arguments = new Object[] {
+                1, // Number of key(IndicatorType)/value pairs
+                BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType: Battery Level
+                batteryUnified, // Battery Level
             };
-            n.start();
+    
+            broadcastVendorSpecificEventIntent(
+                    BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV,
+                    BluetoothAssignedNumbers.APPLE,
+                    BluetoothHeadset.AT_CMD_TYPE_SET,
+                    arguments,
+                    mCurrentDevice);
         }
-        return START_STICKY;
+
+        statusChanged = false;
     }
 
-    // Foreground service for background notification (confusing I know).
-    // Only enabled for API30+
-    @RequiresApi(api = Build.VERSION_CODES.O)
-    private Notification createBackgroundNotification () {
-        final String notChannelID = "FOREGROUND_ID";
+    private void broadcastVendorSpecificEventIntent (String command, int companyId, int commandType,
+            Object[] arguments, BluetoothDevice device) {
+        final Intent intent = new Intent(BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT);
+        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD, command);
+        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD_TYPE, commandType);
+        // assert: all elements of args are Serializable
+        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS, arguments);
+        intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+        intent.putExtra(BluetoothDevice.EXTRA_NAME, device.getName());
+        intent.addCategory(BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY + "."
+                + Integer.toString(companyId));
+        String[] permissions = new String[] {
+            Manifest.permission.BLUETOOTH,
+            Manifest.permission.BLUETOOTH_CONNECT,
+            Manifest.permission.BLUETOOTH_PRIVILEGED,
+        };
+        sendBroadcastAsUserMultiplePermissions(intent, UserHandle.ALL, permissions);
 
-        NotificationManager notManager = (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationChannel notChannel = new NotificationChannel(notChannelID, getString(R.string.bg_noti_channel), NotificationManager.IMPORTANCE_LOW);
-        notChannel.setShowBadge(false);
-        notManager.createNotificationChannel(notChannel);
-
-        Intent notIntent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                .putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName())
-                .putExtra(Settings.EXTRA_CHANNEL_ID, notChannelID);
-
-        PendingIntent notPendingIntent = PendingIntent.getActivity(this, 1110, notIntent, PendingIntent.FLAG_IMMUTABLE);
-
-        Notification.Builder builder = new Notification.Builder(this, notChannelID)
-                .setSmallIcon(R.drawable.pod_case)
-                .setContentTitle(getString(R.string.bg_noti_title))
-                .setContentText(getString(R.string.bg_noti_text))
-                .setContentIntent(notPendingIntent)
-                .setOngoing(true);
-
-        return builder.build();
-    }
-
-    private void unregisterBtReceiver () {
-        try {
-            if (btReceiver != null) {
-                unregisterReceiver(btReceiver);
-                btReceiver = null;
-            }
-        } catch (Throwable t) {
+        if (statusChanged) {
+            final Intent statusIntent = new Intent("batterywidget.impl.action.update_bluetooth_data")
+                                            .setPackage("com.google.android.settings.intelligence");
+            statusIntent.putExtra("android.bluetooth.device.action.BATTERY_LEVEL_CHANGED", intent);
+            sendBroadcastAsUser(statusIntent, UserHandle.ALL);
         }
     }
 
-    private void unregisterScreenReceiver () {
+    public Uri resToUri (int resId) {
         try {
-            if (screenReceiver != null) {
-                unregisterReceiver(screenReceiver);
-                screenReceiver = null;
-            }
-        } catch (Throwable t) {
+            Uri uri = (new Uri.Builder())
+                        .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+                        .authority(getApplicationContext().getResources().getResourcePackageName(resId))
+                        .appendPath(getApplicationContext().getResources().getResourceTypeName(resId))
+                        .appendPath(getApplicationContext().getResources().getResourceEntryName(resId))
+                        .build();
+            return uri;
+        } catch (NotFoundException e) {
+            return null;
         }
     }
 

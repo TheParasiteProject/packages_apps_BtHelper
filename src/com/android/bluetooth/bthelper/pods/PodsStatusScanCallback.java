@@ -7,6 +7,7 @@
 
 package com.android.bluetooth.bthelper.pods;
 
+import android.bluetooth.BluetoothAssignedNumbers;
 import android.bluetooth.le.ScanCallback;
 import android.bluetooth.le.ScanFilter;
 import android.bluetooth.le.ScanResult;
@@ -32,7 +33,6 @@ public abstract class PodsStatusScanCallback extends ScanCallback {
 
     public static final long RECENT_BEACONS_MAX_T_NS = 10000000000L; //10s
 
-    public static final int AIRPODS_MANUFACTURER = 76;
     public static final int AIRPODS_DATA_LENGTH = 27;
     public static final int MIN_RSSI = -60;
 
@@ -51,7 +51,7 @@ public abstract class PodsStatusScanCallback extends ScanCallback {
         manufacturerDataMask[1] = -1;
 
         ScanFilter.Builder builder = new ScanFilter.Builder();
-        builder.setManufacturerData(AIRPODS_MANUFACTURER, manufacturerData, manufacturerDataMask);
+        builder.setManufacturerData(BluetoothAssignedNumbers.APPLE, manufacturerData, manufacturerDataMask);
 
         return Collections.singletonList(builder.build());
     }
@@ -103,7 +103,7 @@ public abstract class PodsStatusScanCallback extends ScanCallback {
     }
 
     private static boolean isAirpodsResult (ScanResult result) {
-        return result != null && result.getScanRecord() != null && isDataValid(result.getScanRecord().getManufacturerSpecificData(AIRPODS_MANUFACTURER));
+        return result != null && result.getScanRecord() != null && isDataValid(result.getScanRecord().getManufacturerSpecificData(BluetoothAssignedNumbers.APPLE));
     }
 
     private static boolean isDataValid (byte[] data) {
@@ -112,7 +112,7 @@ public abstract class PodsStatusScanCallback extends ScanCallback {
 
     private static String decodeResult (ScanResult result) {
         if (result != null && result.getScanRecord() != null) {
-            byte[] data = result.getScanRecord().getManufacturerSpecificData(AIRPODS_MANUFACTURER);
+            byte[] data = result.getScanRecord().getManufacturerSpecificData(BluetoothAssignedNumbers.APPLE);
             if (isDataValid(data))
                 return decodeHex(data);
         }

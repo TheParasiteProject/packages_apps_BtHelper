@@ -7,33 +7,43 @@
 
 package com.android.bluetooth.bthelper.pods.models;
 
-import com.android.bluetooth.bthelper.R;
 import com.android.bluetooth.bthelper.pods.Pod;
+import com.android.bluetooth.bthelper.R;
 
 public class AirPodsPro extends RegularPods {
 
-    public AirPodsPro (Pod leftPod, Pod rightPod, Pod casePod) {
-        super(leftPod, rightPod, casePod);
+    public AirPodsPro (String color, Pod leftPod, Pod rightPod, Pod casePod) {
+        super(color, leftPod, rightPod, casePod);
     }
 
     @Override
+    public int getDrawable () {
+        return R.drawable.AirPods_Pro;
+    };
+
+    @Override
     public int getLeftDrawable () {
-        return getPod(LEFT).isConnected() ? R.drawable.podpro : R.drawable.podpro_disconnected;
+        return R.drawable.AirPods_Pro_Left;
     }
 
     @Override
     public int getRightDrawable () {
-        return getPod(RIGHT).isConnected() ? R.drawable.podpro : R.drawable.podpro_disconnected;
+        return R.drawable.AirPods_Pro_Right;
     }
 
     @Override
     public int getCaseDrawable () {
-        return getPod(CASE).isConnected() ? R.drawable.podpro_case : R.drawable.podpro_case_disconnected;
+        return R.drawable.AirPods_Pro_Case;
     }
 
     @Override
     public String getModel () {
         return Constants.MODEL_AIRPODS_PRO;
+    }
+
+    @Override
+    public String getMenufacturer () {
+        return Constants.MANUFACTURER_APPLE;
     }
 
 }
