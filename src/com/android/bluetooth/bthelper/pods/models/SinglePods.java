@@ -16,25 +16,27 @@ public abstract class SinglePods implements IPods {
     public abstract int getDrawable ();
 
     private final Pod pod;
+    private final String color;
 
-    public SinglePods (Pod pod) {
+    public SinglePods (String color, Pod pod) {
         this.pod = pod;
+        this.color = color;
     }
 
     public Pod getPod () {
         return pod;
     }
 
+    public int getParsedArgStatus () {
+        return pod.parseArgStatus();
+    }
+
     public String getParsedStatus () {
         return pod.parseStatus();
     }
 
-    public int getBatImgVisibility () {
-        return pod.batImgVisibility();
-    }
-
-    public int getBatImgSrcId () {
-        return pod.batImgSrcId();
+    public String getColor () {
+        return color;
     }
 
     @Override
@@ -45,6 +47,19 @@ public abstract class SinglePods implements IPods {
     @Override
     public boolean isDisconnected () {
         return pod.isDisconnected();
+    }
+
+    public int getLowBattThreshold () {
+        // Most AirPods have same Low Battery Threshold to 20
+        return 20;
+    }
+
+    public String getMenufacturer () {
+        return Constants.UNKNOWN;
+    }
+
+    public boolean isCharging () {
+        return pod.isCharging();
     }
 
 }

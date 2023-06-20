@@ -37,7 +37,6 @@ public class PodsStatus {
     public static final PodsStatus DISCONNECTED = new PodsStatus();
 
     private IPods pods;
-    private final long timestamp = System.currentTimeMillis();
 
     public PodsStatus () {
     }
@@ -45,6 +44,8 @@ public class PodsStatus {
     public PodsStatus (String status) {
         if (status == null)
             return;
+
+        String color = status.substring(18, 20);
 
         boolean flip = isFlipped(status);
 
@@ -75,17 +76,17 @@ public class PodsStatus {
 
         // Detect which model
         if ("0220".equals(idFull)) {
-            pods = new AirPods1(leftPod, rightPod, casePod); // Airpods 1st gen
+            pods = new AirPods1(color, leftPod, rightPod, casePod); // Airpods 1st gen
         } else if ("0F20".equals(idFull)) {
-            pods = new AirPods2(leftPod, rightPod, casePod); // Airpods 2nd gen
+            pods = new AirPods2(color, leftPod, rightPod, casePod); // Airpods 2nd gen
         } else if ("1320".equals(idFull)) {
-            pods = new AirPods3(leftPod, rightPod, casePod); // Airpods 3rd gen
+            pods = new AirPods3(color, leftPod, rightPod, casePod); // Airpods 3rd gen
         } else if ("0E20".equals(idFull)) {
-            pods = new AirPodsPro(leftPod, rightPod, casePod); // Airpods Pro
+            pods = new AirPodsPro(color, leftPod, rightPod, casePod); // Airpods Pro
         } else if ("1420".equals(idFull)) {
-            pods = new AirPodsPro2(leftPod, rightPod, casePod); // Airpods Pro 2
-        } else if ('A' == idSingle) {
-            pods = new AirPodsMax(singlePod); // Airpods Max
+            pods = new AirPodsPro2(color, leftPod, rightPod, casePod); // Airpods Pro 2
+        } else if ("0A20".equals(idFull)) {
+            pods = new AirPodsMax(color, singlePod); // Airpods Max
         }
     }
 
@@ -103,9 +104,4 @@ public class PodsStatus {
 
         return pods.isDisconnected();
     }
-
-    public long getTimestamp () {
-        return timestamp;
-    }
-
 }

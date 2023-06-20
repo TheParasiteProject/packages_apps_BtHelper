@@ -15,4 +15,7 @@ public interface IPods {
 
     boolean isDisconnected ();
 
+    int getLowBattThreshold ();
+
+    String getMenufacturer ();
 }

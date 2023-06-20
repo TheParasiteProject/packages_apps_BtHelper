@@ -17,34 +17,48 @@ public class RegularPods implements IPods {
     public static final int LEFT = 0, RIGHT = 1, CASE = 2;
 
     private final Pod[] pods;
+    private final String color;
 
-    public RegularPods (Pod leftPod, Pod rightPod, Pod casePod) {
+    public RegularPods (String color, Pod leftPod, Pod rightPod, Pod casePod) {
         this.pods = new Pod[] {leftPod, rightPod, casePod};
+        this.color = color;
     }
 
     public Pod getPod (int pos) {
         return pods[pos];
     }
 
+    public int getParsedArgStatus (int pos) {
+        return pods[pos].parseArgStatus();
+    }
+
     public String getParsedStatus (int pos) {
         return pods[pos].parseStatus();
     }
 
+    public String getColor () {
+        return color;
+    }
+
+    public int getDrawable () {
+        return -1;
+    }
+
     public int getLeftDrawable () {
-        return getPod(LEFT).isConnected() ? R.drawable.pod : R.drawable.pod_disconnected;
+        return -1;
     }
 
     public int getRightDrawable () {
-        return getPod(RIGHT).isConnected() ? R.drawable.pod : R.drawable.pod_disconnected;
+        return -1;
     }
 
     public int getCaseDrawable () {
-        return getPod(CASE).isConnected() ? R.drawable.pod_case : R.drawable.pod_case_disconnected;
+        return -1;
     }
 
     @Override
     public String getModel () {
-        return Constants.MODEL_UNKNOWN;
+        return Constants.UNKNOWN;
     }
 
     @Override
@@ -57,6 +71,23 @@ public class RegularPods implements IPods {
         return pods[LEFT].isDisconnected() &&
                 pods[RIGHT].isDisconnected() &&
                 pods[CASE].isDisconnected();
+    }
+
+    public int getLowBattThreshold () {
+        // Most AirPods have same Low Battery Threshold to 20
+        return 20;
+    }
+
+    public String getMenufacturer () {
+        return Constants.UNKNOWN;
+    }
+
+    public boolean isInEar (int pos) {
+        return pods[pos].isInEar();
+    }
+
+    public boolean isCharging (int pos) {
+        return pods[pos].isCharging();
     }
 
 }
