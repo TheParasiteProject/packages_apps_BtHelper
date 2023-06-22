@@ -1,3 +1,9 @@
+//
+// Copyright (C) 2023 someone5678
+// SPDX-License-Identifier: GPL-3.0-or-later
+// License-Filename: LICENSE
+//
+
 android_app {
     name: "BtHelper",
     defaults: ["bluetooth-module-sdk-version-defaults"],
