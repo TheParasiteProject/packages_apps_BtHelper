@@ -1,20 +1,31 @@
-# BtHelper
+# Bluetooth Helper
 
-Bluetooth helper service which support showing AirPods series battery level, device icons, etc.<br>
-that currently officially un-supported by AOSP.<br>
+Bluetooth Helper, also known as BtHelper, is a module that enhances the<br>
+functionality of Bluetooth devices, specifically Apple AirPods series, by providing<br>
+features such as battery level display and device icons.<br>
+These features are not currently supported by the Android Open Source Project (AOSP).<br>
 
-Codes are hardly based on [OpenPods](https://github.com/adolfintel/OpenPods), and [xingrz](https://github.com/xingrz)'s system setting implementation.<br>
+BtHelper is developed using code from two primary sources:<br>
+[OpenPods](https://github.com/adolfintel/OpenPods), and [xingrz](https://github.com/xingrz)'s system setting implementation.<br>
+The collaboration of these projects has enabled the creation of BtHelper with its extended capabilities.<br>
 
-
-## Thanks to
+## Acknowledgements
+We would like to express our gratitude to the following projects for their contributions to BtHelper:
 * [OpenPods](https://github.com/adolfintel/OpenPods)
 * [xingrz](https://github.com/xingrz)
 
-## License
+##
 
-<b>AirPods is a trademark of Apple inc.</b><br>
-<b>Images assets under res-apple folder in this repo are owned by Apple inc.</b><br>
-<b>bt_headphones_a2dp.xml under res folder in this repo is taken from The Android Open Source Project.</b><br>
+<b>Trademark Notice:</b><br>
+The term "AirPods" is a registered trademark of Apple Inc.<br>
+
+<b>Ownership of Image Assets:</b><br>
+The image assets located in the "res-apple" folder within this repository are the property of Apple Inc.<br>
+
+<b>Usage of bt_headphones_a2dp.xml:</b><br>
+The file "bt_headphones_a2dp.xml" found in the "res" folder of this repository has been sourced from The Android Open Source Project.<br>
+
+## License
 
 [![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](https://www.gnu.org/licenses/gpl-3.0.en.html)  
 
