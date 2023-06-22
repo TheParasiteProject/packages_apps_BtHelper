@@ -23,7 +23,7 @@
 
     <application
         android:icon="@mipmap/bt_headphones_a2dp"
-        android:label="BtHelper"
+        android:label="@string/app_name"
         android:persistent="true">
 
     </application>
