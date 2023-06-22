@@ -61,6 +61,19 @@ public class PodsService extends Service {
     private boolean isModelIconSet = false;
     private boolean isModelLowBattThresholdSet = false;
 
+    /**
+     * A vendor-specific AT command
+     *
+     */
+    private static final String VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV = "+IPHONEACCEV";
+
+    /**
+     * Battery level indicator associated with
+     * {@link #VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV}
+     *
+     */
+    private static final int VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL = 1;
+
     private static final byte[] TRUE = "true".getBytes();
     private static final byte[] FALSE = "false".getBytes();
 
@@ -357,12 +370,12 @@ public class PodsService extends Service {
 
             final Object[] arguments = new Object[] {
                 1, // Number of key(IndicatorType)/value pairs
-                BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType: Battery Level
+                VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType: Battery Level
                 batteryUnified, // Battery Level
             };
     
             broadcastVendorSpecificEventIntent(
-                    BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV,
+                    VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV,
                     BluetoothAssignedNumbers.APPLE,
                     BluetoothHeadset.AT_CMD_TYPE_SET,
                     arguments,
