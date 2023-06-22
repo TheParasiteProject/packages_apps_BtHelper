@@ -22,9 +22,6 @@ The term "AirPods" is a registered trademark of Apple Inc.<br>
 <b>Ownership of Image Assets:</b><br>
 The image assets located in the "res-apple" folder within this repository are the property of Apple Inc.<br>
 
-<b>Usage of bt_headphones_a2dp.xml:</b><br>
-The file "bt_headphones_a2dp.xml" found in the "res" folder of this repository has been sourced from The Android Open Source Project.<br>
-
 ## License
 
 [![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](https://www.gnu.org/licenses/gpl-3.0.en.html)  
