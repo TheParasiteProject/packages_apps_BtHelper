@@ -54,7 +54,7 @@ public class PodsService extends Service {
     private BroadcastReceiver btReceiver = null;
     private PodsStatusScanCallback scanCallback = null;
 
-    private BluetoothDevice mCurrentDevice;
+    private static BluetoothDevice mCurrentDevice;
     
     private boolean statusChanged = false;
     private boolean isModelSet = false;
@@ -98,8 +98,11 @@ public class PodsService extends Service {
     @Override
     public void onDestroy () {
         super.onDestroy();
-        mCurrentDevice = null;
         stopAirPodsScanner();
+    }
+
+    public static void shouldResetDevice (boolean reset) {
+        if (reset) mCurrentDevice = null;
     }
 
     /**
