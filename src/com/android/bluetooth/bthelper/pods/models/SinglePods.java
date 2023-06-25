@@ -27,11 +27,7 @@ public abstract class SinglePods implements IPods {
         return pod;
     }
 
-    public int getParsedArgStatus () {
-        return pod.parseArgStatus();
-    }
-
-    public String getParsedStatus () {
+    public int getParsedStatus () {
         return pod.parseStatus();
     }
 

@@ -48,6 +48,43 @@ import static com.android.bluetooth.bthelper.pods.PodsStatusScanCallback.getScan
  */
 public class PodsService extends Service {
 
+    /**
+     * Intent used to broadcast the headset's indicator status
+     *
+     * <p>This intent will have 3 extras:
+     * <ul>
+     * <li> {@link #EXTRA_HF_INDICATORS_IND_ID} - The Assigned number of headset Indicator which
+     * is supported by the headset ( as indicated by AT+BIND command in the SLC
+     * sequence) or whose value is changed (indicated by AT+BIEV command) </li>
+     * <li> {@link #EXTRA_HF_INDICATORS_IND_VALUE} - Updated value of headset indicator. </li>
+     * <li> {@link BluetoothDevice#EXTRA_DEVICE} - Remote device. </li>
+     * </ul>
+     * <p>{@link #EXTRA_HF_INDICATORS_IND_ID} is defined by Bluetooth SIG and each of the indicators
+     * are given an assigned number. Below shows the assigned number of Indicator added so far
+     * - Enhanced Safety - 1, Valid Values: 0 - Disabled, 1 - Enabled
+     * - Battery Level - 2, Valid Values: 0~100 - Remaining level of Battery
+     */
+    private static final String ACTION_HF_INDICATORS_VALUE_CHANGED =
+            "android.bluetooth.headset.action.HF_INDICATORS_VALUE_CHANGED";
+
+    /**
+     * A int extra field in {@link #ACTION_HF_INDICATORS_VALUE_CHANGED}
+     * intents that contains the assigned number of the headset indicator as defined by
+     * Bluetooth SIG that is being sent. Value range is 0-65535 as defined in HFP 1.7
+     */
+    private static final String EXTRA_HF_INDICATORS_IND_ID =
+            "android.bluetooth.headset.extra.HF_INDICATORS_IND_ID";
+
+    /**
+     * A int extra field in {@link #ACTION_HF_INDICATORS_VALUE_CHANGED}
+     * intents that contains the value of the Headset indicator that is being sent.
+     */
+    private static final String EXTRA_HF_INDICATORS_IND_VALUE =
+            "android.bluetooth.headset.extra.HF_INDICATORS_IND_VALUE";
+
+    // Match up with bthf_hf_ind_type_t of bt_hf.h
+    private static final int HF_INDICATOR_BATTERY_LEVEL_STATUS = 2;
+
     private BluetoothLeScanner btScanner;
     private PodsStatus status = PodsStatus.DISCONNECTED;
 
@@ -60,19 +97,6 @@ public class PodsService extends Service {
     private boolean isModelSet = false;
     private boolean isModelIconSet = false;
     private boolean isModelLowBattThresholdSet = false;
-
-    /**
-     * A vendor-specific AT command
-     *
-     */
-    private static final String VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV = "+IPHONEACCEV";
-
-    /**
-     * Battery level indicator associated with
-     * {@link #VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV}
-     *
-     */
-    private static final int VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL = 1;
 
     private static final byte[] TRUE = "true".getBytes();
     private static final byte[] FALSE = "false".getBytes();
@@ -342,63 +366,46 @@ public class PodsService extends Service {
                 device.setMetadata(device.METADATA_UNTETHERED_LEFT_CHARGING,
                                     regularPods.isCharging(RegularPods.LEFT) == true ? TRUE : FALSE);
                 device.setMetadata(device.METADATA_UNTETHERED_LEFT_BATTERY,
-                                    regularPods.getParsedStatus(RegularPods.LEFT).getBytes());
+                                    (regularPods.getParsedStatus(RegularPods.LEFT) + "").getBytes());
         
                 device.setMetadata(device.METADATA_UNTETHERED_RIGHT_CHARGING,
                                     regularPods.isCharging(RegularPods.RIGHT) == true ? TRUE : FALSE);
                 device.setMetadata(device.METADATA_UNTETHERED_RIGHT_BATTERY,
-                                    regularPods.getParsedStatus(RegularPods.RIGHT).getBytes());
+                                    (regularPods.getParsedStatus(RegularPods.RIGHT) + "").getBytes());
         
                 device.setMetadata(device.METADATA_UNTETHERED_CASE_CHARGING,
                                     regularPods.isCharging(RegularPods.CASE) == true ? TRUE : FALSE);
                 device.setMetadata(device.METADATA_UNTETHERED_CASE_BATTERY,
-                                    regularPods.getParsedStatus(RegularPods.CASE).getBytes());
+                                    (regularPods.getParsedStatus(RegularPods.CASE) + "").getBytes());
 
                 chargingMain = regularPods.isCharging(RegularPods.LEFT) 
                                && regularPods.isCharging(RegularPods.RIGHT);
 
-                batteryUnified = Math.min(regularPods.getParsedArgStatus(RegularPods.LEFT), 
-                                          regularPods.getParsedArgStatus(RegularPods.RIGHT));
+                batteryUnified = Math.min(regularPods.getParsedStatus(RegularPods.LEFT), 
+                                          regularPods.getParsedStatus(RegularPods.RIGHT));
 
             } else {
                 SinglePods singlePods = (SinglePods)airpods;
 
                 chargingMain = singlePods.isCharging();
 
-                batteryUnified = singlePods.getParsedArgStatus();
+                batteryUnified = singlePods.getParsedStatus();
             }
 
             device.setMetadata(device.METADATA_MAIN_CHARGING,
                                 chargingMain == true ? TRUE : FALSE);
 
-            final Object[] arguments = new Object[] {
-                1, // Number of key(IndicatorType)/value pairs
-                VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType: Battery Level
-                batteryUnified, // Battery Level
-            };
-    
-            broadcastVendorSpecificEventIntent(
-                    VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV,
-                    BluetoothAssignedNumbers.APPLE,
-                    BluetoothHeadset.AT_CMD_TYPE_SET,
-                    arguments,
-                    mCurrentDevice);
+            broadcastHfIndicatorEventIntent(batteryUnified, mCurrentDevice);
         }
 
         statusChanged = false;
     }
 
-    private void broadcastVendorSpecificEventIntent (String command, int companyId, int commandType,
-            Object[] arguments, BluetoothDevice device) {
-        final Intent intent = new Intent(BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT);
-        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD, command);
-        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD_TYPE, commandType);
-        // assert: all elements of args are Serializable
-        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS, arguments);
+    private void broadcastHfIndicatorEventIntent (int battery, BluetoothDevice device) {
+        final Intent intent = new Intent(ACTION_HF_INDICATORS_VALUE_CHANGED);
+        intent.putExtra(EXTRA_HF_INDICATORS_IND_ID, HF_INDICATOR_BATTERY_LEVEL_STATUS);
+        intent.putExtra(EXTRA_HF_INDICATORS_IND_VALUE, battery);
         intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
-        intent.putExtra(BluetoothDevice.EXTRA_NAME, device.getName());
-        intent.addCategory(BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY + "."
-                + Integer.toString(companyId));
         String[] permissions = new String[] {
             Manifest.permission.BLUETOOTH,
             Manifest.permission.BLUETOOTH_CONNECT,

@@ -28,11 +28,7 @@ public class RegularPods implements IPods {
         return pods[pos];
     }
 
-    public int getParsedArgStatus (int pos) {
-        return pods[pos].parseArgStatus();
-    }
-
-    public String getParsedStatus (int pos) {
+    public int getParsedStatus (int pos) {
         return pods[pos].parseStatus();
     }
 
