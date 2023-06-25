@@ -12,6 +12,7 @@ import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -35,10 +36,27 @@ public class StartupReceiver extends BroadcastReceiver {
         PodsUUIDS.add(ParcelUuid.fromString("2a72e02b-7b99-778f-014d-ad0b7221ec74"));
     }
 
+    public static final Set<String> btActions = new HashSet<>();
+    static {
+        btActions.add(BluetoothA2dp.ACTION_ACTIVE_DEVICE_CHANGED);
+        btActions.add("android.bluetooth.a2dp.profile.action.AVRCP_CONNECTION_STATE_CHANGED");
+        btActions.add(BluetoothA2dp.ACTION_CODEC_CONFIG_CHANGED);
+        btActions.add(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED);
+        btActions.add(BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED);
+        btActions.add(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
+        btActions.add(BluetoothAdapter.ACTION_STATE_CHANGED);
+        btActions.add(BluetoothDevice.ACTION_ACL_CONNECTED);
+        btActions.add(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        btActions.add(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        btActions.add(BluetoothDevice.ACTION_NAME_CHANGED);
+        btActions.add(BluetoothHeadset.ACTION_CONNECTION_STATE_CHANGED);
+        btActions.add(BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT);
+    }
+
     @Override
     public void onReceive (Context context, Intent intent) {
         if (intent == null) return;
-        if (BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED.equals(Objects.requireNonNull(intent.getAction()))) {
+        if (btActions.contains(Objects.requireNonNull(intent.getAction()))) {
             final int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, BluetoothAdapter.ERROR);
             final BluetoothDevice device = Objects.requireNonNull(intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
             btProfileChanges(Objects.requireNonNull(context), state, device);
