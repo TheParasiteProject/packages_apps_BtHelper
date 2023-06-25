@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Bluetooth Helper</string>
+
+    <!-- Advanced device settings -->
+    <string name="advanced_device_settings_title">Advanced device settings</string>
+
+    <!-- Low latency audio -->
+    <string name="low_latency_audio_title">Use Low Latency Audio</string>
+    <string name="low_latency_audio_summary">Enable Low Latency connection for audio to reduce delay.\nThis will increase power consumption of bluetooth device and decrease audio quality.</string>
 </resources>

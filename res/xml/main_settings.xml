@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:title="@string/advanced_device_settings_title">
+
+    <SwitchPreference
+        android:key="low_latency_audio_pref"
+        android:defaultValue="false"
+        android:title="@string/low_latency_audio_title"
+        android:summary="@string/low_latency_audio_summary" />
+</PreferenceScreen>

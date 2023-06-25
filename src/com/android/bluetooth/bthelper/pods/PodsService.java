@@ -92,7 +92,7 @@ public class PodsService extends Service {
     private PodsStatusScanCallback scanCallback = null;
 
     private static BluetoothDevice mCurrentDevice;
-    
+
     private boolean statusChanged = false;
     private boolean isModelSet = false;
     private boolean isModelIconSet = false;
@@ -114,6 +114,7 @@ public class PodsService extends Service {
         final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
         if (device != null) {
             mCurrentDevice = device;
+            setLowLatencyAudio(getApplicationContext());
             startAirPodsScanner();
         }
         return START_STICKY;
@@ -435,4 +436,8 @@ public class PodsService extends Service {
         }
     }
 
+    public static void setLowLatencyAudio (Context context) {
+        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        mCurrentDevice.setLowLatencyAudioAllowed(mSharedPrefs.getBoolean(Constants.KEY_LOW_LATENCY_AUDIO, false));
+    }
 }
