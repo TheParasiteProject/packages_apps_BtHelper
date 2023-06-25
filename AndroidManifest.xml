@@ -42,6 +42,22 @@
         android:label="@string/app_name"
         android:persistent="true">
 
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            tools:replace="android:authorities" />
+
+        <activity
+            android:name=".settings.MainSettingsActivity"
+            android:exported="true"
+            android:label="@string/advanced_device_settings_title"
+            android:theme="@style/Theme.SubSettingsBase">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
         <!-- AirPods services -->
         <service
             android:name=".pods.PodsService"

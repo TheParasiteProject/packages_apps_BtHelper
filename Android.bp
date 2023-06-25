@@ -6,7 +6,6 @@
 
 android_app {
     name: "BtHelper",
-    defaults: ["bluetooth-module-sdk-version-defaults"],
 
     srcs: ["src/**/*.java"],
 
@@ -21,6 +20,8 @@ android_app {
     ],
     static_libs: [
         "androidx.core_core",
+        "androidx.preference_preference",
+        "SettingsLib",
     ],
 
     resource_dirs: [
@@ -30,6 +31,10 @@ android_app {
 
     required: [
         "com.android.bluetooth.bthelper.xml",
+    ],
+
+    defaults: [
+        "SettingsLibDefaults",
     ],
 
     system_ext_specific: true,
