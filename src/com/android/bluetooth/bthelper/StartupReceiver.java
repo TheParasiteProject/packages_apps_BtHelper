@@ -55,11 +55,16 @@ public class StartupReceiver extends BroadcastReceiver {
 
     @Override
     public void onReceive (Context context, Intent intent) {
-        if (intent == null) return;
+        if (intent == null || context == null) return;
         if (btActions.contains(Objects.requireNonNull(intent.getAction()))) {
-            final int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, BluetoothAdapter.ERROR);
-            final BluetoothDevice device = Objects.requireNonNull(intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE));
-            btProfileChanges(Objects.requireNonNull(context), state, device);
+            try {
+                final int state = intent.getIntExtra(BluetoothProfile.EXTRA_STATE, BluetoothAdapter.ERROR);
+                final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (device == null) return;
+                btProfileChanges(context, state, device);
+            } catch (NullPointerException e) {
+                return;
+            }
         }
     }
 
