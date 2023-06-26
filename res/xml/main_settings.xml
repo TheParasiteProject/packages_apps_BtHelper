@@ -1,7 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2023 someone5678
+  SPDX-License-Identifier: GPL-3.0-or-later
+  License-Filename: LICENSE
+-->
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="@string/advanced_device_settings_title">
+
+    <SwitchPreference
+        android:key="onepod_mode_pref"
+        android:defaultValue="false"
+        android:title="@string/onepod_mode_title" 
+        android:summary="@string/onepod_mode_summary" />
+
+    <SwitchPreference
+        android:key="auto_play_pref"
+        android:defaultValue="false"
+        android:title="@string/auto_play_titles"
+        android:summary="@string/auto_play_summary" />
+
+    <SwitchPreference
+        android:key="auto_pause_pref"
+        android:defaultValue="false"
+        android:title="@string/auto_pause_title"
+        android:summary="@string/auto_pause_summary" />
 
     <SwitchPreference
         android:key="low_latency_audio_pref"

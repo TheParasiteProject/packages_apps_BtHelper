@@ -1,3 +1,9 @@
+/*
+ * Copyright (C) 2023 someone5678
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * License-Filename: LICENSE
+ */
+
 package com.android.bluetooth.bthelper.settings;
 
 import android.app.ActionBar;
@@ -24,6 +30,9 @@ public class MainSettingsFragment extends PreferenceFragment implements
         OnPreferenceChangeListener {
 
     private SharedPreferences mSharedPrefs;
+    private SwitchPreference mOnePodModePref;
+    private SwitchPreference mAutoPlayPref;
+    private SwitchPreference mAutoPausePref;
     private SwitchPreference mLowLatencyAudioSwitchPref;
 
     @Override
@@ -32,6 +41,18 @@ public class MainSettingsFragment extends PreferenceFragment implements
         final ActionBar mActionBar = getActivity().getActionBar();
         mActionBar.setDisplayHomeAsUpEnabled(true);
         mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+
+        mOnePodModePref = (SwitchPreference) findPreference(Constants.KEY_ONEPOD_MODE);
+        mOnePodModePref.setEnabled(true);
+        mOnePodModePref.setOnPreferenceChangeListener(this);
+
+        mAutoPlayPref = (SwitchPreference) findPreference(Constants.KEY_AUTO_PLAY);
+        mAutoPlayPref.setEnabled(true);
+        mAutoPlayPref.setOnPreferenceChangeListener(this);
+
+        mAutoPausePref = (SwitchPreference) findPreference(Constants.KEY_AUTO_PAUSE);
+        mAutoPausePref.setEnabled(true);
+        mAutoPausePref.setOnPreferenceChangeListener(this);
 
         mLowLatencyAudioSwitchPref = (SwitchPreference) findPreference(Constants.KEY_LOW_LATENCY_AUDIO);
         mLowLatencyAudioSwitchPref.setEnabled(true);

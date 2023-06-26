@@ -24,6 +24,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources.NotFoundException;
+import android.content.SharedPreferences;
 import android.Manifest;
 import android.net.Uri;
 import android.os.Build;
@@ -32,13 +33,16 @@ import android.os.ParcelUuid;
 import android.os.UserHandle;
 import android.provider.Settings;
 
-import java.util.Objects;
+import androidx.preference.PreferenceManager;
 
-import com.android.bluetooth.bthelper.R;
+import java.util.Objects;
 
 import com.android.bluetooth.bthelper.pods.models.IPods;
 import com.android.bluetooth.bthelper.pods.models.RegularPods;
 import com.android.bluetooth.bthelper.pods.models.SinglePods;
+import com.android.bluetooth.bthelper.R;
+import com.android.bluetooth.bthelper.settings.Constants;
+import com.android.bluetooth.bthelper.utils.MediaControl;
 import static com.android.bluetooth.bthelper.pods.PodsStatusScanCallback.getScanFilters;
 
 /**
@@ -100,6 +104,10 @@ public class PodsService extends Service {
 
     private static final byte[] TRUE = "true".getBytes();
     private static final byte[] FALSE = "false".getBytes();
+
+    private static SharedPreferences mSharedPrefs;
+    private static boolean inEarLeftOld;
+    private static boolean inEarRightOld;
 
     public PodsService () {
     }
@@ -169,6 +177,7 @@ public class PodsService extends Service {
                 public void onStatus (PodsStatus newStatus) {
                     setStatusChanged(status, newStatus);
                     status = newStatus;
+                    handlePlayPause(status, getApplicationContext());
                     updatePodsStatus(status, mCurrentDevice);
                 }
             };
@@ -368,12 +377,12 @@ public class PodsService extends Service {
                                     regularPods.isCharging(RegularPods.LEFT) == true ? TRUE : FALSE);
                 device.setMetadata(device.METADATA_UNTETHERED_LEFT_BATTERY,
                                     (regularPods.getParsedStatus(RegularPods.LEFT) + "").getBytes());
-        
+
                 device.setMetadata(device.METADATA_UNTETHERED_RIGHT_CHARGING,
                                     regularPods.isCharging(RegularPods.RIGHT) == true ? TRUE : FALSE);
                 device.setMetadata(device.METADATA_UNTETHERED_RIGHT_BATTERY,
                                     (regularPods.getParsedStatus(RegularPods.RIGHT) + "").getBytes());
-        
+
                 device.setMetadata(device.METADATA_UNTETHERED_CASE_CHARGING,
                                     regularPods.isCharging(RegularPods.CASE) == true ? TRUE : FALSE);
                 device.setMetadata(device.METADATA_UNTETHERED_CASE_BATTERY,
@@ -439,5 +448,76 @@ public class PodsService extends Service {
     public static void setLowLatencyAudio (Context context) {
         mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
         mCurrentDevice.setLowLatencyAudioAllowed(mSharedPrefs.getBoolean(Constants.KEY_LOW_LATENCY_AUDIO, false));
+    }
+
+    public static void handlePlayPause (PodsStatus status, Context context) {
+        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+
+        final boolean onePodMode = mSharedPrefs.getBoolean(Constants.KEY_ONEPOD_MODE, false);
+        final boolean autoPlay = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PLAY, false);
+        final boolean autoPause = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PAUSE, false);
+
+        final IPods airpods = status.getAirpods();
+        final boolean single = airpods.isSingle();
+
+        if (!single) {
+            boolean leftChanged = false;
+            boolean rightChanged = false;
+
+            final RegularPods regularPods = (RegularPods)airpods;
+
+            final boolean leftInEar = regularPods.isInEar(RegularPods.LEFT);
+            final boolean rightInEar = regularPods.isInEar(RegularPods.RIGHT);
+
+            if (inEarLeftOld != leftInEar) {
+                leftChanged = true;
+                inEarLeftOld = leftInEar;
+            }
+            if (inEarRightOld != rightInEar) {
+                rightChanged = true;
+                inEarRightOld = rightInEar;
+            }
+
+            if (!onePodMode) {
+                if (leftChanged && rightChanged) {
+                    if (autoPlay && leftInEar && rightInEar) {
+                        MediaControl.sendPlay(context);
+                        return;
+                    } else if (autoPause && !leftInEar && !rightInEar) {
+                        MediaControl.sendPause(context);
+                        return;
+                    }
+                } else if (leftChanged || rightChanged) {
+                    if (autoPlay && leftInEar && rightInEar) {
+                        MediaControl.sendPlay(context);
+                        return;
+                    } else if (autoPause && !leftInEar && !rightInEar) {
+                        MediaControl.sendPause(context);
+                        return;
+                    }
+                }
+            } else {
+                if (leftChanged || rightChanged) {
+                    if (autoPlay && leftInEar && rightInEar) {
+                        MediaControl.sendPlay(context);
+                        return;
+                    } else if (autoPause && !leftInEar && !rightInEar) {
+                        MediaControl.sendPause(context);
+                        return;
+                    } else if (autoPlay && (((leftChanged && leftInEar && !rightInEar)
+                                            || (rightChanged && rightInEar && !leftInEar)))) {
+                        MediaControl.sendPlay(context);
+                        return;
+                    } else if (autoPause && (((leftChanged && !leftInEar && rightInEar) 
+                                            || (rightChanged && !rightInEar && leftInEar)))) {
+                        MediaControl.sendPause(context);
+                        return;
+                    }
+                }
+            }
+        } else {
+            // TODO: Support single pod devices (AirPod Max)  
+            return;
+        }
     }
 }
