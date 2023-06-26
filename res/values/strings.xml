@@ -1,9 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2023 someone5678
+  SPDX-License-Identifier: GPL-3.0-or-later
+  License-Filename: LICENSE
+-->
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Bluetooth Helper</string>
 
     <!-- Advanced device settings -->
     <string name="advanced_device_settings_title">Advanced device settings</string>
+
+    <!-- One pod mode -->
+    <string name="onepod_mode_title">One pod mode</string>
+    <string name="onepod_mode_summary">Trigger reaction events even using a single device only.</string>
+
+    <!-- Auto play -->
+    <string name="auto_play_titles">Auto play</string>
+    <string name="auto_play_summary">Start audio playback when device is worn.</string>
+
+    <!-- Auto pause -->
+    <string name="auto_pause_title">Auto pause</string>
+    <string name="auto_pause_summary">Pause audio playback when device is took off.</string>
 
     <!-- Low latency audio -->
     <string name="low_latency_audio_title">Use Low Latency Audio</string>
