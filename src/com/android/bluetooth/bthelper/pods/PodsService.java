@@ -43,6 +43,7 @@ import com.android.bluetooth.bthelper.pods.models.SinglePods;
 import com.android.bluetooth.bthelper.R;
 import com.android.bluetooth.bthelper.settings.Constants;
 import com.android.bluetooth.bthelper.utils.MediaControl;
+import com.android.bluetooth.bthelper.settings.MainSettingsSliceProvider;
 import static com.android.bluetooth.bthelper.pods.PodsStatusScanCallback.getScanFilters;
 
 /**
@@ -98,6 +99,7 @@ public class PodsService extends Service {
     private static BluetoothDevice mCurrentDevice;
 
     private boolean statusChanged = false;
+    private boolean isEnhancedUriSet = false;
     private boolean isModelSet = false;
     private boolean isModelIconSet = false;
     private boolean isModelLowBattThresholdSet = false;
@@ -208,6 +210,15 @@ public class PodsService extends Service {
     public void updatePodsStatus (PodsStatus status, BluetoothDevice device) {
         IPods airpods = status.getAirpods();
         boolean single = airpods.isSingle();
+
+        if (!isEnhancedUriSet) {
+            if (device.getMetadata(device.METADATA_ENHANCED_SETTINGS_UI_URI) == null) {
+                isEnhancedUriSet = device.setMetadata(device.METADATA_ENHANCED_SETTINGS_UI_URI,
+                                        MainSettingsSliceProvider.getUri(getApplicationContext(), "bthelper").toString().getBytes());
+            } else {
+                isEnhancedUriSet = true;
+            }
+        }
 
         if (!isModelSet) {
             boolean isManufacturerSet = false;

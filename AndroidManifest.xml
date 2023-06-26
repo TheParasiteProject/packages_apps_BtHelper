@@ -58,6 +58,12 @@
             </intent-filter>
         </activity>
 
+        <provider
+            android:authorities="com.android.bluetooth.bthelper"
+            android:name=".settings.MainSettingsSliceProvider"
+            android:grantUriPermissions="true"
+            android:exported="true" />
+
         <!-- AirPods services -->
         <service
             android:name=".pods.PodsService"

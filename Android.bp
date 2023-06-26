@@ -23,6 +23,9 @@ android_app {
     static_libs: [
         "androidx.core_core",
         "androidx.preference_preference",
+        "androidx.slice_slice-core",
+        "androidx.slice_slice-view",
+        "androidx.slice_slice-builders",
         "SettingsLib",
     ],
 
