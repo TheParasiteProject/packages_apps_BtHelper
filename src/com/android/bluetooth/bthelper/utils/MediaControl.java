@@ -13,38 +13,47 @@ import android.os.SystemClock;
 import android.view.KeyEvent;
 
 public class MediaControl {
-    public static boolean isPlaying (Context context) {
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+    private static AudioManager audioManager;
+    private static MediaControl mInstance;
+
+    public MediaControl (Context context) {
+        audioManager = context.getSystemService(AudioManager.class);
+    }
+
+    public static synchronized MediaControl getInstance(Context context) {
+        if (mInstance == null) {
+            mInstance = new MediaControl(context);
+        }
+        return mInstance;
+    }
+
+    public static boolean isPlaying () {
         return audioManager.isMusicActive();
     }
 
-    public static void sendPlay (Context context) {
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        if (audioManager.isMusicActive()) {
+    public static void sendPlay () {
+        if (isPlaying()) {
             return;
         }
-        sendKey(context, KeyEvent.KEYCODE_MEDIA_PLAY);
+        sendKey(KeyEvent.KEYCODE_MEDIA_PLAY);
     }
 
-    public static void sendPause (Context context) {
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        if (!audioManager.isMusicActive()) {
+    public static void sendPause () {
+        if (!isPlaying()) {
             return;
         }
-        sendKey(context, KeyEvent.KEYCODE_MEDIA_PAUSE);
+        sendKey(KeyEvent.KEYCODE_MEDIA_PAUSE);
     }
 
-    public static void sendPlayPause (Context context) {
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        if (audioManager.isMusicActive()) {
-            sendPause(context);
+    public static void sendPlayPause () {
+        if (isPlaying()) {
+            sendPause();
         } else {
-            sendPlay(context);
+            sendPlay();
         }
     }
 
-    private static void sendKey (Context context, int keyCode) {
-        final AudioManager audioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+    private static void sendKey (int keyCode) {
         final long eventTime = SystemClock.uptimeMillis();
         audioManager.dispatchMediaKeyEvent(new KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0));
         try {
