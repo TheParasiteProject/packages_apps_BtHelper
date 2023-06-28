@@ -54,6 +54,10 @@ public abstract class SinglePods implements IPods {
         return Constants.UNKNOWN;
     }
 
+    public boolean isInEar () {
+        return pod.isInEar();
+    }
+
     public boolean isCharging () {
         return pod.isCharging();
     }

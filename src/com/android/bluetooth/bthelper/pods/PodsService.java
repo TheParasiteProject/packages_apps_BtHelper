@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2019-2022 Federico Dossena
  *               2019 The MoKee Open Source Project
+ *               2021-2023 Matthias Urhahn
  *               2023 someone5678
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
@@ -109,8 +110,8 @@ public class PodsService extends Service {
     private static final byte[] FALSE = "false".getBytes();
 
     private static SharedPreferences mSharedPrefs;
-    private static boolean inEarLeftOld;
-    private static boolean inEarRightOld;
+    private static MediaControl mediaControl;
+    private static boolean previousWorn = false;
 
     public PodsService () {
     }
@@ -474,67 +475,39 @@ public class PodsService extends Service {
         final boolean autoPlay = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PLAY, false);
         final boolean autoPause = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PAUSE, false);
 
+        try {
+            mediaControl = MediaControl.getInstance(context);
+        } catch (Exception e) {
+        }
+
+        if (mediaControl == null) return;
+
         final IPods airpods = status.getAirpods();
         final boolean single = airpods.isSingle();
+        boolean currentWorn = false;
 
         if (!single) {
-            boolean leftChanged = false;
-            boolean rightChanged = false;
-
             final RegularPods regularPods = (RegularPods)airpods;
-
-            final boolean leftInEar = regularPods.isInEar(RegularPods.LEFT);
-            final boolean rightInEar = regularPods.isInEar(RegularPods.RIGHT);
-
-            if (inEarLeftOld != leftInEar) {
-                leftChanged = true;
-                inEarLeftOld = leftInEar;
-            }
-            if (inEarRightOld != rightInEar) {
-                rightChanged = true;
-                inEarRightOld = rightInEar;
-            }
-
-            if (!onePodMode) {
-                if (leftChanged && rightChanged) {
-                    if (autoPlay && leftInEar && rightInEar) {
-                        MediaControl.sendPlay(context);
-                        return;
-                    } else if (autoPause && !leftInEar && !rightInEar) {
-                        MediaControl.sendPause(context);
-                        return;
-                    }
-                } else if (leftChanged || rightChanged) {
-                    if (autoPlay && leftInEar && rightInEar) {
-                        MediaControl.sendPlay(context);
-                        return;
-                    } else if (autoPause && !leftInEar && !rightInEar) {
-                        MediaControl.sendPause(context);
-                        return;
-                    }
-                }
+            if (onePodMode) {
+                currentWorn = regularPods.isInEar(RegularPods.LEFT) || regularPods.isInEar(RegularPods.RIGHT);
             } else {
-                if (leftChanged || rightChanged) {
-                    if (autoPlay && leftInEar && rightInEar) {
-                        MediaControl.sendPlay(context);
-                        return;
-                    } else if (autoPause && !leftInEar && !rightInEar) {
-                        MediaControl.sendPause(context);
-                        return;
-                    } else if (autoPlay && (((leftChanged && leftInEar && !rightInEar)
-                                            || (rightChanged && rightInEar && !leftInEar)))) {
-                        MediaControl.sendPlay(context);
-                        return;
-                    } else if (autoPause && (((leftChanged && !leftInEar && rightInEar) 
-                                            || (rightChanged && !rightInEar && leftInEar)))) {
-                        MediaControl.sendPause(context);
-                        return;
-                    }
-                }
+                currentWorn = regularPods.isInEar(RegularPods.LEFT) && regularPods.isInEar(RegularPods.RIGHT);
             }
         } else {
-            // TODO: Support single pod devices (AirPod Max)  
-            return;
+            final SinglePods singlePods = (SinglePods)airpods;
+            currentWorn = singlePods.isInEar();
         }
+
+        if (!previousWorn && currentWorn && !mediaControl.isPlaying()) {
+            if (autoPlay) {
+                mediaControl.sendPlay();
+            }
+        } else if (previousWorn && !currentWorn && mediaControl.isPlaying()) {
+            if (autoPause) {
+                mediaControl.sendPause();
+            }
+        }
+
+        previousWorn = currentWorn;
     }
 }
