@@ -45,6 +45,9 @@ public class MainSettingsFragment extends PreferenceFragment implements
         mOnePodModePref = (SwitchPreference) findPreference(Constants.KEY_ONEPOD_MODE);
         mOnePodModePref.setEnabled(true);
         mOnePodModePref.setOnPreferenceChangeListener(this);
+        if (PodsService.isSingleDevice()) {
+            getPreferenceScreen().removePreference(mOnePodModePref);
+        }
 
         mAutoPlayPref = (SwitchPreference) findPreference(Constants.KEY_AUTO_PLAY);
         mAutoPlayPref.setEnabled(true);

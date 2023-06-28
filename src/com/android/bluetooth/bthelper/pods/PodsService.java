@@ -98,6 +98,7 @@ public class PodsService extends Service {
 
     private static BluetoothDevice mCurrentDevice;
 
+    private static boolean isSinglePods = false;
     private boolean statusChanged = false;
     private boolean isEnhancedUriSet = false;
     private boolean isModelSet = false;
@@ -207,9 +208,14 @@ public class PodsService extends Service {
         }
     }
 
+    public static boolean isSingleDevice () {
+        return isSinglePods;
+    }
+
     public void updatePodsStatus (PodsStatus status, BluetoothDevice device) {
-        IPods airpods = status.getAirpods();
-        boolean single = airpods.isSingle();
+        final IPods airpods = status.getAirpods();
+        final boolean single = airpods.isSingle();
+        isSinglePods = single;
 
         if (!isEnhancedUriSet) {
             if (device.getMetadata(device.METADATA_ENHANCED_SETTINGS_UI_URI) == null) {
