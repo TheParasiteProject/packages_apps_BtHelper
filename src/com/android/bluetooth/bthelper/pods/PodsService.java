@@ -9,15 +9,10 @@
 
 package com.android.bluetooth.bthelper.pods;
 
-import android.annotation.SuppressLint;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothAssignedNumbers;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
 import android.bluetooth.le.ScanSettings;
 import android.content.BroadcastReceiver;
@@ -30,12 +25,12 @@ import android.Manifest;
 import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
-import android.os.ParcelUuid;
 import android.os.UserHandle;
-import android.provider.Settings;
 
 import androidx.preference.PreferenceManager;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import com.android.bluetooth.bthelper.pods.models.IPods;
@@ -91,6 +86,27 @@ public class PodsService extends Service {
     // Match up with bthf_hf_ind_type_t of bt_hf.h
     private static final int HF_INDICATOR_BATTERY_LEVEL_STATUS = 2;
 
+    /**
+     * Broadcast Action: Indicates the battery level of a remote device has
+     * been retrieved for the first time, or changed since the last retrieval
+     * <p>Always contains the extra fields {@link BluetoothDevice#EXTRA_DEVICE}
+     * and {@link BluetoothDevice#EXTRA_BATTERY_LEVEL}.
+     */
+    public static final String ACTION_BATTERY_LEVEL_CHANGED =
+            "android.bluetooth.device.action.BATTERY_LEVEL_CHANGED";
+
+    // Target Android Settings Intelligence package that have battery widget for data update
+    private static final String PACKAGE_ASI = "com.google.android.settings.intelligence";
+
+    /** 
+     * Intent used to broadcast bluetooth data update
+     * for the Settings Intelligence package's battery widget
+     */
+    private static final String ACTION_ASI_UPDATE_BLUETOOTH_DATA = "batterywidget.impl.action.update_bluetooth_data";
+
+    // Enhanced Settings UI Slice for BtHelper
+    private static final String SLICE_BTHELPER = "bthelper";
+
     private BluetoothLeScanner btScanner;
     private PodsStatus status = PodsStatus.DISCONNECTED;
 
@@ -100,14 +116,8 @@ public class PodsService extends Service {
     private static BluetoothDevice mCurrentDevice;
 
     private static boolean isSinglePods = false;
+    private boolean isMetaDataSet = false;
     private boolean statusChanged = false;
-    private boolean isEnhancedUriSet = false;
-    private boolean isModelSet = false;
-    private boolean isModelIconSet = false;
-    private boolean isModelLowBattThresholdSet = false;
-
-    private static final byte[] TRUE = "true".getBytes();
-    private static final byte[] FALSE = "false".getBytes();
 
     private static SharedPreferences mSharedPrefs;
     private static MediaControl mediaControl;
@@ -138,8 +148,15 @@ public class PodsService extends Service {
         stopAirPodsScanner();
     }
 
+    // Reset currently set device
     public static void shouldResetDevice (boolean reset) {
         if (reset) mCurrentDevice = null;
+    }
+
+    // Set Low Latency Audio mode to current device
+    public static void setLowLatencyAudio (Context context) {
+        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+        mCurrentDevice.setLowLatencyAudioAllowed(mSharedPrefs.getBoolean(Constants.KEY_LOW_LATENCY_AUDIO, false));
     }
 
     /**
@@ -203,272 +220,20 @@ public class PodsService extends Service {
         }
     }
 
+    // Set boolean value to true if device's status has changed
     private void setStatusChanged (PodsStatus status, PodsStatus newStatus) {
         if (!Objects.equals(status, newStatus)) {
             statusChanged = true;
         }
     }
 
+    // Check whether current device is single model (e.g. AirPods Max)
     public static boolean isSingleDevice () {
         return isSinglePods;
     }
 
-    public void updatePodsStatus (PodsStatus status, BluetoothDevice device) {
-        final IPods airpods = status.getAirpods();
-        final boolean single = airpods.isSingle();
-        isSinglePods = single;
-
-        if (!isEnhancedUriSet) {
-            if (device.getMetadata(device.METADATA_ENHANCED_SETTINGS_UI_URI) == null) {
-                isEnhancedUriSet = device.setMetadata(device.METADATA_ENHANCED_SETTINGS_UI_URI,
-                                        MainSettingsSliceProvider.getUri(getApplicationContext(), "bthelper").toString().getBytes());
-            } else {
-                isEnhancedUriSet = true;
-            }
-        }
-
-        if (!isModelSet) {
-            boolean isManufacturerSet = false;
-            boolean isNameSet = false;
-            boolean isTypeSet = false;
-            
-            if (!single) {
-                if (device.getMetadata(device.METADATA_MANUFACTURER_NAME) == null) {
-                    isManufacturerSet = device.setMetadata(device.METADATA_MANUFACTURER_NAME,
-                                            ((RegularPods)airpods).getMenufacturer().getBytes());
-                } else {
-                    isManufacturerSet = true;
-                }
-                if (device.getMetadata(device.METADATA_MODEL_NAME) == null) {
-                    isNameSet = device.setMetadata(device.METADATA_MODEL_NAME,
-                                            ((RegularPods)airpods).getModel().getBytes());
-                } else {
-                    isNameSet = true;
-                }
-            } else {
-                if (device.getMetadata(device.METADATA_MANUFACTURER_NAME) == null) {
-                    isManufacturerSet = device.setMetadata(device.METADATA_MANUFACTURER_NAME,
-                                            ((SinglePods)airpods).getMenufacturer().getBytes());
-                } else {
-                    isManufacturerSet = true;
-                }
-                if (device.getMetadata(device.METADATA_MODEL_NAME) == null) {
-                    isNameSet = device.setMetadata(device.METADATA_MODEL_NAME,
-                                            ((SinglePods)airpods).getModel().getBytes());
-                } else {
-                    isNameSet = true;
-                }
-            }
-            if (device.getMetadata(device.METADATA_DEVICE_TYPE) == null) {
-                isTypeSet = device.setMetadata(device.METADATA_DEVICE_TYPE,
-                                        device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes()
-                                    );
-            } else {
-                isTypeSet = true;
-            }
-            isModelSet = isManufacturerSet
-                         && isNameSet
-                         && isTypeSet;
-        }
-
-        if (!isModelLowBattThresholdSet) {
-            boolean isMainLowBatterySet = false;
-            boolean isLeftLowBatterySet = false;
-            boolean isRightLowBatterySet = false;
-            boolean isCaseLowBatterySet = false;
-
-            if (!single) {
-                if (device.getMetadata(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD) == null) {
-                    isMainLowBatterySet =
-                        device.setMetadata(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
-                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
-                } else {
-                    isMainLowBatterySet = true;
-                }
-                if (device.getMetadata(device.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD) == null) {
-                    isLeftLowBatterySet = 
-                        device.setMetadata(device.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD,
-                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
-                } else {
-                    isLeftLowBatterySet = true;
-                }
-                if (device.getMetadata(device.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD) == null) {
-                    isRightLowBatterySet =
-                        device.setMetadata(device.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD,
-                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
-                } else {
-                    isRightLowBatterySet = true;
-                }
-                if (device.getMetadata(device.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD) == null) {
-                    isCaseLowBatterySet =
-                        device.setMetadata(device.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD,
-                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
-                } else {
-                    isCaseLowBatterySet = true;
-                }
-                isModelLowBattThresholdSet = isMainLowBatterySet
-                                             && isLeftLowBatterySet
-                                             && isRightLowBatterySet
-                                             && isCaseLowBatterySet;
-            } else {
-                if (device.getMetadata(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD) == null) {
-                    isMainLowBatterySet =
-                        device.setMetadata(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
-                                    (""+((RegularPods)airpods).getLowBattThreshold()).getBytes());
-                } else {
-                    isMainLowBatterySet = true;
-                }
-                isModelLowBattThresholdSet = isMainLowBatterySet;
-            }
-        }
-
-        if (!isModelIconSet) {
-            byte[] MODEL_ICON_URI = null;
-            byte[] MODEL_ICON_URI_LEFT = null;
-            byte[] MODEL_ICON_URI_RIGHT = null;
-            byte[] MODEL_ICON_URI_CASE = null;
-
-            boolean isMainIconset = false;
-            boolean isLeftIconset = false;
-            boolean isRightIconset = false;
-            boolean isCaseIconset = false;
-
-            if (!single) {
-                MODEL_ICON_URI = 
-                        resToUri(((RegularPods)airpods).getDrawable()).toString().getBytes();
-                MODEL_ICON_URI_LEFT = 
-                        resToUri(((RegularPods)airpods).getLeftDrawable()).toString().getBytes();
-                MODEL_ICON_URI_RIGHT = 
-                        resToUri(((RegularPods)airpods).getRightDrawable()).toString().getBytes();
-                MODEL_ICON_URI_CASE = 
-                        resToUri(((RegularPods)airpods).getCaseDrawable()).toString().getBytes();
-            } else {
-                MODEL_ICON_URI = 
-                        resToUri(((SinglePods)airpods).getDrawable()).toString().getBytes();
-            }
-
-            if (device.getMetadata(device.METADATA_MAIN_ICON) == null) {
-                isMainIconset = device.setMetadata(device.METADATA_MAIN_ICON,
-                                                    MODEL_ICON_URI);
-            } else {
-                isMainIconset = true;
-            }
-            if (!single) {
-                if (device.getMetadata(device.METADATA_UNTETHERED_LEFT_ICON) == null) {
-                    isLeftIconset = device.setMetadata(device.METADATA_UNTETHERED_LEFT_ICON,
-                                                        MODEL_ICON_URI_LEFT);
-                } else {
-                    isLeftIconset = true;
-                }
-                if (device.getMetadata(device.METADATA_UNTETHERED_RIGHT_ICON) == null) {
-                    isRightIconset = device.setMetadata(device.METADATA_UNTETHERED_RIGHT_ICON,
-                                                         MODEL_ICON_URI_RIGHT);
-                } else {
-                    isRightIconset = true;
-                }
-                if (device.getMetadata(device.METADATA_UNTETHERED_CASE_ICON) == null) {
-                    isCaseIconset = device.setMetadata(device.METADATA_UNTETHERED_CASE_ICON,
-                                                        MODEL_ICON_URI_CASE);
-                } else {
-                    isCaseIconset = true;
-                }
-            }
-            if (!single) {
-                isModelIconSet = isMainIconset
-                                 && isLeftIconset
-                                 && isRightIconset
-                                 && isCaseIconset;
-            } else {
-                isModelIconSet = isMainIconset;
-            }
-        }
-
-        if (statusChanged) {
-            int batteryUnified = 0;
-
-            boolean chargingMain = false;
-
-            if (!single) {
-                RegularPods regularPods = (RegularPods)airpods;
-
-                device.setMetadata(device.METADATA_UNTETHERED_LEFT_CHARGING,
-                                    regularPods.isCharging(RegularPods.LEFT) == true ? TRUE : FALSE);
-                device.setMetadata(device.METADATA_UNTETHERED_LEFT_BATTERY,
-                                    (regularPods.getParsedStatus(RegularPods.LEFT) + "").getBytes());
-
-                device.setMetadata(device.METADATA_UNTETHERED_RIGHT_CHARGING,
-                                    regularPods.isCharging(RegularPods.RIGHT) == true ? TRUE : FALSE);
-                device.setMetadata(device.METADATA_UNTETHERED_RIGHT_BATTERY,
-                                    (regularPods.getParsedStatus(RegularPods.RIGHT) + "").getBytes());
-
-                device.setMetadata(device.METADATA_UNTETHERED_CASE_CHARGING,
-                                    regularPods.isCharging(RegularPods.CASE) == true ? TRUE : FALSE);
-                device.setMetadata(device.METADATA_UNTETHERED_CASE_BATTERY,
-                                    (regularPods.getParsedStatus(RegularPods.CASE) + "").getBytes());
-
-                chargingMain = regularPods.isCharging(RegularPods.LEFT) 
-                               && regularPods.isCharging(RegularPods.RIGHT);
-
-                batteryUnified = Math.min(regularPods.getParsedStatus(RegularPods.LEFT), 
-                                          regularPods.getParsedStatus(RegularPods.RIGHT));
-
-            } else {
-                SinglePods singlePods = (SinglePods)airpods;
-
-                chargingMain = singlePods.isCharging();
-
-                batteryUnified = singlePods.getParsedStatus();
-            }
-
-            device.setMetadata(device.METADATA_MAIN_CHARGING,
-                                chargingMain == true ? TRUE : FALSE);
-
-            broadcastHfIndicatorEventIntent(batteryUnified, mCurrentDevice);
-        }
-
-        statusChanged = false;
-    }
-
-    private void broadcastHfIndicatorEventIntent (int battery, BluetoothDevice device) {
-        final Intent intent = new Intent(ACTION_HF_INDICATORS_VALUE_CHANGED);
-        intent.putExtra(EXTRA_HF_INDICATORS_IND_ID, HF_INDICATOR_BATTERY_LEVEL_STATUS);
-        intent.putExtra(EXTRA_HF_INDICATORS_IND_VALUE, battery);
-        intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
-        String[] permissions = new String[] {
-            Manifest.permission.BLUETOOTH,
-            Manifest.permission.BLUETOOTH_CONNECT,
-            Manifest.permission.BLUETOOTH_PRIVILEGED,
-        };
-        sendBroadcastAsUserMultiplePermissions(intent, UserHandle.ALL, permissions);
-
-        if (statusChanged) {
-            final Intent statusIntent = new Intent("batterywidget.impl.action.update_bluetooth_data")
-                                            .setPackage("com.google.android.settings.intelligence");
-            statusIntent.putExtra("android.bluetooth.device.action.BATTERY_LEVEL_CHANGED", intent);
-            sendBroadcastAsUser(statusIntent, UserHandle.ALL);
-        }
-    }
-
-    public Uri resToUri (int resId) {
-        try {
-            Uri uri = (new Uri.Builder())
-                        .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-                        .authority(getApplicationContext().getResources().getResourcePackageName(resId))
-                        .appendPath(getApplicationContext().getResources().getResourceTypeName(resId))
-                        .appendPath(getApplicationContext().getResources().getResourceEntryName(resId))
-                        .build();
-            return uri;
-        } catch (NotFoundException e) {
-            return null;
-        }
-    }
-
-    public static void setLowLatencyAudio (Context context) {
-        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
-        mCurrentDevice.setLowLatencyAudioAllowed(mSharedPrefs.getBoolean(Constants.KEY_LOW_LATENCY_AUDIO, false));
-    }
-
-    public static void handlePlayPause (PodsStatus status, Context context) {
+    // Handle Play/Pause media control event based on device wear status
+    private static void handlePlayPause (PodsStatus status, Context context) {
         mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
 
         final boolean onePodMode = mSharedPrefs.getBoolean(Constants.KEY_ONEPOD_MODE, false);
@@ -509,5 +274,122 @@ public class PodsService extends Service {
         }
 
         previousWorn = currentWorn;
+    }
+
+    // Convert internal resource address to URI
+    private Uri resToUri (int resId) {
+        try {
+            Uri uri = (new Uri.Builder())
+                        .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+                        .authority(getApplicationContext().getResources().getResourcePackageName(resId))
+                        .appendPath(getApplicationContext().getResources().getResourceTypeName(resId))
+                        .appendPath(getApplicationContext().getResources().getResourceEntryName(resId))
+                        .build();
+            return uri;
+        } catch (NotFoundException e) {
+            return null;
+        }
+    }
+
+    private Map<Integer, byte[]> metadataDevice = new HashMap<>();
+    private Map<Integer, byte[]> metadataDeviceBatt = new HashMap<>();
+
+    // Set metadata (icon, battery, charging status, etc.) for current device
+    // and send broadcast that device status has changed
+    private void updatePodsStatus (PodsStatus status, BluetoothDevice device) {
+        final IPods airpods = status.getAirpods();
+        final boolean single = airpods.isSingle();
+        isSinglePods = single;
+        int batteryUnified = 0;
+        boolean chargingMain = false;
+
+        if (!isMetaDataSet) {
+            metadataDevice.put(device.METADATA_ENHANCED_SETTINGS_UI_URI, 
+                    MainSettingsSliceProvider.getUri(getApplicationContext(), SLICE_BTHELPER).toString().getBytes());
+        }
+
+        if (!single) {
+            final RegularPods regularPods = (RegularPods)airpods;
+            if (!isMetaDataSet) {
+                metadataDevice.put(device.METADATA_MANUFACTURER_NAME, regularPods.getMenufacturer().getBytes());
+                metadataDevice.put(device.METADATA_MODEL_NAME, regularPods.getModel().getBytes());
+                metadataDevice.put(device.METADATA_DEVICE_TYPE, device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes());
+                metadataDevice.put(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD, (regularPods.getLowBattThreshold() + "").getBytes());
+                metadataDevice.put(device.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD, (regularPods.getLowBattThreshold() + "").getBytes());
+                metadataDevice.put(device.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD, (regularPods.getLowBattThreshold() + "").getBytes());
+                metadataDevice.put(device.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD, (regularPods.getLowBattThreshold() + "").getBytes());
+                metadataDevice.put(device.METADATA_MAIN_ICON, resToUri(regularPods.getDrawable()).toString().getBytes());
+                metadataDevice.put(device.METADATA_UNTETHERED_LEFT_ICON, resToUri(regularPods.getLeftDrawable()).toString().getBytes());
+                metadataDevice.put(device.METADATA_UNTETHERED_RIGHT_ICON, resToUri(regularPods.getRightDrawable()).toString().getBytes());
+                metadataDevice.put(device.METADATA_UNTETHERED_CASE_ICON, resToUri(regularPods.getCaseDrawable()).toString().getBytes());
+            }
+
+            final boolean leftCharging = regularPods.isCharging(RegularPods.LEFT);
+            final boolean rightCharging = regularPods.isCharging(RegularPods.RIGHT);
+            final boolean caseCharging = regularPods.isCharging(RegularPods.CASE);
+            final int leftBattery = regularPods.getParsedStatus(RegularPods.LEFT);
+            final int rightBattery = regularPods.getParsedStatus(RegularPods.RIGHT);
+            final int caseBattery = regularPods.getParsedStatus(RegularPods.CASE);
+
+            metadataDeviceBatt.put(device.METADATA_UNTETHERED_LEFT_CHARGING, (leftCharging + "").toUpperCase().getBytes());
+            metadataDeviceBatt.put(device.METADATA_UNTETHERED_RIGHT_CHARGING, (rightCharging + "").toUpperCase().getBytes());
+            metadataDeviceBatt.put(device.METADATA_UNTETHERED_CASE_CHARGING, (caseCharging + "").toUpperCase().getBytes());
+            metadataDeviceBatt.put(device.METADATA_UNTETHERED_LEFT_BATTERY, (leftBattery + "").getBytes());
+            metadataDeviceBatt.put(device.METADATA_UNTETHERED_RIGHT_BATTERY, (rightBattery + "").getBytes());
+            metadataDeviceBatt.put(device.METADATA_UNTETHERED_CASE_BATTERY, (caseBattery + "").getBytes());
+
+            chargingMain = leftCharging && rightCharging;
+            batteryUnified = Math.min(leftBattery, rightBattery);
+        } else {
+            final SinglePods singlePods = (SinglePods)airpods;
+            if (!isMetaDataSet) {
+                metadataDevice.put(device.METADATA_MANUFACTURER_NAME, singlePods.getMenufacturer().getBytes());
+                metadataDevice.put(device.METADATA_MODEL_NAME, singlePods.getModel().getBytes());
+                metadataDevice.put(device.METADATA_DEVICE_TYPE, device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes());
+                metadataDevice.put(device.METADATA_MAIN_LOW_BATTERY_THRESHOLD, (singlePods.getLowBattThreshold() + "").getBytes());
+                metadataDevice.put(device.METADATA_MAIN_ICON, resToUri(singlePods.getDrawable()).toString().getBytes());
+            }
+            chargingMain = singlePods.isCharging();
+            batteryUnified = singlePods.getParsedStatus();
+        }
+        metadataDeviceBatt.put(device.METADATA_MAIN_CHARGING, (chargingMain + "").toUpperCase().getBytes());
+
+        if (!isMetaDataSet) {
+            metadataDevice.forEach((k, v) -> device.setMetadata(k, v));
+            metadataDevice.clear();
+            isMetaDataSet = true;
+        }
+
+        if (statusChanged) {
+            metadataDeviceBatt.forEach((k, v) -> device.setMetadata(k, v));
+            metadataDeviceBatt.clear();
+            broadcastHfIndicatorEventIntent(batteryUnified, device);
+            statusChanged = false;
+        }
+    }
+
+    private static final String[] btPermissions = new String[] {
+        Manifest.permission.BLUETOOTH,
+        Manifest.permission.BLUETOOTH_CONNECT,
+        Manifest.permission.BLUETOOTH_PRIVILEGED,
+    };
+
+    // Send broadcasts to Android System Intelligence, Bluetooth app, System Settings
+    // to reflect current device status changes
+    private void broadcastHfIndicatorEventIntent (int battery, BluetoothDevice device) {
+        // Update battery status for this device
+        final Intent intent = new Intent(ACTION_HF_INDICATORS_VALUE_CHANGED);
+        intent.putExtra(EXTRA_HF_INDICATORS_IND_ID, HF_INDICATOR_BATTERY_LEVEL_STATUS);
+        intent.putExtra(EXTRA_HF_INDICATORS_IND_VALUE, battery);
+        intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+        sendBroadcastAsUserMultiplePermissions(intent, UserHandle.ALL, btPermissions);
+
+        if (statusChanged) {
+            // Update Android System Intelligence's battery widget
+            final Intent statusIntent = 
+                new Intent(ACTION_ASI_UPDATE_BLUETOOTH_DATA).setPackage(PACKAGE_ASI);
+            statusIntent.putExtra(ACTION_BATTERY_LEVEL_CHANGED, intent);
+            sendBroadcastAsUser(statusIntent, UserHandle.ALL);
+        }
     }
 }

@@ -23,6 +23,6 @@
     <string name="auto_pause_summary">Pause audio playback when device is took off.</string>
 
     <!-- Low latency audio -->
-    <string name="low_latency_audio_title">Use Low Latency Audio</string>
+    <string name="low_latency_audio_title">Low Latency Audio</string>
     <string name="low_latency_audio_summary">Enable Low Latency connection for audio to reduce delay.\nThis will increase power consumption of bluetooth device and decrease audio quality.</string>
 </resources>
