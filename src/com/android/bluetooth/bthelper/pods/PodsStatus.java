@@ -14,7 +14,6 @@ import com.android.bluetooth.bthelper.pods.models.AirPodsMax;
 import com.android.bluetooth.bthelper.pods.models.AirPodsPro;
 import com.android.bluetooth.bthelper.pods.models.AirPodsPro2;
 import com.android.bluetooth.bthelper.pods.models.IPods;
-import com.android.bluetooth.bthelper.pods.models.RegularPods;
 
 /**
  * Decoding the beacon:

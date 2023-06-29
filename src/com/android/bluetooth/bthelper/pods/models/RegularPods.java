@@ -7,7 +7,6 @@
 
 package com.android.bluetooth.bthelper.pods.models;
 
-import com.android.bluetooth.bthelper.R;
 import com.android.bluetooth.bthelper.pods.Pod;
 
 import java.util.Locale;

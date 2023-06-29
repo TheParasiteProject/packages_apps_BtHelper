@@ -9,8 +9,6 @@ package com.android.bluetooth.bthelper.pods;
 
 import android.bluetooth.BluetoothDevice;
 
-import android.view.View;
-
 import com.android.bluetooth.bthelper.R;
 
 public class Pod {

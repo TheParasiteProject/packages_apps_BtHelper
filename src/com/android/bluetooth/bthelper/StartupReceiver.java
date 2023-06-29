@@ -11,7 +11,6 @@ package com.android.bluetooth.bthelper;
 import android.bluetooth.BluetoothA2dp;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
 import android.content.BroadcastReceiver;
@@ -26,8 +25,6 @@ import java.util.Set;
 
 import com.android.bluetooth.bthelper.pods.PodsService;
 
-import java.util.Objects;
-
 public class StartupReceiver extends BroadcastReceiver {
 
     public static final Set<ParcelUuid> PodsUUIDS = new HashSet<>();
@@ -36,10 +33,13 @@ public class StartupReceiver extends BroadcastReceiver {
         PodsUUIDS.add(ParcelUuid.fromString("2a72e02b-7b99-778f-014d-ad0b7221ec74"));
     }
 
+    private static final String ACTION_AVRCP_CONNECTION_STATE_CHANGED =
+            "android.bluetooth.a2dp.profile.action.AVRCP_CONNECTION_STATE_CHANGED";
+
     public static final Set<String> btActions = new HashSet<>();
     static {
         btActions.add(BluetoothA2dp.ACTION_ACTIVE_DEVICE_CHANGED);
-        btActions.add("android.bluetooth.a2dp.profile.action.AVRCP_CONNECTION_STATE_CHANGED");
+        btActions.add(ACTION_AVRCP_CONNECTION_STATE_CHANGED);
         btActions.add(BluetoothA2dp.ACTION_CODEC_CONFIG_CHANGED);
         btActions.add(BluetoothA2dp.ACTION_CONNECTION_STATE_CHANGED);
         btActions.add(BluetoothA2dp.ACTION_PLAYING_STATE_CHANGED);
