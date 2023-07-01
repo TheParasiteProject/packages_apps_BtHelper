@@ -247,6 +247,7 @@ public class PodsService extends Service {
         final boolean onePodMode = mSharedPrefs.getBoolean(Constants.KEY_ONEPOD_MODE, false);
         final boolean autoPlay = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PLAY, false);
         final boolean autoPause = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PAUSE, false);
+        final boolean autoPlayPause = autoPlay && autoPause;
 
         try {
             mediaControl = MediaControl.getInstance(context);
@@ -272,11 +273,11 @@ public class PodsService extends Service {
         }
 
         if (!previousWorn && currentWorn && !mediaControl.isPlaying()) {
-            if (autoPlay) {
+            if (autoPlayPause || autoPlay) {
                 mediaControl.sendPlay();
             }
         } else if (previousWorn && !currentWorn && mediaControl.isPlaying()) {
-            if (autoPause) {
+            if (autoPlayPause || autoPause) {
                 mediaControl.sendPause();
             }
         }
