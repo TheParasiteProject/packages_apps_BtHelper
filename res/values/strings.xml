@@ -5,24 +5,24 @@
   License-Filename: LICENSE
 -->
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name" translatable="false">Bluetooth Helper</string>
+    <string name="app_name" translatable="false">Bluetooth Devices Helper</string>
 
-    <!-- Advanced device settings -->
-    <string name="advanced_device_settings_title">Advanced device settings</string>
+    <!-- Settings title -->
+    <string name="settings_title">Experiamental settings</string>
 
-    <!-- One pod mode -->
-    <string name="onepod_mode_title">One pod mode</string>
-    <string name="onepod_mode_summary">Trigger reaction events even using a single device only.</string>
+    <!-- OnePod mode -->
+    <string name="onepod_mode_title">OnePod mode</string>
+    <string name="onepod_mode_summary">Enable audio playback controls even if one AirPod is in use.</string>
 
     <!-- Auto play -->
-    <string name="auto_play_titles">Auto play</string>
-    <string name="auto_play_summary">Start audio playback when device is worn.</string>
+    <string name="auto_play_title">Auto play</string>
+    <string name="auto_play_summary">When the AirPods are worn, audio playback automatically starts.</string>
 
     <!-- Auto pause -->
     <string name="auto_pause_title">Auto pause</string>
-    <string name="auto_pause_summary">Pause audio playback when device is took off.</string>
+    <string name="auto_pause_summary">When the AirPods are removed, audio playback pauses.</string>
 
     <!-- Low latency audio -->
-    <string name="low_latency_audio_title">Low Latency Audio</string>
-    <string name="low_latency_audio_summary">Enable Low Latency connection for audio to reduce delay.\nThis will increase power consumption of bluetooth device and decrease audio quality.</string>
+    <string name="low_latency_audio_title">Low latency audio</string>
+    <string name="low_latency_audio_summary">Enable to reduce audio delays.\nRequires reconnecting AirPods after turn on. It may increase battery consumption.</string>
 </resources>
