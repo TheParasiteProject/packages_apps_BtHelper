@@ -1,10 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
   <background>
-    <color android:color="#A7C7E7" />
+    <color android:color="@color/icon_background_color" />
   </background>
   <foreground>
     <inset
       android:drawable="@drawable/ic_headphone_battery"
       android:inset="25%" />
   </foreground>
+  <monochrome>
+    <inset
+      android:drawable="@drawable/ic_headphone_battery"
+      android:inset="25%" />
+  </monochrome>
 </adaptive-icon>
