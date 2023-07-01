@@ -50,7 +50,7 @@
         <activity
             android:name=".settings.MainSettingsActivity"
             android:exported="true"
-            android:label="@string/advanced_device_settings_title"
+            android:label="@string/settings_title"
             android:theme="@style/Theme.SubSettingsBase">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

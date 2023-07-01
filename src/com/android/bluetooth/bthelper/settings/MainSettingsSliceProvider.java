@@ -48,7 +48,7 @@ public class MainSettingsSliceProvider extends SliceProvider {
     private Slice createBtHelperSlice(Uri sliceUri) {
         ListBuilder listBuilder = new ListBuilder(context, sliceUri, INFINITY);
         ListBuilder.RowBuilder btHeleperRow = new ListBuilder.RowBuilder(sliceUri);
-        final String SLICE_TITLE = context.getString(R.string.advanced_device_settings_title);
+        final String SLICE_TITLE = context.getString(R.string.settings_title);
         btHeleperRow.setTitle(SLICE_TITLE);
         Intent intent = new Intent(getContext(), MainSettingsActivity.class);
         PendingIntent pendingIntent = PendingIntent.getActivity(getContext(), sliceUri.hashCode(),

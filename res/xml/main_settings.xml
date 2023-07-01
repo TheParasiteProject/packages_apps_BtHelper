@@ -6,7 +6,7 @@
 -->
 <PreferenceScreen
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:title="@string/advanced_device_settings_title">
+    android:title="@string/settings_title">
 
     <SwitchPreference
         android:key="onepod_mode_pref"
@@ -17,7 +17,7 @@
     <SwitchPreference
         android:key="auto_play_pref"
         android:defaultValue="false"
-        android:title="@string/auto_play_titles"
+        android:title="@string/auto_play_title"
         android:summary="@string/auto_play_summary" />
 
     <SwitchPreference
