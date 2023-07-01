@@ -5,14 +5,14 @@ functionality of Bluetooth devices, specifically Apple AirPods series, by provid
 features such as battery level display and device icons.<br>
 These features are not currently supported by the Android Open Source Project (AOSP).<br>
 
-BtHelper is developed using code from two primary sources:<br>
-[OpenPods](https://github.com/adolfintel/OpenPods), [capod](https://github.com/d4rken-org/capod) and [xingrz](https://github.com/xingrz)'s system setting implementation.<br>
+BtHelper is developed using code from three primary sources:<br>
+[OpenPods](https://github.com/adolfintel/OpenPods), [CAPod](https://github.com/d4rken-org/capod) and [xingrz](https://github.com/xingrz)'s system setting implementation.<br>
 The collaboration of these projects has enabled the creation of BtHelper with its extended capabilities.<br>
 
 ## Acknowledgements
 We would like to express our gratitude to the following projects for their contributions to BtHelper:
 * [OpenPods](https://github.com/adolfintel/OpenPods)
-* [capod](https://github.com/d4rken-org/capod)
+* [CAPod](https://github.com/d4rken-org/capod)
 * [xingrz](https://github.com/xingrz)
 
 ##
