@@ -136,11 +136,14 @@ public class PodsService extends Service {
 
     @Override
     public int onStartCommand (Intent intent, int flags, int startId) {
-        final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        if (device != null) {
-            mCurrentDevice = device;
-            setLowLatencyAudio(getApplicationContext());
-            startAirPodsScanner();
+        try {
+            final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            if (device != null) {
+                mCurrentDevice = device;
+                setLowLatencyAudio(getApplicationContext());
+                startAirPodsScanner();
+            }
+        } catch (NullPointerException e) {
         }
         return START_STICKY;
     }
