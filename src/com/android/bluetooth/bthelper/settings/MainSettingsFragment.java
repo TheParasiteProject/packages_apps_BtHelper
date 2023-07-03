@@ -7,20 +7,24 @@
 package com.android.bluetooth.bthelper.settings;
 
 import android.app.ActionBar;
+import android.app.slice.Slice;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.os.UserHandle;
 
 import androidx.preference.Preference;
 import androidx.preference.Preference.OnPreferenceChangeListener;
 import androidx.preference.PreferenceFragment;
-import androidx.preference.PreferenceManager;
 import androidx.preference.SwitchPreference;
 
+import com.android.bluetooth.bthelper.Constants;
 import com.android.bluetooth.bthelper.R;
 import com.android.bluetooth.bthelper.pods.PodsService;
 
@@ -33,12 +37,52 @@ public class MainSettingsFragment extends PreferenceFragment implements
     private SwitchPreference mAutoPausePref;
     private SwitchPreference mLowLatencyAudioSwitchPref;
 
+    private boolean mSelfChange = false;
+
+    private BroadcastReceiver stateReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            try {
+                if (intent == null || context == null) return;
+                final String action = intent.getAction();
+                if (action == null) return;
+                switch (action) {
+                    case Constants.ACTION_ONEPOD_CHANGED:
+                        handleSwitchBroadcast(mOnePodModePref,
+                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
+                        return;
+                    case Constants.ACTION_AUTO_PLAY_CHANGED:
+                        handleSwitchBroadcast(mAutoPlayPref,
+                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
+                        return;
+                    case Constants.ACTION_AUTO_PAUSE_CHANGED:
+                        handleSwitchBroadcast(mAutoPausePref,
+                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
+                        return;
+                    case Constants.ACTION_LOW_LATENCY_AUDIO_CHANGED:
+                        handleSwitchBroadcast(mLowLatencyAudioSwitchPref,
+                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
+                        return;
+                }
+            } catch (NullPointerException e) {
+            }
+        }
+    };
+
+    private void handleSwitchBroadcast(SwitchPreference sp, boolean isChecked) {
+        if (mSelfChange) {
+            mSelfChange = false;
+            return;
+        }
+        sp.setChecked(isChecked);
+    }
+
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         addPreferencesFromResource(R.xml.main_settings);
         final ActionBar mActionBar = getActivity().getActionBar();
         mActionBar.setDisplayHomeAsUpEnabled(true);
-        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
+        mSharedPrefs = getContext().getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE);
 
         mOnePodModePref = (SwitchPreference) findPreference(Constants.KEY_ONEPOD_MODE);
         mOnePodModePref.setEnabled(true);
@@ -77,13 +121,30 @@ public class MainSettingsFragment extends PreferenceFragment implements
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         switch (preference.getKey()) {
+            case Constants.KEY_ONEPOD_MODE:
+                sendSwitchBroadcast(Constants.ACTION_ONEPOD_CHANGED, (boolean) newValue);
+                break;
+            case Constants.KEY_AUTO_PLAY:
+                sendSwitchBroadcast(Constants.ACTION_AUTO_PLAY_CHANGED, (boolean) newValue);
+                break;
+            case Constants.KEY_AUTO_PAUSE:
+                sendSwitchBroadcast(Constants.ACTION_AUTO_PAUSE_CHANGED, (boolean) newValue);
+                break;
             case Constants.KEY_LOW_LATENCY_AUDIO:
-                PodsService.setLowLatencyAudio(getContext());
+                sendSwitchBroadcast(Constants.ACTION_LOW_LATENCY_AUDIO_CHANGED, (boolean) newValue);
                 break;
             default:
                 break;
         }
         return true;
+    }
+
+    private void sendSwitchBroadcast(String action, boolean isChecked) {
+        mSelfChange = true;
+        final Intent intent = new Intent(action);
+        intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+        intent.putExtra(Slice.EXTRA_TOGGLE_STATE, isChecked);
+        getContext().sendBroadcastAsUser(intent, UserHandle.CURRENT);
     }
 
     @Override

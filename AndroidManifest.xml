@@ -34,6 +34,11 @@
 
     <protected-broadcast android:name="batterywidget.impl.action.update_bluetooth_data" />
 
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.action.ONEPOD_CHANGED" />
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.action.AUTO_PLAY_CHANGED" />
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.action.AUTO_PAUSE_CHANGED" />
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.action.LOW_LATENCY_AUDIO_CHANGED" />
+
     <uses-feature
         android:name="android.hardware.bluetooth_le"
         android:required="false" />
@@ -48,6 +53,25 @@
             android:authorities="${applicationId}.androidx-startup"
             tools:replace="android:authorities" />
 
+        <provider
+            android:authorities="com.android.bluetooth.bthelper"
+            android:name=".slices.BtHelperSliceProvider"
+            android:grantUriPermissions="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".slices.SliceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="com.android.bluetooth.bthelper.action.ONEPOD_CHANGED" />
+                <action android:name="com.android.bluetooth.bthelper.action.AUTO_PLAY_CHANGED" />
+                <action android:name="com.android.bluetooth.bthelper.action.AUTO_PAUSE_CHANGED" />
+                <action android:name="com.android.bluetooth.bthelper.action.LOW_LATENCY_AUDIO_CHANGED" />
+            </intent-filter>
+        </receiver>
+
         <activity
             android:name=".settings.MainSettingsActivity"
             android:exported="true"
@@ -59,11 +83,16 @@
             </intent-filter>
         </activity>
 
-        <provider
-            android:authorities="com.android.bluetooth.bthelper"
-            android:name=".settings.MainSettingsSliceProvider"
-            android:grantUriPermissions="true"
-            android:exported="true" />
+        <activity
+            android:name=".settings.MainSettingsFragment"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.android.bluetooth.bthelper.action.ONEPOD_CHANGED" />
+                <action android:name="com.android.bluetooth.bthelper.action.AUTO_PLAY_CHANGED" />
+                <action android:name="com.android.bluetooth.bthelper.action.AUTO_PAUSE_CHANGED" />
+                <action android:name="com.android.bluetooth.bthelper.action.LOW_LATENCY_AUDIO_CHANGED" />
+            </intent-filter>
+        </activity>
 
         <!-- AirPods services -->
         <service

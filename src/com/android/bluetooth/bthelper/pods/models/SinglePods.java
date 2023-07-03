@@ -9,8 +9,6 @@ package com.android.bluetooth.bthelper.pods.models;
 
 import com.android.bluetooth.bthelper.pods.Pod;
 
-import java.util.Locale;
-
 public abstract class SinglePods implements IPods {
 
     public abstract int getDrawable ();
