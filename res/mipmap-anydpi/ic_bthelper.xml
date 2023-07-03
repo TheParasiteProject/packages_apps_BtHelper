@@ -4,13 +4,13 @@
     <color android:color="@color/icon_background_color" />
   </background>
   <foreground>
-    <inset
-      android:drawable="@drawable/ic_headphone_battery"
-      android:inset="25%" />
+      <inset
+          android:drawable="@drawable/ic_pod"
+          android:inset="10%" />
   </foreground>
   <monochrome>
-    <inset
-      android:drawable="@drawable/ic_headphone_battery"
-      android:inset="25%" />
+      <inset
+          android:drawable="@drawable/ic_pod"
+          android:inset="10%" />
   </monochrome>
 </adaptive-icon>
