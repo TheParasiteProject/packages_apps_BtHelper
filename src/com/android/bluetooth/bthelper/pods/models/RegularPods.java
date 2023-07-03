@@ -9,8 +9,6 @@ package com.android.bluetooth.bthelper.pods.models;
 
 import com.android.bluetooth.bthelper.pods.Pod;
 
-import java.util.Locale;
-
 public class RegularPods implements IPods {
 
     public static final int LEFT = 0, RIGHT = 1, CASE = 2;

@@ -37,9 +37,9 @@ import com.android.bluetooth.bthelper.pods.models.IPods;
 import com.android.bluetooth.bthelper.pods.models.RegularPods;
 import com.android.bluetooth.bthelper.pods.models.SinglePods;
 import com.android.bluetooth.bthelper.R;
-import com.android.bluetooth.bthelper.settings.Constants;
+import com.android.bluetooth.bthelper.Constants;
+import com.android.bluetooth.bthelper.slices.BtHelperSliceProvider;
 import com.android.bluetooth.bthelper.utils.MediaControl;
-import com.android.bluetooth.bthelper.settings.MainSettingsSliceProvider;
 import static com.android.bluetooth.bthelper.pods.PodsStatusScanCallback.getScanFilters;
 
 /**
@@ -142,7 +142,7 @@ public class PodsService extends Service {
             final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             if (device != null) {
                 mCurrentDevice = device;
-                setLowLatencyAudio(getApplicationContext());
+                setLowLatencyAudio();
                 startAirPodsScanner();
             }
         } catch (NullPointerException e) {
@@ -162,8 +162,8 @@ public class PodsService extends Service {
     }
 
     // Set Low Latency Audio mode to current device
-    public static void setLowLatencyAudio (Context context) {
-        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+    public void setLowLatencyAudio () {
+        mSharedPrefs = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE);
         mCurrentDevice.setLowLatencyAudioAllowed(mSharedPrefs.getBoolean(Constants.KEY_LOW_LATENCY_AUDIO, false));
     }
 
@@ -241,8 +241,8 @@ public class PodsService extends Service {
     }
 
     // Handle Play/Pause media control event based on device wear status
-    private static void handlePlayPause (PodsStatus status, Context context) {
-        mSharedPrefs = PreferenceManager.getDefaultSharedPreferences(context);
+    private void handlePlayPause (PodsStatus status, Context context) {
+        mSharedPrefs = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE);
 
         final boolean onePodMode = mSharedPrefs.getBoolean(Constants.KEY_ONEPOD_MODE, false);
         final boolean autoPlay = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PLAY, false);
@@ -285,12 +285,21 @@ public class PodsService extends Service {
         previousWorn = currentWorn;
     }
 
+    // Convert internal content address combined with recieved path value to URI
+    public static Uri getUri (String path) {
+        return new Uri.Builder()
+                .scheme(ContentResolver.SCHEME_CONTENT)
+                .authority(Constants.AUTHORITY_BTHELPER)
+                .appendPath(path)
+                .build();
+    }
+
     // Convert internal resource address to URI
     private Uri resToUri (int resId) {
         try {
             Uri uri = (new Uri.Builder())
                         .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-                        .authority(getApplicationContext().getResources().getResourcePackageName(resId))
+                        .authority(Constants.AUTHORITY_BTHELPER)
                         .appendPath(getApplicationContext().getResources().getResourceTypeName(resId))
                         .appendPath(getApplicationContext().getResources().getResourceEntryName(resId))
                         .build();
@@ -317,10 +326,9 @@ public class PodsService extends Service {
         boolean chargingMain = false;
         
         if (!isMetaDataSet) {
-            isSliceSet = setMetadata(device, device.METADATA_COMPANION_APP, getApplicationContext().getPackageName().getBytes());
+            isSliceSet = setMetadata(device, device.METADATA_COMPANION_APP, Constants.AUTHORITY_BTHELPER.getBytes());
             isSliceSet = setMetadata(device, device.METADATA_SOFTWARE_VERSION, COMPANION_TYPE_NONE.getBytes());
-            isSliceSet = setMetadata(device, device.METADATA_ENHANCED_SETTINGS_UI_URI, 
-                    MainSettingsSliceProvider.getUri(getApplicationContext(), SLICE_BTHELPER).toString().getBytes());
+            isSliceSet = setMetadata(device, device.METADATA_ENHANCED_SETTINGS_UI_URI, getUri(Constants.PATH_BTHELPER).toString().getBytes());
         }
 
         if (!single) {
