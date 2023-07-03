@@ -107,6 +107,8 @@ public class PodsService extends Service {
     // Enhanced Settings UI Slice for BtHelper
     private static final String SLICE_BTHELPER = "bthelper";
 
+    private static final String COMPANION_TYPE_NONE = "COMPANION_NONE";
+
     private BluetoothLeScanner btScanner;
     private PodsStatus status = PodsStatus.DISCONNECTED;
 
@@ -314,6 +316,8 @@ public class PodsService extends Service {
         boolean chargingMain = false;
         
         if (!isMetaDataSet) {
+            isSliceSet = setMetadata(device, device.METADATA_COMPANION_APP, getApplicationContext().getPackageName().getBytes());
+            isSliceSet = setMetadata(device, device.METADATA_SOFTWARE_VERSION, COMPANION_TYPE_NONE.getBytes());
             isSliceSet = setMetadata(device, device.METADATA_ENHANCED_SETTINGS_UI_URI, 
                     MainSettingsSliceProvider.getUri(getApplicationContext(), SLICE_BTHELPER).toString().getBytes());
         }
