@@ -8,7 +8,7 @@
     <string name="app_name" translatable="false">Bluetooth Devices Helper</string>
 
     <!-- Settings title -->
-    <string name="settings_title">Experiamental settings</string>
+    <string name="settings_title">Advanced settings</string>
 
     <!-- OnePod mode -->
     <string name="onepod_mode_title">OnePod mode</string>
