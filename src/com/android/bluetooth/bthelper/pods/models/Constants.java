@@ -13,6 +13,7 @@ public final class Constants {
     static final String MODEL_AIRPODS_GEN3 = "AirPods";
     static final String MODEL_AIRPODS_PRO = "AirPods Pro";
     static final String MODEL_AIRPODS_PRO_2 = "AirPods Pro";
+    static final String MODEL_AIRPODS_PRO_2_USB_C = "AirPods Pro USB-C";
     static final String MODEL_AIRPODS_MAX = "AirPods Max";
     static final String UNKNOWN = "unknown";
     static final String MANUFACTURER_APPLE = "Apple Inc.";
