@@ -13,6 +13,7 @@ import com.android.bluetooth.bthelper.pods.models.AirPods3;
 import com.android.bluetooth.bthelper.pods.models.AirPodsMax;
 import com.android.bluetooth.bthelper.pods.models.AirPodsPro;
 import com.android.bluetooth.bthelper.pods.models.AirPodsPro2;
+import com.android.bluetooth.bthelper.pods.models.AirPodsPro2UsbC;
 import com.android.bluetooth.bthelper.pods.models.IPods;
 
 /**
@@ -84,6 +85,8 @@ public class PodsStatus {
             pods = new AirPodsPro(color, leftPod, rightPod, casePod); // Airpods Pro
         } else if ("1420".equals(idFull)) {
             pods = new AirPodsPro2(color, leftPod, rightPod, casePod); // Airpods Pro 2
+        } else if ("2420".equals(idFull)) {
+            pods = new AirPodsPro2UsbC(color, leftPod, rightPod, casePod); // Airpods Pro 2 with USB‐C
         } else if ("0A20".equals(idFull)) {
             pods = new AirPodsMax(color, singlePod); // Airpods Max
         }
