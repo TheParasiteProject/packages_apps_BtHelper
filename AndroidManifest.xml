@@ -65,10 +65,7 @@
             android:exported="true"
             android:label="@string/app_name">
             <intent-filter>
-                <action android:name="com.android.bluetooth.bthelper.action.ONEPOD_CHANGED" />
-                <action android:name="com.android.bluetooth.bthelper.action.AUTO_PLAY_CHANGED" />
-                <action android:name="com.android.bluetooth.bthelper.action.AUTO_PAUSE_CHANGED" />
-                <action android:name="com.android.bluetooth.bthelper.action.LOW_LATENCY_AUDIO_CHANGED" />
+                <action android:name="com.android.bluetooth.bthelper.ACTION_PENDING_INTENT" />
             </intent-filter>
         </receiver>
 
@@ -87,10 +84,7 @@
             android:name=".settings.MainSettingsFragment"
             android:exported="true">
             <intent-filter>
-                <action android:name="com.android.bluetooth.bthelper.action.ONEPOD_CHANGED" />
-                <action android:name="com.android.bluetooth.bthelper.action.AUTO_PLAY_CHANGED" />
-                <action android:name="com.android.bluetooth.bthelper.action.AUTO_PAUSE_CHANGED" />
-                <action android:name="com.android.bluetooth.bthelper.action.LOW_LATENCY_AUDIO_CHANGED" />
+                <action android:name="com.android.bluetooth.bthelper.ACTION_PENDING_INTENT" />
             </intent-filter>
         </activity>
 

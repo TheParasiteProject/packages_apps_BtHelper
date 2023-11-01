@@ -46,20 +46,24 @@ public class MainSettingsFragment extends PreferenceFragment implements
                 if (intent == null || context == null) return;
                 final String action = intent.getAction();
                 if (action == null) return;
-                switch (action) {
-                    case Constants.ACTION_ONEPOD_CHANGED:
+
+                final int extra =
+                    intent.getIntExtra(Constants.ACTION_PENDING_INTENT, Constants.EXTRA_NONE);
+
+                switch (extra) {
+                    case Constants.EXTRA_ONEPOD_CHANGED:
                         handleSwitchBroadcast(mOnePodModePref,
                                 intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
                         return;
-                    case Constants.ACTION_AUTO_PLAY_CHANGED:
+                    case Constants.EXTRA_AUTO_PLAY_CHANGED:
                         handleSwitchBroadcast(mAutoPlayPref,
                                 intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
                         return;
-                    case Constants.ACTION_AUTO_PAUSE_CHANGED:
+                    case Constants.EXTRA_AUTO_PAUSE_CHANGED:
                         handleSwitchBroadcast(mAutoPausePref,
                                 intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
                         return;
-                    case Constants.ACTION_LOW_LATENCY_AUDIO_CHANGED:
+                    case Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED:
                         handleSwitchBroadcast(mLowLatencyAudioSwitchPref,
                                 intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
                         return;
@@ -122,16 +126,32 @@ public class MainSettingsFragment extends PreferenceFragment implements
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         switch (preference.getKey()) {
             case Constants.KEY_ONEPOD_MODE:
-                sendSwitchBroadcast(Constants.ACTION_ONEPOD_CHANGED, (boolean) newValue);
+                sendSwitchBroadcast(
+                    Constants.ACTION_PENDING_INTENT,
+                    Constants.EXTRA_ONEPOD_CHANGED,
+                    (boolean) newValue
+                );
                 break;
             case Constants.KEY_AUTO_PLAY:
-                sendSwitchBroadcast(Constants.ACTION_AUTO_PLAY_CHANGED, (boolean) newValue);
+                sendSwitchBroadcast(
+                    Constants.ACTION_PENDING_INTENT,
+                    Constants.EXTRA_AUTO_PLAY_CHANGED,
+                    (boolean) newValue
+                );
                 break;
             case Constants.KEY_AUTO_PAUSE:
-                sendSwitchBroadcast(Constants.ACTION_AUTO_PAUSE_CHANGED, (boolean) newValue);
+                sendSwitchBroadcast(
+                    Constants.ACTION_PENDING_INTENT,
+                    Constants.EXTRA_AUTO_PAUSE_CHANGED,
+                    (boolean) newValue
+                );
                 break;
             case Constants.KEY_LOW_LATENCY_AUDIO:
-                sendSwitchBroadcast(Constants.ACTION_LOW_LATENCY_AUDIO_CHANGED, (boolean) newValue);
+                sendSwitchBroadcast(
+                    Constants.ACTION_PENDING_INTENT,
+                    Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED,
+                    (boolean) newValue
+                );
                 break;
             default:
                 break;
@@ -139,10 +159,11 @@ public class MainSettingsFragment extends PreferenceFragment implements
         return true;
     }
 
-    private void sendSwitchBroadcast(String action, boolean isChecked) {
+    private void sendSwitchBroadcast(String action, int extra, boolean isChecked) {
         mSelfChange = true;
         final Intent intent = new Intent(action);
         intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY);
+        intent.putExtra(Slice.EXTRA_TOGGLE_STATE, extra);
         intent.putExtra(Slice.EXTRA_TOGGLE_STATE, isChecked);
         getContext().sendBroadcastAsUser(intent, UserHandle.CURRENT);
     }

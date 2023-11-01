@@ -15,15 +15,20 @@ public class Constants {
     public static final String PATH_BTHELPER = "bthelper";
     public static final String SLICE_BTHELPER = "/"+PATH_BTHELPER;
 
+    /* Slices Type */
+    public static final int SLICE_TOGGLE = 101;
+    public static final int SLICE_MAIN = 102;
+
     /* Slices Intent Action */
-    public static final String ACTION_ONEPOD_CHANGED =
-            "com.android.bluetooth.bthelper.action.ONEPOD_CHANGED";
-    public static final String ACTION_AUTO_PLAY_CHANGED =
-            "com.android.bluetooth.bthelper.action.AUTO_PLAY_CHANGED";
-    public static final String ACTION_AUTO_PAUSE_CHANGED =
-            "com.android.bluetooth.bthelper.action.AUTO_PAUSE_CHANGED";
-    public static final String ACTION_LOW_LATENCY_AUDIO_CHANGED =
-            "com.android.bluetooth.bthelper.action.LOW_LATENCY_AUDIO_CHANGED";
+    public static final String ACTION_PENDING_INTENT =
+            "com.android.bluetooth.bthelper.ACTION_PENDING_INTENT";
+
+    /* Slices Intent Extra */
+    public static final int EXTRA_NONE = 0;
+    public static final int EXTRA_ONEPOD_CHANGED = 10001;
+    public static final int EXTRA_AUTO_PLAY_CHANGED = 10002;
+    public static final int EXTRA_AUTO_PAUSE_CHANGED = 10003;
+    public static final int EXTRA_LOW_LATENCY_AUDIO_CHANGED = 10004;
 
     /* Shared Preferences */
     public static final String PREFERENCES_BTHELPER = AUTHORITY_BTHELPER+"_preferences";
@@ -52,5 +57,25 @@ public class Constants {
         public static final int AirPods_Max_Silver = R.drawable.AirPods_Max_Silver;
         public static final int AirPods_Max_SkyBlue = R.drawable.AirPods_Max_SkyBlue;
         public static final int AirPods_Max_SpaceGray = R.drawable.AirPods_Max_SpaceGray;
+
+        public static final int[] defaultIcons = new int[] {
+                AirPods,
+                AirPods_Left,
+                AirPods_Right,
+                AirPods_Case,
+                AirPods_Gen3,
+                AirPods_Gen3_Left,
+                AirPods_Gen3_Right,
+                AirPods_Gen3_Case,
+                AirPods_Pro,
+                AirPods_Pro_Left,
+                AirPods_Pro_Right,
+                AirPods_Pro_Case,
+                AirPods_Max_Green,
+                AirPods_Max_Pink,
+                AirPods_Max_Silver,
+                AirPods_Max_SkyBlue,
+                AirPods_Max_SpaceGray
+            };
     }
 }
