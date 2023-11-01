@@ -15,7 +15,6 @@ android_app {
 
     platform_apis: true,
     libs: [
-        "framework-bluetooth-pre-jarjar",
         "unsupportedappusage",
         "framework-annotations-lib",
         "error_prone_annotations",
