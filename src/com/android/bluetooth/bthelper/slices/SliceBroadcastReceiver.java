@@ -35,20 +35,23 @@ public class SliceBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        switch (action) {
-            case Constants.ACTION_ONEPOD_CHANGED:
+        final int extra =
+            intent.getIntExtra(Constants.ACTION_PENDING_INTENT, Constants.EXTRA_NONE);
+
+        switch (extra) {
+            case Constants.EXTRA_ONEPOD_CHANGED:
                 enabled = intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false);
                 handleSliceChange(Constants.KEY_ONEPOD_MODE, enabled);
                 return;
-            case Constants.ACTION_AUTO_PLAY_CHANGED:
+            case Constants.EXTRA_AUTO_PLAY_CHANGED:
                 enabled = intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false);
                 handleSliceChange(Constants.KEY_AUTO_PLAY, enabled);
                 return;
-            case Constants.ACTION_AUTO_PAUSE_CHANGED:
+            case Constants.EXTRA_AUTO_PAUSE_CHANGED:
                 enabled = intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false);
                 handleSliceChange(Constants.KEY_AUTO_PAUSE, enabled);
                 return;
-            case Constants.ACTION_LOW_LATENCY_AUDIO_CHANGED:
+            case Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED:
                 enabled = intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false);
                 handleSliceChange(Constants.KEY_LOW_LATENCY_AUDIO, enabled);
                 return;

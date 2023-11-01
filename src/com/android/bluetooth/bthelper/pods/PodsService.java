@@ -104,9 +104,6 @@ public class PodsService extends Service {
      */
     private static final String ACTION_ASI_UPDATE_BLUETOOTH_DATA = "batterywidget.impl.action.update_bluetooth_data";
 
-    // Enhanced Settings UI Slice for BtHelper
-    private static final String SLICE_BTHELPER = "bthelper";
-
     private static final String COMPANION_TYPE_NONE = "COMPANION_NONE";
 
     private BluetoothLeScanner btScanner;

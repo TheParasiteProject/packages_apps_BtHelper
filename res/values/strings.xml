@@ -10,6 +10,10 @@
     <!-- Settings title -->
     <string name="settings_title">Advanced settings</string>
 
+    <!-- More settings title -->
+    <string name="more_settings_title">More settings</string>
+    <string name="more_settings_subtitle">Auto play/pause, and more</string>
+  
     <!-- OnePod mode -->
     <string name="onepod_mode_title">OnePod mode</string>
     <string name="onepod_mode_summary">Enable audio playback controls even if one AirPod is in use.</string>
