@@ -7,8 +7,8 @@
 
 package com.android.bluetooth.bthelper.pods.models;
 
+import com.android.bluetooth.bthelper.Constants.Icons;
 import com.android.bluetooth.bthelper.pods.Pod;
-import com.android.bluetooth.bthelper.R;
 
 public class AirPods1 extends RegularPods {
 
@@ -18,22 +18,22 @@ public class AirPods1 extends RegularPods {
 
     @Override
     public int getDrawable () {
-        return R.drawable.AirPods;
+        return Icons.AirPods;
     };
 
     @Override
     public int getLeftDrawable () {
-        return R.drawable.AirPods_Left;
+        return Icons.AirPods_Left;
     }
 
     @Override
     public int getRightDrawable () {
-        return R.drawable.AirPods_Right;
+        return Icons.AirPods_Right;
     }
 
     @Override
     public int getCaseDrawable () {
-        return R.drawable.AirPods_Case;
+        return Icons.AirPods_Case;
     }
 
     @Override

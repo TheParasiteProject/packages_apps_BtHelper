@@ -33,4 +33,24 @@ public class Constants {
     public static final String KEY_AUTO_PLAY = "auto_play_pref";
     public static final String KEY_AUTO_PAUSE = "auto_pause_pref";
     public static final String KEY_LOW_LATENCY_AUDIO = "low_latency_audio_pref";
+
+    public static final class Icons {
+        public static final int AirPods = R.drawable.AirPods;
+        public static final int AirPods_Left = R.drawable.AirPods_Left;
+        public static final int AirPods_Right= R.drawable.AirPods_Right;
+        public static final int AirPods_Case = R.drawable.AirPods_Case;
+        public static final int AirPods_Gen3 = R.drawable.AirPods_Gen3;
+        public static final int AirPods_Gen3_Left = R.drawable.AirPods_Gen3_Left;
+        public static final int AirPods_Gen3_Right = R.drawable.AirPods_Gen3_Right;
+        public static final int AirPods_Gen3_Case = R.drawable.AirPods_Gen3_Case;
+        public static final int AirPods_Pro = R.drawable.AirPods_Pro;
+        public static final int AirPods_Pro_Left = R.drawable.AirPods_Pro_Left;
+        public static final int AirPods_Pro_Right = R.drawable.AirPods_Pro_Right;
+        public static final int AirPods_Pro_Case = R.drawable.AirPods_Pro_Case;
+        public static final int AirPods_Max_Green = R.drawable.AirPods_Max_Green;
+        public static final int AirPods_Max_Pink = R.drawable.AirPods_Max_Pink;
+        public static final int AirPods_Max_Silver = R.drawable.AirPods_Max_Silver;
+        public static final int AirPods_Max_SkyBlue = R.drawable.AirPods_Max_SkyBlue;
+        public static final int AirPods_Max_SpaceGray = R.drawable.AirPods_Max_SpaceGray;
+    }
 }
