@@ -15,13 +15,12 @@ Media play/pause, OnePod mode features are highly experimental.
 This project depends on AOSP components.<br>
 You need to add these commits to corresponding repositories.
 
-* packages/module/Bluetooth: [Add .gitignore](https://github.com/TheParasiteProject/packages_modules_Bluetooth/commit/64bdf905f24e0ab02b3747ecb9a902a9660c5654)
 * packages/apps/Settings: [[HACK] Settings: Bluetooth: Don't check persistable uri permission for BtHelper](https://github.com/TheParasiteProject/packages_apps_Settings/commit/189dcd3b6c62cbc99e170a3b4c898ab3d039c542)
 * vendor repository (e.g. vendor/aosp): [vendor: config: common: Build BtHelper](https://github.com/TheParasiteProject/vendor_aosp/commit/424bca6b12a9f1d5fd56374ba6ae4310ea98cde3)
 
 After that clone this repo:<br>
 ```bash
-git clone https://github.com/TheParasiteProject/packages_modules_Bluetooth_android_BtHelper packages/modules/Bluetooth/android/BtHelper
+git clone https://github.com/TheParasiteProject/packages_apps_BtHelper packages/apps/BtHelper
 ```
 
 Finally, build your AOSP.<br>
