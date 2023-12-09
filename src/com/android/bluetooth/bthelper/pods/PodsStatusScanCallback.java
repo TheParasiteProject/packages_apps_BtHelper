@@ -19,15 +19,18 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * TODO: proper javadoc
- * On a normal OS, we would use the bluetooth address of the device to filter out beacons from other devices.
- * UNFORTUNATELY, someone at google was so concerned about privacy (yea, as if they give a shit) that he decided it was a good idea to not allow access to the bluetooth address of incoming BLE beacons.
- * As a result, we have no reliable way to make sure that the beacon comes from YOUR airpods and not the guy sitting next to you on the bus.
- * What we did to workaround this issue is this:
- * - When a beacon arrives that looks like a pair of AirPods, look at the other beacons received in the last 10 seconds and get the strongest one
- * - If the strongest beacon's fake address is the same as this, use this beacon; otherwise use the strongest beacon
- * - Filter for signals stronger than -60db
- * - Decode...
+ * This method aims to address the unavailability of Bluetooth addresses from incoming BLE beacons due to privacy restrictions
+ * imposed by certain operating systems like Google's. Typically, the Bluetooth address of a device would be used to filter out
+ * beacons from other devices. However, due to privacy concerns, access to the Bluetooth address of incoming BLE beacons is
+ * restricted, making it challenging to reliably identify if a beacon originates from specific devices like AirPods.
+ *
+ * To work around this issue, the following steps are implemented:
+ * - Upon receiving a beacon resembling a pair of AirPods, the method analyzes other beacons received within the last 10 seconds
+ *   and identifies the one with the strongest signal.
+ * - It then compares the fake address of the strongest beacon with the current beacon's fake address. If they match, the current
+ *   beacon is used; otherwise, the strongest beacon is chosen.
+ * - Additionally, signals stronger than -60dB are filtered for further processing.
+ * - The method proceeds to decode the beacon data for further analysis.
  */
 public abstract class PodsStatusScanCallback extends ScanCallback {
 
