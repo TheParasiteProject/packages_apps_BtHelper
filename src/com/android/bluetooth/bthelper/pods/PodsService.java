@@ -9,10 +9,6 @@
 
 package com.android.bluetooth.bthelper.pods;
 
-import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -154,10 +150,8 @@ public class PodsService extends Service {
         } catch (NullPointerException e) {
         }
 
-        startForeground(101, createBackgroundNotification());
-
         if (notif == null || !notif.isAlive()) {
-            notif = new NotificationThread(this) {
+            notif = new NotificationThread(getApplicationContext()) {
                 @Override
                 public PodsStatus getStatus() {
                     return status;
@@ -436,30 +430,5 @@ public class PodsService extends Service {
             statusIntent.putExtra(ACTION_BATTERY_LEVEL_CHANGED, intent);
             sendBroadcastAsUser(statusIntent, UserHandle.ALL);
         }
-    }
-
-    private Notification createBackgroundNotification () {
-        final String notChannelID = "FOREGROUND_ID";
-
-        NotificationManager notManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        NotificationChannel notChannel = new NotificationChannel(notChannelID, getString(R.string.bg_noti_channel), NotificationManager.IMPORTANCE_LOW);
-        notChannel.setShowBadge(false);
-        notManager.createNotificationChannel(notChannel);
-
-        Intent notIntent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                .putExtra(Settings.EXTRA_APP_PACKAGE, Constants.AUTHORITY_BTHELPER)
-                .putExtra(Settings.EXTRA_CHANNEL_ID, notChannelID);
-
-        PendingIntent notPendingIntent = PendingIntent.getActivity(getApplicationContext(), 1110, notIntent, PendingIntent.FLAG_IMMUTABLE);
-
-        Notification.Builder builder = new Notification.Builder(getApplicationContext(), notChannelID)
-                .setSmallIcon(R.drawable.ic_pod)
-                .setContentTitle(getString(R.string.bg_noti_title))
-                .setContentText(getString(R.string.bg_noti_text))
-                .setContentIntent(notPendingIntent)
-                .setOngoing(true);
-
-        return builder.build();
     }
 }
