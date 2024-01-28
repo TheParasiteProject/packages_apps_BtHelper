@@ -29,6 +29,18 @@ public class RegularPods implements IPods {
         return pods[pos].parseStatus();
     }
 
+    public int getInEarVisibility (int pos) {
+        return pods[pos].inEarVisibility();
+    }
+
+    public int getBatImgVisibility (int pos) {
+        return pods[pos].batImgVisibility();
+    }
+
+    public int getBatImgSrcId (int pos) {
+        return pods[pos].batImgSrcId();
+    }
+
     public String getColor () {
         return color;
     }

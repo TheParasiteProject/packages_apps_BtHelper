@@ -7,6 +7,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name" translatable="false">Bluetooth Devices Helper</string>
 
+    <!-- Notification -->
+    <string name="bg_noti_channel">Background Notification</string>
+    <string name="bg_noti_title">Running in the background</string>
+    <string name="bg_noti_text">Click to open notification settings</string>
+
     <!-- Settings title -->
     <string name="settings_title">Advanced settings</string>
 

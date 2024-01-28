@@ -8,6 +8,7 @@
 package com.android.bluetooth.bthelper.pods;
 
 import android.bluetooth.BluetoothDevice;
+import android.view.View;
 
 import com.android.bluetooth.bthelper.R;
 
@@ -53,6 +54,18 @@ public class Pod {
 
     public boolean isLowBattery () {
         return status <= LOW_BATTERY_STATUS;
+    }
+
+    public int inEarVisibility () {
+        return inEar ? View.VISIBLE : View.INVISIBLE;
+    }
+
+    public int batImgVisibility () {
+        return (charging && isConnected() || isLowBattery()) ? View.VISIBLE : View.GONE;
+    }
+
+    public int batImgSrcId () {
+        return charging ? R.drawable.ic_battery_charging_full_green_24dp : R.drawable.ic_battery_alert_red_24dp;
     }
 
 }

@@ -29,6 +29,14 @@ public abstract class SinglePods implements IPods {
         return pod.parseStatus();
     }
 
+    public int getBatImgVisibility () {
+        return pod.batImgVisibility();
+    }
+
+    public int getBatImgSrcId () {
+        return pod.batImgSrcId();
+    }
+
     public String getColor () {
         return color;
     }

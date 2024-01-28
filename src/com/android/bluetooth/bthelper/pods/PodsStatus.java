@@ -37,6 +37,7 @@ public class PodsStatus {
     public static final PodsStatus DISCONNECTED = new PodsStatus();
 
     private IPods pods;
+    private final long timestamp = System.currentTimeMillis();
 
     public PodsStatus () {
     }
@@ -105,5 +106,9 @@ public class PodsStatus {
             return true;
 
         return pods.isDisconnected();
+    }
+
+    public long getTimestamp () {
+        return timestamp;
     }
 }

@@ -9,6 +9,10 @@
 
 package com.android.bluetooth.bthelper.pods;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -26,6 +30,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.IBinder;
 import android.os.UserHandle;
+import android.provider.Settings;
 
 import androidx.preference.PreferenceManager;
 
@@ -33,6 +38,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import com.android.bluetooth.bthelper.notification.NotificationThread;
 import com.android.bluetooth.bthelper.pods.models.IPods;
 import com.android.bluetooth.bthelper.pods.models.RegularPods;
 import com.android.bluetooth.bthelper.pods.models.SinglePods;
@@ -109,6 +115,9 @@ public class PodsService extends Service {
     private BluetoothLeScanner btScanner;
     private PodsStatus status = PodsStatus.DISCONNECTED;
 
+    private static NotificationThread notif = null;
+    private static boolean maybeConnected = false;
+
     private BroadcastReceiver btReceiver = null;
     private PodsStatusScanCallback scanCallback = null;
 
@@ -144,6 +153,19 @@ public class PodsService extends Service {
             }
         } catch (NullPointerException e) {
         }
+
+        startForeground(101, createBackgroundNotification());
+
+        if (notif == null || !notif.isAlive()) {
+            notif = new NotificationThread(this) {
+                @Override
+                public PodsStatus getStatus() {
+                    return status;
+                }
+            };
+            notif.start();
+        }
+
         return START_STICKY;
     }
 
@@ -414,5 +436,30 @@ public class PodsService extends Service {
             statusIntent.putExtra(ACTION_BATTERY_LEVEL_CHANGED, intent);
             sendBroadcastAsUser(statusIntent, UserHandle.ALL);
         }
+    }
+
+    private Notification createBackgroundNotification () {
+        final String notChannelID = "FOREGROUND_ID";
+
+        NotificationManager notManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        NotificationChannel notChannel = new NotificationChannel(notChannelID, getString(R.string.bg_noti_channel), NotificationManager.IMPORTANCE_LOW);
+        notChannel.setShowBadge(false);
+        notManager.createNotificationChannel(notChannel);
+
+        Intent notIntent = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                .putExtra(Settings.EXTRA_APP_PACKAGE, Constants.AUTHORITY_BTHELPER)
+                .putExtra(Settings.EXTRA_CHANNEL_ID, notChannelID);
+
+        PendingIntent notPendingIntent = PendingIntent.getActivity(getApplicationContext(), 1110, notIntent, PendingIntent.FLAG_IMMUTABLE);
+
+        Notification.Builder builder = new Notification.Builder(getApplicationContext(), notChannelID)
+                .setSmallIcon(R.drawable.ic_pod)
+                .setContentTitle(getString(R.string.bg_noti_title))
+                .setContentText(getString(R.string.bg_noti_text))
+                .setContentIntent(notPendingIntent)
+                .setOngoing(true);
+
+        return builder.build();
     }
 }
