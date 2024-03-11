@@ -8,25 +8,25 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:title="@string/settings_title">
 
-    <SwitchPreference
+    <SwitchPreferenceCompat
         android:key="onepod_mode_pref"
         android:defaultValue="false"
         android:title="@string/onepod_mode_title" 
         android:summary="@string/onepod_mode_summary" />
 
-    <SwitchPreference
+    <SwitchPreferenceCompat
         android:key="auto_play_pref"
         android:defaultValue="false"
         android:title="@string/auto_play_title"
         android:summary="@string/auto_play_summary" />
 
-    <SwitchPreference
+    <SwitchPreferenceCompat
         android:key="auto_pause_pref"
         android:defaultValue="false"
         android:title="@string/auto_pause_title"
         android:summary="@string/auto_pause_summary" />
 
-    <SwitchPreference
+    <SwitchPreferenceCompat
         android:key="low_latency_audio_pref"
         android:defaultValue="false"
         android:title="@string/low_latency_audio_title"

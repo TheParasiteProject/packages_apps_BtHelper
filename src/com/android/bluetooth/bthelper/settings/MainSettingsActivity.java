@@ -9,7 +9,7 @@ package com.android.bluetooth.bthelper.settings;
 import android.os.Bundle;
 
 import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity;
-import com.android.settingslib.widget.R;
+import com.android.settingslib.collapsingtoolbar.R;
 
 public class MainSettingsActivity extends CollapsingToolbarBaseActivity {
 
@@ -19,7 +19,12 @@ public class MainSettingsActivity extends CollapsingToolbarBaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getFragmentManager().beginTransaction().replace(R.id.content_frame,
-                new MainSettingsFragment(), TAG).commit();
+        getFragmentManager()
+            .beginTransaction()
+            .replace(
+                R.id.content_frame,
+                new MainSettingsFragment(),
+                TAG
+            ).commit();
     }
 }

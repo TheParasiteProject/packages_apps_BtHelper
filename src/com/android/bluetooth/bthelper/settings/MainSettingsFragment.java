@@ -22,7 +22,7 @@ import android.os.UserHandle;
 import androidx.preference.Preference;
 import androidx.preference.Preference.OnPreferenceChangeListener;
 import androidx.preference.PreferenceFragment;
-import androidx.preference.SwitchPreference;
+import androidx.preference.SwitchPreferenceCompat;
 
 import com.android.bluetooth.bthelper.Constants;
 import com.android.bluetooth.bthelper.R;
@@ -32,10 +32,10 @@ public class MainSettingsFragment extends PreferenceFragment implements
         OnPreferenceChangeListener {
 
     private SharedPreferences mSharedPrefs;
-    private SwitchPreference mOnePodModePref;
-    private SwitchPreference mAutoPlayPref;
-    private SwitchPreference mAutoPausePref;
-    private SwitchPreference mLowLatencyAudioSwitchPref;
+    private SwitchPreferenceCompat mOnePodModePref;
+    private SwitchPreferenceCompat mAutoPlayPref;
+    private SwitchPreferenceCompat mAutoPausePref;
+    private SwitchPreferenceCompat mLowLatencyAudioSwitchPref;
 
     private boolean mSelfChange = false;
 
@@ -73,7 +73,7 @@ public class MainSettingsFragment extends PreferenceFragment implements
         }
     };
 
-    private void handleSwitchBroadcast(SwitchPreference sp, boolean isChecked) {
+    private void handleSwitchBroadcast(SwitchPreferenceCompat sp, boolean isChecked) {
         if (mSelfChange) {
             mSelfChange = false;
             return;
@@ -88,22 +88,22 @@ public class MainSettingsFragment extends PreferenceFragment implements
         mActionBar.setDisplayHomeAsUpEnabled(true);
         mSharedPrefs = getContext().getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE);
 
-        mOnePodModePref = (SwitchPreference) findPreference(Constants.KEY_ONEPOD_MODE);
+        mOnePodModePref = (SwitchPreferenceCompat) findPreference(Constants.KEY_ONEPOD_MODE);
         mOnePodModePref.setEnabled(true);
         mOnePodModePref.setOnPreferenceChangeListener(this);
         if (PodsService.isSingleDevice()) {
             getPreferenceScreen().removePreference(mOnePodModePref);
         }
 
-        mAutoPlayPref = (SwitchPreference) findPreference(Constants.KEY_AUTO_PLAY);
+        mAutoPlayPref = (SwitchPreferenceCompat) findPreference(Constants.KEY_AUTO_PLAY);
         mAutoPlayPref.setEnabled(true);
         mAutoPlayPref.setOnPreferenceChangeListener(this);
 
-        mAutoPausePref = (SwitchPreference) findPreference(Constants.KEY_AUTO_PAUSE);
+        mAutoPausePref = (SwitchPreferenceCompat) findPreference(Constants.KEY_AUTO_PAUSE);
         mAutoPausePref.setEnabled(true);
         mAutoPausePref.setOnPreferenceChangeListener(this);
 
-        mLowLatencyAudioSwitchPref = (SwitchPreference) findPreference(Constants.KEY_LOW_LATENCY_AUDIO);
+        mLowLatencyAudioSwitchPref = (SwitchPreferenceCompat) findPreference(Constants.KEY_LOW_LATENCY_AUDIO);
         mLowLatencyAudioSwitchPref.setEnabled(true);
         mLowLatencyAudioSwitchPref.setOnPreferenceChangeListener(this);
     }
