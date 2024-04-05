@@ -25,9 +25,4 @@
     <!-- Auto pause -->
     <string name="auto_pause_title">Auto pause</string>
     <string name="auto_pause_summary">When the AirPods are removed, audio playback pauses.</string>
-
-    <!-- Low latency audio -->
-    <string name="low_latency_audio_title">Low latency audio</string>
-    <string name="low_latency_audio_summary">Enable to reduce audio delays.\nRequires reconnecting AirPods after turn on. It may increase battery consumption.</string>
-    <string name="low_latency_audio_slice_subtitle">Requires reconnecting AirPods.</string>
 </resources>

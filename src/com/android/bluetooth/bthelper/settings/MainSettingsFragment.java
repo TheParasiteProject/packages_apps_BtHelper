@@ -35,7 +35,6 @@ public class MainSettingsFragment extends PreferenceFragment implements
     private SwitchPreferenceCompat mOnePodModePref;
     private SwitchPreferenceCompat mAutoPlayPref;
     private SwitchPreferenceCompat mAutoPausePref;
-    private SwitchPreferenceCompat mLowLatencyAudioSwitchPref;
 
     private boolean mSelfChange = false;
 
@@ -61,10 +60,6 @@ public class MainSettingsFragment extends PreferenceFragment implements
                         return;
                     case Constants.EXTRA_AUTO_PAUSE_CHANGED:
                         handleSwitchBroadcast(mAutoPausePref,
-                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
-                        return;
-                    case Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED:
-                        handleSwitchBroadcast(mLowLatencyAudioSwitchPref,
                                 intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false));
                         return;
                 }
@@ -102,10 +97,6 @@ public class MainSettingsFragment extends PreferenceFragment implements
         mAutoPausePref = (SwitchPreferenceCompat) findPreference(Constants.KEY_AUTO_PAUSE);
         mAutoPausePref.setEnabled(true);
         mAutoPausePref.setOnPreferenceChangeListener(this);
-
-        mLowLatencyAudioSwitchPref = (SwitchPreferenceCompat) findPreference(Constants.KEY_LOW_LATENCY_AUDIO);
-        mLowLatencyAudioSwitchPref.setEnabled(true);
-        mLowLatencyAudioSwitchPref.setOnPreferenceChangeListener(this);
     }
 
     @Override
@@ -143,13 +134,6 @@ public class MainSettingsFragment extends PreferenceFragment implements
                 sendSwitchBroadcast(
                     Constants.ACTION_PENDING_INTENT,
                     Constants.EXTRA_AUTO_PAUSE_CHANGED,
-                    (boolean) newValue
-                );
-                break;
-            case Constants.KEY_LOW_LATENCY_AUDIO:
-                sendSwitchBroadcast(
-                    Constants.ACTION_PENDING_INTENT,
-                    Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED,
                     (boolean) newValue
                 );
                 break;

@@ -139,7 +139,6 @@ public class PodsService extends Service {
             final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             if (device != null) {
                 mCurrentDevice = device;
-                setLowLatencyAudio();
                 startAirPodsScanner();
             }
         } catch (NullPointerException e) {
@@ -156,12 +155,6 @@ public class PodsService extends Service {
     // Reset currently set device
     public static void shouldResetDevice (boolean reset) {
         if (reset) mCurrentDevice = null;
-    }
-
-    // Set Low Latency Audio mode to current device
-    public void setLowLatencyAudio () {
-        mSharedPrefs = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE);
-        mCurrentDevice.setLowLatencyAudioAllowed(mSharedPrefs.getBoolean(Constants.KEY_LOW_LATENCY_AUDIO, false));
     }
 
     /**

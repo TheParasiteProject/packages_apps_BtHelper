@@ -51,10 +51,6 @@ public class SliceBroadcastReceiver extends BroadcastReceiver {
                 enabled = intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false);
                 handleSliceChange(Constants.KEY_AUTO_PAUSE, enabled);
                 return;
-            case Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED:
-                enabled = intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false);
-                handleSliceChange(Constants.KEY_LOW_LATENCY_AUDIO, enabled);
-                return;
             default:
                 return;
         }
