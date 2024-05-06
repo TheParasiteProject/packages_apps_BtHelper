@@ -25,8 +25,8 @@ public abstract class SinglePods implements IPods {
         return pod;
     }
 
-    public int getParsedStatus () {
-        return pod.parseStatus();
+    public int getParsedStatus(boolean arg) {
+        return pod.parseStatus(arg);
     }
 
     public String getColor () {

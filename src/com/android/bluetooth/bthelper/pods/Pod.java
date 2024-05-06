@@ -31,8 +31,13 @@ public class Pod {
         return status;
     }
 
-    public int parseStatus () {
-        return (status == MAX_CONNECTED_STATUS) ? 100 : ((status < MAX_CONNECTED_STATUS) ? ((status * 10 + 5)) : BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+    public int parseStatus(boolean arg) {
+        if (arg) {
+            return (status == MAX_CONNECTED_STATUS || (status < MAX_CONNECTED_STATUS && status > 0)) ? 
+                    status - 1 : BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+        }
+
+        return (status == MAX_CONNECTED_STATUS) ? 100 : ((status < MAX_CONNECTED_STATUS) ? (status * 10) : BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
     }
 
     public boolean isCharging () {

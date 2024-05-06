@@ -25,8 +25,8 @@ public class RegularPods implements IPods {
         return pods[pos];
     }
 
-    public int getParsedStatus (int pos) {
-        return pods[pos].parseStatus();
+    public int getParsedStatus(boolean arg, int pos) {
+        return pods[pos].parseStatus(arg);
     }
 
     public String getColor () {
