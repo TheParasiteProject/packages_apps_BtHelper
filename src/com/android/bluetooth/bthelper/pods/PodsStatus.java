@@ -38,30 +38,41 @@ public class PodsStatus {
 
     private IPods pods;
 
-    public PodsStatus () {
-    }
+    public PodsStatus() {}
 
-    public PodsStatus (String status) {
-        if (status == null)
-            return;
+    public PodsStatus(String status) {
+        if (status == null) return;
 
         String color = status.substring(18, 20);
 
         boolean flip = isFlipped(status);
 
-        int leftStatus = Integer.parseInt("" + status.charAt(flip ? 12 : 13), 16); // Left airpod (0-10 batt; 15=disconnected)
-        int rightStatus = Integer.parseInt("" + status.charAt(flip ? 13 : 12), 16); // Right airpod (0-10 batt; 15=disconnected)
-        int caseStatus = Integer.parseInt("" + status.charAt(15), 16); // Case (0-10 batt; 15=disconnected)
-        int singleStatus = Integer.parseInt("" + status.charAt(13), 16); // Single (0-10 batt; 15=disconnected)
+        int leftStatus =
+                Integer.parseInt(
+                        "" + status.charAt(flip ? 12 : 13),
+                        16); // Left airpod (0-10 batt; 15=disconnected)
+        int rightStatus =
+                Integer.parseInt(
+                        "" + status.charAt(flip ? 13 : 12),
+                        16); // Right airpod (0-10 batt; 15=disconnected)
+        int caseStatus =
+                Integer.parseInt("" + status.charAt(15), 16); // Case (0-10 batt; 15=disconnected)
+        int singleStatus =
+                Integer.parseInt("" + status.charAt(13), 16); // Single (0-10 batt; 15=disconnected)
 
-        int chargeStatus = Integer.parseInt("" + status.charAt(14), 16); // Charge status (bit 0=left; bit 1=right; bit 2=case)
+        int chargeStatus =
+                Integer.parseInt(
+                        "" + status.charAt(14),
+                        16); // Charge status (bit 0=left; bit 1=right; bit 2=case)
 
         boolean chargeL = (chargeStatus & (flip ? 0b00000010 : 0b00000001)) != 0;
         boolean chargeR = (chargeStatus & (flip ? 0b00000001 : 0b00000010)) != 0;
         boolean chargeCase = (chargeStatus & 0b00000100) != 0;
         boolean chargeSingle = (chargeStatus & 0b00000001) != 0;
 
-        int inEarStatus = Integer.parseInt("" + status.charAt(11), 16); // InEar status (bit 1=left; bit 3=right)
+        int inEarStatus =
+                Integer.parseInt(
+                        "" + status.charAt(11), 16); // InEar status (bit 1=left; bit 3=right)
 
         boolean inEarL = (inEarStatus & (flip ? 0b00001000 : 0b00000010)) != 0;
         boolean inEarR = (inEarStatus & (flip ? 0b00000010 : 0b00001000)) != 0;
@@ -86,23 +97,24 @@ public class PodsStatus {
         } else if ("1420".equals(idFull)) {
             pods = new AirPodsPro2(color, leftPod, rightPod, casePod); // Airpods Pro 2
         } else if ("2420".equals(idFull)) {
-            pods = new AirPodsPro2UsbC(color, leftPod, rightPod, casePod); // Airpods Pro 2 with USB‐C
+            pods =
+                    new AirPodsPro2UsbC(
+                            color, leftPod, rightPod, casePod); // Airpods Pro 2 with USB‐C
         } else if ("0A20".equals(idFull)) {
             pods = new AirPodsMax(color, singlePod); // Airpods Max
         }
     }
 
-    public static boolean isFlipped (String str) {
+    public static boolean isFlipped(String str) {
         return (Integer.parseInt("" + str.charAt(10), 16) & 0x02) == 0;
     }
 
-    public IPods getAirpods () {
+    public IPods getAirpods() {
         return pods;
     }
 
-    public boolean isAllDisconnected () {
-        if (this == DISCONNECTED)
-            return true;
+    public boolean isAllDisconnected() {
+        if (this == DISCONNECTED) return true;
 
         return pods.isDisconnected();
     }

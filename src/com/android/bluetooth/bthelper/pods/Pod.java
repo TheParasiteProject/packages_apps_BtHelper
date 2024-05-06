@@ -9,8 +9,6 @@ package com.android.bluetooth.bthelper.pods;
 
 import android.bluetooth.BluetoothDevice;
 
-import com.android.bluetooth.bthelper.R;
-
 public class Pod {
 
     public static final int DISCONNECTED_STATUS = 15;
@@ -21,43 +19,47 @@ public class Pod {
     private final boolean charging;
     private final boolean inEar;
 
-    public Pod (int status, boolean charging, boolean inEar) {
+    public Pod(int status, boolean charging, boolean inEar) {
         this.status = status;
         this.charging = charging;
         this.inEar = inEar;
     }
 
-    public int getStatus () {
+    public int getStatus() {
         return status;
     }
 
     public int parseStatus(boolean arg) {
         if (arg) {
-            return (status == MAX_CONNECTED_STATUS || (status < MAX_CONNECTED_STATUS && status > 0)) ? 
-                    status - 1 : BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
+            return (status == MAX_CONNECTED_STATUS || (status < MAX_CONNECTED_STATUS && status > 0))
+                    ? status - 1
+                    : BluetoothDevice.BATTERY_LEVEL_UNKNOWN;
         }
 
-        return (status == MAX_CONNECTED_STATUS) ? 100 : ((status < MAX_CONNECTED_STATUS) ? (status * 10) : BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
+        return (status == MAX_CONNECTED_STATUS)
+                ? 100
+                : ((status < MAX_CONNECTED_STATUS)
+                        ? (status * 10)
+                        : BluetoothDevice.BATTERY_LEVEL_UNKNOWN);
     }
 
-    public boolean isCharging () {
+    public boolean isCharging() {
         return charging;
     }
 
-    public boolean isInEar () {
+    public boolean isInEar() {
         return inEar;
     }
 
-    public boolean isConnected () {
+    public boolean isConnected() {
         return status <= MAX_CONNECTED_STATUS;
     }
 
-    public boolean isDisconnected () {
+    public boolean isDisconnected() {
         return status == DISCONNECTED_STATUS;
     }
 
-    public boolean isLowBattery () {
+    public boolean isLowBattery() {
         return status <= LOW_BATTERY_STATUS;
     }
-
 }

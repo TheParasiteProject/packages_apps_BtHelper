@@ -20,11 +20,8 @@ public class MainSettingsActivity extends CollapsingToolbarBaseActivity {
         super.onCreate(savedInstanceState);
 
         getFragmentManager()
-            .beginTransaction()
-            .replace(
-                R.id.content_frame,
-                new MainSettingsFragment(),
-                TAG
-            ).commit();
+                .beginTransaction()
+                .replace(R.id.content_frame, new MainSettingsFragment(), TAG)
+                .commit();
     }
 }

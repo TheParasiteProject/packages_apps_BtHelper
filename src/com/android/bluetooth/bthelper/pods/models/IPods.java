@@ -9,13 +9,13 @@ package com.android.bluetooth.bthelper.pods.models;
 
 public interface IPods {
 
-    String getModel ();
+    String getModel();
 
-    boolean isSingle ();
+    boolean isSingle();
 
-    boolean isDisconnected ();
+    boolean isDisconnected();
 
-    int getLowBattThreshold ();
+    int getLowBattThreshold();
 
-    String getMenufacturer ();
+    String getMenufacturer();
 }

@@ -17,33 +17,33 @@ public class AirPods3 extends RegularPods {
     }
 
     @Override
-    public int getDrawable () {
+    public int getDrawable() {
         return Icons.AirPods_Gen3;
-    };
+    }
+    ;
 
     @Override
-    public int getLeftDrawable () {
+    public int getLeftDrawable() {
         return Icons.AirPods_Gen3_Left;
     }
 
     @Override
-    public int getRightDrawable () {
+    public int getRightDrawable() {
         return Icons.AirPods_Gen3_Right;
     }
 
     @Override
-    public int getCaseDrawable () {
+    public int getCaseDrawable() {
         return Icons.AirPods_Gen3_Case;
     }
 
     @Override
-    public String getModel () {
+    public String getModel() {
         return Constants.MODEL_AIRPODS_GEN3;
     }
 
     @Override
-    public String getMenufacturer () {
+    public String getMenufacturer() {
         return Constants.MANUFACTURER_APPLE;
     }
-
 }

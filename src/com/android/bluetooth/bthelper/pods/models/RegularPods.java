@@ -16,12 +16,12 @@ public class RegularPods implements IPods {
     private final Pod[] pods;
     private final String color;
 
-    public RegularPods (String color, Pod leftPod, Pod rightPod, Pod casePod) {
+    public RegularPods(String color, Pod leftPod, Pod rightPod, Pod casePod) {
         this.pods = new Pod[] {leftPod, rightPod, casePod};
         this.color = color;
     }
 
-    public Pod getPod (int pos) {
+    public Pod getPod(int pos) {
         return pods[pos];
     }
 
@@ -29,58 +29,57 @@ public class RegularPods implements IPods {
         return pods[pos].parseStatus(arg);
     }
 
-    public String getColor () {
+    public String getColor() {
         return color;
     }
 
-    public int getDrawable () {
+    public int getDrawable() {
         return -1;
     }
 
-    public int getLeftDrawable () {
+    public int getLeftDrawable() {
         return -1;
     }
 
-    public int getRightDrawable () {
+    public int getRightDrawable() {
         return -1;
     }
 
-    public int getCaseDrawable () {
+    public int getCaseDrawable() {
         return -1;
     }
 
     @Override
-    public String getModel () {
+    public String getModel() {
         return Constants.UNKNOWN;
     }
 
     @Override
-    public boolean isSingle () {
+    public boolean isSingle() {
         return false;
     }
 
     @Override
-    public boolean isDisconnected () {
-        return pods[LEFT].isDisconnected() &&
-                pods[RIGHT].isDisconnected() &&
-                pods[CASE].isDisconnected();
+    public boolean isDisconnected() {
+        return pods[LEFT].isDisconnected()
+                && pods[RIGHT].isDisconnected()
+                && pods[CASE].isDisconnected();
     }
 
-    public int getLowBattThreshold () {
+    public int getLowBattThreshold() {
         // Most AirPods have same Low Battery Threshold to 20
         return 20;
     }
 
-    public String getMenufacturer () {
+    public String getMenufacturer() {
         return Constants.UNKNOWN;
     }
 
-    public boolean isInEar (int pos) {
+    public boolean isInEar(int pos) {
         return pods[pos].isInEar();
     }
 
-    public boolean isCharging (int pos) {
+    public boolean isCharging(int pos) {
         return pods[pos].isCharging();
     }
-
 }

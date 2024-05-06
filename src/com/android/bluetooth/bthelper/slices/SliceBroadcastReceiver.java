@@ -13,10 +13,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.UserHandle;
 
 import com.android.bluetooth.bthelper.Constants;
-import com.android.bluetooth.bthelper.pods.PodsService;
 
 public class SliceBroadcastReceiver extends BroadcastReceiver {
     private static SharedPreferences mSharedPrefs;
@@ -25,7 +23,7 @@ public class SliceBroadcastReceiver extends BroadcastReceiver {
     private Context context;
 
     @Override
-    public void onReceive (Context context, Intent intent) {
+    public void onReceive(Context context, Intent intent) {
         try {
             if (intent == null || context == null) return;
             this.context = context;
@@ -35,8 +33,7 @@ public class SliceBroadcastReceiver extends BroadcastReceiver {
             return;
         }
 
-        final int extra =
-            intent.getIntExtra(Constants.ACTION_PENDING_INTENT, Constants.EXTRA_NONE);
+        final int extra = intent.getIntExtra(Constants.ACTION_PENDING_INTENT, Constants.EXTRA_NONE);
 
         switch (extra) {
             case Constants.EXTRA_ONEPOD_CHANGED:
@@ -56,16 +53,16 @@ public class SliceBroadcastReceiver extends BroadcastReceiver {
         }
     }
 
-    private void handleSliceChange (String key, boolean enabled) {
+    private void handleSliceChange(String key, boolean enabled) {
         try {
             if (context == null || key == null) return;
         } catch (NullPointerException e) {
             return;
         }
 
-        SharedPreferences.Editor editor = context.getSharedPreferences(
-                Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
-                .edit();
+        SharedPreferences.Editor editor =
+                context.getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
+                        .edit();
         editor.putBoolean(key, enabled).apply();
     }
 }

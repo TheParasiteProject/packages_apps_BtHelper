@@ -9,6 +9,9 @@
 
 package com.android.bluetooth.bthelper.pods;
 
+import static com.android.bluetooth.bthelper.pods.PodsStatusScanCallback.getScanFilters;
+
+import android.Manifest;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -20,28 +23,19 @@ import android.content.BroadcastReceiver;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources.NotFoundException;
 import android.content.SharedPreferences;
-import android.Manifest;
+import android.content.res.Resources.NotFoundException;
 import android.net.Uri;
-import android.os.Build;
 import android.os.IBinder;
 import android.os.UserHandle;
 
-import androidx.preference.PreferenceManager;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
+import com.android.bluetooth.bthelper.Constants;
 import com.android.bluetooth.bthelper.pods.models.IPods;
 import com.android.bluetooth.bthelper.pods.models.RegularPods;
 import com.android.bluetooth.bthelper.pods.models.SinglePods;
-import com.android.bluetooth.bthelper.R;
-import com.android.bluetooth.bthelper.Constants;
-import com.android.bluetooth.bthelper.slices.BtHelperSliceProvider;
 import com.android.bluetooth.bthelper.utils.MediaControl;
-import static com.android.bluetooth.bthelper.pods.PodsStatusScanCallback.getScanFilters;
+
+import java.util.Objects;
 
 /**
  * This is the class that does most of the work. It has 3 functions:
@@ -80,11 +74,12 @@ public class PodsService extends Service {
     // Target Android Settings Intelligence package that have battery widget for data update
     private static final String PACKAGE_ASI = "com.google.android.settings.intelligence";
 
-    /** 
+    /**
      * Intent used to broadcast bluetooth data update
      * for the Settings Intelligence package's battery widget
      */
-    private static final String ACTION_ASI_UPDATE_BLUETOOTH_DATA = "batterywidget.impl.action.update_bluetooth_data";
+    private static final String ACTION_ASI_UPDATE_BLUETOOTH_DATA =
+            "batterywidget.impl.action.update_bluetooth_data";
 
     private static final String COMPANION_TYPE_NONE = "COMPANION_NONE";
 
@@ -103,23 +98,22 @@ public class PodsService extends Service {
     private boolean isMetaDataSet = false;
     private boolean isSliceSet = false;
     private boolean isModelDataSet = false;
-    
+
     private boolean statusChanged = false;
 
     private static SharedPreferences mSharedPrefs;
     private static MediaControl mediaControl;
     private static boolean previousWorn = false;
 
-    public PodsService () {
-    }
+    public PodsService() {}
 
     @Override
-    public IBinder onBind (Intent intent) {
+    public IBinder onBind(Intent intent) {
         return null;
     }
 
     @Override
-    public int onStartCommand (Intent intent, int flags, int startId) {
+    public int onStartCommand(Intent intent, int flags, int startId) {
         try {
             final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             if (device != null) {
@@ -132,13 +126,13 @@ public class PodsService extends Service {
     }
 
     @Override
-    public void onDestroy () {
+    public void onDestroy() {
         super.onDestroy();
         stopAirPodsScanner();
     }
 
     // Reset currently set device
-    public static void shouldResetDevice (boolean reset) {
+    public static void shouldResetDevice(boolean reset) {
         if (reset) mCurrentDevice = null;
     }
 
@@ -151,9 +145,10 @@ public class PodsService extends Service {
      *
      * After decoding a beacon, the status is written to PodsStatus.
      */
-    private void startAirPodsScanner () {
+    private void startAirPodsScanner() {
         try {
-            BluetoothManager btManager = (BluetoothManager)getSystemService(Context.BLUETOOTH_SERVICE);
+            BluetoothManager btManager =
+                    (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
             BluetoothAdapter btAdapter = btManager.getAdapter();
 
             if (btAdapter == null) {
@@ -171,27 +166,29 @@ public class PodsService extends Service {
 
             btScanner = btAdapter.getBluetoothLeScanner();
 
-            ScanSettings scanSettings = new ScanSettings.Builder()
-                    .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-                    .setReportDelay(1) // DON'T USE 0
-                    .build();
+            ScanSettings scanSettings =
+                    new ScanSettings.Builder()
+                            .setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
+                            .setReportDelay(1) // DON'T USE 0
+                            .build();
 
-            scanCallback = new PodsStatusScanCallback() {
-                @Override
-                public void onStatus (PodsStatus newStatus) {
-                    setStatusChanged(status, newStatus);
-                    status = newStatus;
-                    handlePlayPause(status, getApplicationContext());
-                    updatePodsStatus(status, mCurrentDevice);
-                }
-            };
+            scanCallback =
+                    new PodsStatusScanCallback() {
+                        @Override
+                        public void onStatus(PodsStatus newStatus) {
+                            setStatusChanged(status, newStatus);
+                            status = newStatus;
+                            handlePlayPause(status, getApplicationContext());
+                            updatePodsStatus(status, mCurrentDevice);
+                        }
+                    };
 
             btScanner.startScan(getScanFilters(), scanSettings, scanCallback);
         } catch (Throwable t) {
         }
     }
 
-    private void stopAirPodsScanner () {
+    private void stopAirPodsScanner() {
         try {
             if (btScanner != null && scanCallback != null) {
 
@@ -204,19 +201,19 @@ public class PodsService extends Service {
     }
 
     // Set boolean value to true if device's status has changed
-    private void setStatusChanged (PodsStatus status, PodsStatus newStatus) {
+    private void setStatusChanged(PodsStatus status, PodsStatus newStatus) {
         if (!Objects.equals(status, newStatus)) {
             statusChanged = true;
         }
     }
 
     // Check whether current device is single model (e.g. AirPods Max)
-    public static boolean isSingleDevice () {
+    public static boolean isSingleDevice() {
         return isSinglePods;
     }
 
     // Handle Play/Pause media control event based on device wear status
-    private void handlePlayPause (PodsStatus status, Context context) {
+    private void handlePlayPause(PodsStatus status, Context context) {
         mSharedPrefs = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE);
 
         final boolean onePodMode = mSharedPrefs.getBoolean(Constants.KEY_ONEPOD_MODE, false);
@@ -236,14 +233,18 @@ public class PodsService extends Service {
         boolean currentWorn = false;
 
         if (!single) {
-            final RegularPods regularPods = (RegularPods)airpods;
+            final RegularPods regularPods = (RegularPods) airpods;
             if (onePodMode) {
-                currentWorn = regularPods.isInEar(RegularPods.LEFT) || regularPods.isInEar(RegularPods.RIGHT);
+                currentWorn =
+                        regularPods.isInEar(RegularPods.LEFT)
+                                || regularPods.isInEar(RegularPods.RIGHT);
             } else {
-                currentWorn = regularPods.isInEar(RegularPods.LEFT) && regularPods.isInEar(RegularPods.RIGHT);
+                currentWorn =
+                        regularPods.isInEar(RegularPods.LEFT)
+                                && regularPods.isInEar(RegularPods.RIGHT);
             }
         } else {
-            final SinglePods singlePods = (SinglePods)airpods;
+            final SinglePods singlePods = (SinglePods) airpods;
             currentWorn = singlePods.isInEar();
         }
 
@@ -261,7 +262,7 @@ public class PodsService extends Service {
     }
 
     // Convert internal content address combined with recieved path value to URI
-    public static Uri getUri (String path) {
+    public static Uri getUri(String path) {
         return new Uri.Builder()
                 .scheme(ContentResolver.SCHEME_CONTENT)
                 .authority(Constants.AUTHORITY_BTHELPER)
@@ -270,14 +271,21 @@ public class PodsService extends Service {
     }
 
     // Convert internal resource address to URI
-    private Uri resToUri (int resId) {
+    private Uri resToUri(int resId) {
         try {
-            Uri uri = (new Uri.Builder())
-                        .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-                        .authority(Constants.AUTHORITY_BTHELPER)
-                        .appendPath(getApplicationContext().getResources().getResourceTypeName(resId))
-                        .appendPath(getApplicationContext().getResources().getResourceEntryName(resId))
-                        .build();
+            Uri uri =
+                    (new Uri.Builder())
+                            .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
+                            .authority(Constants.AUTHORITY_BTHELPER)
+                            .appendPath(
+                                    getApplicationContext()
+                                            .getResources()
+                                            .getResourceTypeName(resId))
+                            .appendPath(
+                                    getApplicationContext()
+                                            .getResources()
+                                            .getResourceEntryName(resId))
+                            .build();
             return uri;
         } catch (NotFoundException e) {
             return null;
@@ -293,35 +301,89 @@ public class PodsService extends Service {
 
     // Set metadata (icon, battery, charging status, etc.) for current device
     // and send broadcast that device status has changed
-    private void updatePodsStatus (PodsStatus status, BluetoothDevice device) {
+    private void updatePodsStatus(PodsStatus status, BluetoothDevice device) {
         final IPods airpods = status.getAirpods();
         final boolean single = airpods.isSingle();
         isSinglePods = single;
         int batteryUnified = 0;
         boolean chargingMain = false;
-        
+
         if (!isMetaDataSet) {
-            isSliceSet = setMetadata(device, device.METADATA_COMPANION_APP, Constants.AUTHORITY_BTHELPER.getBytes());
-            isSliceSet = setMetadata(device, device.METADATA_SOFTWARE_VERSION, COMPANION_TYPE_NONE.getBytes());
-            isSliceSet = setMetadata(device, device.METADATA_ENHANCED_SETTINGS_UI_URI, getUri(Constants.PATH_BTHELPER).toString().getBytes());
+            isSliceSet =
+                    setMetadata(
+                            device,
+                            device.METADATA_COMPANION_APP,
+                            Constants.AUTHORITY_BTHELPER.getBytes());
+            isSliceSet =
+                    setMetadata(
+                            device,
+                            device.METADATA_SOFTWARE_VERSION,
+                            COMPANION_TYPE_NONE.getBytes());
+            isSliceSet =
+                    setMetadata(
+                            device,
+                            device.METADATA_ENHANCED_SETTINGS_UI_URI,
+                            getUri(Constants.PATH_BTHELPER).toString().getBytes());
         }
 
         if (!single) {
-            final RegularPods regularPods = (RegularPods)airpods;
+            final RegularPods regularPods = (RegularPods) airpods;
             if (!isMetaDataSet) {
                 isModelDataSet =
-                    setMetadata(device, device.METADATA_MANUFACTURER_NAME, regularPods.getMenufacturer().getBytes())
-                    && setMetadata(device, device.METADATA_MODEL_NAME, regularPods.getModel().getBytes())
-                    && setMetadata(device, device.METADATA_DEVICE_TYPE, device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes())
-                    && setMetadata(device, device.METADATA_IS_UNTETHERED_HEADSET, Boolean.toString(true).getBytes())
-                    && setMetadata(device, device.METADATA_MAIN_LOW_BATTERY_THRESHOLD, (regularPods.getLowBattThreshold() + "").getBytes())
-                    && setMetadata(device, device.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD, (regularPods.getLowBattThreshold() + "").getBytes())
-                    && setMetadata(device, device.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD, (regularPods.getLowBattThreshold() + "").getBytes())
-                    && setMetadata(device, device.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD, (regularPods.getLowBattThreshold() + "").getBytes())
-                    && setMetadata(device, device.METADATA_MAIN_ICON, resToUri(regularPods.getDrawable()).toString().getBytes())
-                    && setMetadata(device, device.METADATA_UNTETHERED_LEFT_ICON, resToUri(regularPods.getLeftDrawable()).toString().getBytes())
-                    && setMetadata(device, device.METADATA_UNTETHERED_RIGHT_ICON, resToUri(regularPods.getRightDrawable()).toString().getBytes())
-                    && setMetadata(device, device.METADATA_UNTETHERED_CASE_ICON, resToUri(regularPods.getCaseDrawable()).toString().getBytes());
+                        setMetadata(
+                                device,
+                                device.METADATA_MANUFACTURER_NAME,
+                                regularPods.getMenufacturer().getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_MODEL_NAME,
+                                regularPods.getModel().getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_DEVICE_TYPE,
+                                device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_IS_UNTETHERED_HEADSET,
+                                Boolean.toString(true).getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
+                                (regularPods.getLowBattThreshold() + "").getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD,
+                                (regularPods.getLowBattThreshold() + "").getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD,
+                                (regularPods.getLowBattThreshold() + "").getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD,
+                                (regularPods.getLowBattThreshold() + "").getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_MAIN_ICON,
+                                resToUri(regularPods.getDrawable()).toString().getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_UNTETHERED_LEFT_ICON,
+                                resToUri(regularPods.getLeftDrawable())
+                                        .toString()
+                                        .getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_UNTETHERED_RIGHT_ICON,
+                                resToUri(regularPods.getRightDrawable())
+                                        .toString()
+                                        .getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_UNTETHERED_CASE_ICON,
+                                resToUri(regularPods.getCaseDrawable())
+                                        .toString()
+                                        .getBytes());
             }
 
             if (statusChanged) {
@@ -334,33 +396,61 @@ public class PodsService extends Service {
                 final int rightBatteryArg = regularPods.getParsedStatus(true, RegularPods.RIGHT);
                 final int caseBattery = regularPods.getParsedStatus(false, RegularPods.CASE);
 
-                device.setMetadata(device.METADATA_UNTETHERED_LEFT_CHARGING, (leftCharging + "").toUpperCase().getBytes());
-                device.setMetadata(device.METADATA_UNTETHERED_RIGHT_CHARGING, (rightCharging + "").toUpperCase().getBytes());
-                device.setMetadata(device.METADATA_UNTETHERED_CASE_CHARGING, (caseCharging + "").toUpperCase().getBytes());
-                device.setMetadata(device.METADATA_UNTETHERED_LEFT_BATTERY, (leftBattery + "").getBytes());
-                device.setMetadata(device.METADATA_UNTETHERED_RIGHT_BATTERY, (rightBattery + "").getBytes());
-                device.setMetadata(device.METADATA_UNTETHERED_CASE_BATTERY, (caseBattery + "").getBytes());
+                device.setMetadata(
+                        device.METADATA_UNTETHERED_LEFT_CHARGING,
+                        (leftCharging + "").toUpperCase().getBytes());
+                device.setMetadata(
+                        device.METADATA_UNTETHERED_RIGHT_CHARGING,
+                        (rightCharging + "").toUpperCase().getBytes());
+                device.setMetadata(
+                        device.METADATA_UNTETHERED_CASE_CHARGING,
+                        (caseCharging + "").toUpperCase().getBytes());
+                device.setMetadata(
+                        device.METADATA_UNTETHERED_LEFT_BATTERY, (leftBattery + "").getBytes());
+                device.setMetadata(
+                        device.METADATA_UNTETHERED_RIGHT_BATTERY, (rightBattery + "").getBytes());
+                device.setMetadata(
+                        device.METADATA_UNTETHERED_CASE_BATTERY, (caseBattery + "").getBytes());
 
                 chargingMain = leftCharging && rightCharging;
                 batteryUnified = Math.min(leftBatteryArg, rightBatteryArg);
             }
         } else {
-            final SinglePods singlePods = (SinglePods)airpods;
+            final SinglePods singlePods = (SinglePods) airpods;
             if (!isMetaDataSet) {
                 isModelDataSet =
-                    setMetadata(device, device.METADATA_MANUFACTURER_NAME, singlePods.getMenufacturer().getBytes())
-                    && setMetadata(device, device.METADATA_DEVICE_TYPE, device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes())
-                    && setMetadata(device, device.METADATA_IS_UNTETHERED_HEADSET, Boolean.toString(true).getBytes())
-                    && setMetadata(device, device.METADATA_MODEL_NAME, singlePods.getModel().getBytes())
-                    && setMetadata(device, device.METADATA_MAIN_LOW_BATTERY_THRESHOLD, (singlePods.getLowBattThreshold() + "").getBytes())
-                    && setMetadata(device, device.METADATA_MAIN_ICON, resToUri(singlePods.getDrawable()).toString().getBytes());
+                        setMetadata(
+                                device,
+                                device.METADATA_MANUFACTURER_NAME,
+                                singlePods.getMenufacturer().getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_DEVICE_TYPE,
+                                device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_IS_UNTETHERED_HEADSET,
+                                Boolean.toString(true).getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_MODEL_NAME,
+                                singlePods.getModel().getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
+                                (singlePods.getLowBattThreshold() + "").getBytes())
+                        && setMetadata(
+                                device,
+                                device.METADATA_MAIN_ICON,
+                                resToUri(singlePods.getDrawable()).toString().getBytes());
             }
             chargingMain = singlePods.isCharging();
             batteryUnified = singlePods.getParsedStatus(false);
         }
 
         if (statusChanged) {
-            device.setMetadata(device.METADATA_MAIN_CHARGING, (chargingMain + "").toUpperCase().getBytes());
+            device.setMetadata(
+                    device.METADATA_MAIN_CHARGING, (chargingMain + "").toUpperCase().getBytes());
         }
 
         if (!isMetaDataSet) {
@@ -368,11 +458,13 @@ public class PodsService extends Service {
         }
 
         if (statusChanged) {
-            final Object[] arguments = new Object[] {
-                1, // Number of key(IndicatorType)/value pairs
-                VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType: Battery Level
-                batteryUnified, // Battery Level
-            };
+            final Object[] arguments =
+                    new Object[] {
+                        1, // Number of key(IndicatorType)/value pairs
+                        VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType:
+                                                                                 // Battery Level
+                        batteryUnified, // Battery Level
+                    };
 
             broadcastVendorSpecificEventIntent(
                     VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV,
@@ -385,18 +477,21 @@ public class PodsService extends Service {
         }
     }
 
-    private static final String[] btPermissions = new String[] {
-        Manifest.permission.BLUETOOTH,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.BLUETOOTH_PRIVILEGED,
-    };
+    private static final String[] btPermissions =
+            new String[] {
+                Manifest.permission.BLUETOOTH,
+                Manifest.permission.BLUETOOTH_CONNECT,
+                Manifest.permission.BLUETOOTH_PRIVILEGED,
+            };
 
     // Send broadcasts to Android Settings Intelligence, Bluetooth app, System Settings
     // to reflect current device status changes
     private void broadcastVendorSpecificEventIntent(
-        String command, int companyId, int commandType,
-        Object[] arguments, BluetoothDevice device
-    ) {
+            String command,
+            int companyId,
+            int commandType,
+            Object[] arguments,
+            BluetoothDevice device) {
         // Update battery status for this device
         final Intent intent = new Intent(BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT);
         intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD, command);
@@ -405,14 +500,16 @@ public class PodsService extends Service {
         intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS, arguments);
         intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
         intent.putExtra(BluetoothDevice.EXTRA_NAME, device.getName());
-        intent.addCategory(BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY + "."
-                + Integer.toString(companyId));
+        intent.addCategory(
+                BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY
+                        + "."
+                        + Integer.toString(companyId));
         sendBroadcastAsUserMultiplePermissions(intent, UserHandle.ALL, btPermissions);
 
         if (statusChanged) {
             // Update Android Settings Intelligence's battery widget
-            final Intent statusIntent = 
-                new Intent(ACTION_ASI_UPDATE_BLUETOOTH_DATA).setPackage(PACKAGE_ASI);
+            final Intent statusIntent =
+                    new Intent(ACTION_ASI_UPDATE_BLUETOOTH_DATA).setPackage(PACKAGE_ASI);
             statusIntent.putExtra(ACTION_BATTERY_LEVEL_CHANGED, intent);
             sendBroadcastAsUser(statusIntent, UserHandle.ALL);
         }
