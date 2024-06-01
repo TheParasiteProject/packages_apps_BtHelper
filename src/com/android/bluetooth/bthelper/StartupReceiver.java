@@ -99,10 +99,6 @@ public class StartupReceiver extends BroadcastReceiver {
             case BluetoothProfile.STATE_CONNECTED:
                 startPodsService(context, device);
                 break;
-            case BluetoothDevice.BOND_NONE:
-                PodsService.shouldResetDevice(true);
-                stopPodsService(context);
-                break;
             case BluetoothProfile.STATE_DISCONNECTING:
             case BluetoothProfile.STATE_DISCONNECTED:
                 stopPodsService(context);

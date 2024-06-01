@@ -128,12 +128,8 @@ public class PodsService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mCurrentDevice = null;
         stopAirPodsScanner();
-    }
-
-    // Reset currently set device
-    public static void shouldResetDevice(boolean reset) {
-        if (reset) mCurrentDevice = null;
     }
 
     /**
