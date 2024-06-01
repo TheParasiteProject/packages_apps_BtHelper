@@ -71,6 +71,14 @@ public class PodsService extends Service {
     public static final String ACTION_BATTERY_LEVEL_CHANGED =
             "android.bluetooth.device.action.BATTERY_LEVEL_CHANGED";
 
+    /**
+     * Used as an Integer extra field in {@link #ACTION_BATTERY_LEVEL_CHANGED} intent. It contains
+     * the most recently retrieved battery level information ranging from 0% to 100% for a remote
+     * device, {@link #BATTERY_LEVEL_UNKNOWN} when the valid is unknown or there is an error, {@link
+     * #BATTERY_LEVEL_BLUETOOTH_OFF} when the bluetooth is off
+     */
+    public static final String EXTRA_BATTERY_LEVEL = "android.bluetooth.device.extra.BATTERY_LEVEL";
+
     // Target Android Settings Intelligence package that have battery widget for data update
     private static final String PACKAGE_ASI = "com.google.android.settings.intelligence";
 
@@ -302,6 +310,7 @@ public class PodsService extends Service {
         final boolean single = airpods.isSingle();
         isSinglePods = single;
         int batteryUnified = 0;
+        int batteryUnifiedArg = 0;
         boolean chargingMain = false;
 
         if (!isMetaDataSet) {
@@ -409,7 +418,8 @@ public class PodsService extends Service {
                         device.METADATA_UNTETHERED_CASE_BATTERY, (caseBattery + "").getBytes());
 
                 chargingMain = leftCharging && rightCharging;
-                batteryUnified = Math.min(leftBatteryArg, rightBatteryArg);
+                batteryUnified = Math.min(leftBattery, rightBattery);
+                batteryUnifiedArg = Math.min(leftBatteryArg, rightBatteryArg);
             }
         } else {
             final SinglePods singlePods = (SinglePods) airpods;
@@ -441,14 +451,8 @@ public class PodsService extends Service {
                                 resToUri(singlePods.getDrawable()).toString().getBytes());
             }
             chargingMain = singlePods.isCharging();
-            batteryUnified = singlePods.getParsedStatus(false);
-        }
-
-        if (statusChanged) {
-            device.setMetadata(
-                    device.METADATA_MAIN_CHARGING, (chargingMain + "").toUpperCase().getBytes());
-            device.setMetadata(
-                    device.METADATA_MAIN_BATTERY, (batteryUnified + "").getBytes());
+            batteryUnified = singlePods.getParsedStatus(true);
+            batteryUnifiedArg = singlePods.getParsedStatus(false);
         }
 
         if (!isMetaDataSet) {
@@ -456,31 +460,22 @@ public class PodsService extends Service {
         }
 
         if (statusChanged) {
-            final Object[] arguments =
-                    new Object[] {
-                        1, // Number of key(IndicatorType)/value pairs
-                        VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType:
-                                                                                 // Battery Level
-                        batteryUnified, // Battery Level
-                    };
+            device.setMetadata(
+                    device.METADATA_MAIN_CHARGING, (chargingMain + "").toUpperCase().getBytes());
+            device.setMetadata(
+                    device.METADATA_MAIN_BATTERY, (batteryUnified + "").getBytes());
 
             broadcastVendorSpecificEventIntent(
                     VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV,
                     APPLE,
                     BluetoothHeadset.AT_CMD_TYPE_SET,
-                    arguments,
+                    batteryUnified,
+                    batteryUnifiedArg,
                     device);
 
             statusChanged = false;
         }
     }
-
-    private static final String[] btPermissions =
-            new String[] {
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.BLUETOOTH_PRIVILEGED,
-            };
 
     // Send broadcasts to Android Settings Intelligence, Bluetooth app, System Settings
     // to reflect current device status changes
@@ -488,8 +483,18 @@ public class PodsService extends Service {
             String command,
             int companyId,
             int commandType,
-            Object[] arguments,
+            int batteryUnified,
+            int batteryUnifiedArg,
             BluetoothDevice device) {
+
+        final Object[] arguments =
+                new Object[] {
+                    1, // Number of key(IndicatorType)/value pairs
+                    VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType:
+                                                                                    // Battery Level
+                    batteryUnifiedArg, // Battery Level
+                };
+
         // Update battery status for this device
         final Intent intent = new Intent(BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT);
         intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD, command);
@@ -502,14 +507,19 @@ public class PodsService extends Service {
                 BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY
                         + "."
                         + Integer.toString(companyId));
-        sendBroadcastAsUserMultiplePermissions(intent, UserHandle.ALL, btPermissions);
+        sendBroadcastAsUser(intent, UserHandle.ALL, Manifest.permission.BLUETOOTH_CONNECT);
 
-        if (statusChanged) {
-            // Update Android Settings Intelligence's battery widget
-            final Intent statusIntent =
-                    new Intent(ACTION_ASI_UPDATE_BLUETOOTH_DATA).setPackage(PACKAGE_ASI);
-            statusIntent.putExtra(ACTION_BATTERY_LEVEL_CHANGED, intent);
-            sendBroadcastAsUser(statusIntent, UserHandle.ALL);
-        }
+        // Broadcast battery level changes
+        final Intent batteryIntent =
+                new Intent(ACTION_BATTERY_LEVEL_CHANGED);
+        batteryIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
+        batteryIntent.putExtra(EXTRA_BATTERY_LEVEL, batteryUnified);
+        sendBroadcastAsUser(batteryIntent, UserHandle.ALL, Manifest.permission.BLUETOOTH_CONNECT);
+
+        // Update Android Settings Intelligence's battery widget
+        final Intent statusIntent =
+                new Intent(ACTION_ASI_UPDATE_BLUETOOTH_DATA).setPackage(PACKAGE_ASI);
+        statusIntent.putExtra(ACTION_BATTERY_LEVEL_CHANGED, intent);
+        sendBroadcastAsUser(statusIntent, UserHandle.ALL);
     }
 }
