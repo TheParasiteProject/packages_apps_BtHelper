@@ -451,6 +451,8 @@ public class PodsService extends Service {
         if (statusChanged) {
             device.setMetadata(
                     device.METADATA_MAIN_CHARGING, (chargingMain + "").toUpperCase().getBytes());
+            device.setMetadata(
+                    device.METADATA_MAIN_BATTERY, (batteryUnified + "").getBytes());
         }
 
         if (!isMetaDataSet) {
