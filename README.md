@@ -12,10 +12,7 @@ Media play/pause, OnePod mode features are highly experimental.
 
 ## To Do List
 
-- [ ] Make BtHelper correctly handles multiple devices (Help wanted!!)
-- [ ] Make BtHelper correctly report device type to Bluetooth app
-- [ ] Many more features support (ANC toggle, etc)
-- [ ] Better OnePod mode
+* Check [todo](todo/README.md)
 
 ## Requirements
 
