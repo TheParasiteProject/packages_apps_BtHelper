@@ -10,6 +10,13 @@ These features are not currently supported by AOSP.<br>
 Currently, Only Apple AirPods series are supported by this project.<br>
 Media play/pause, OnePod mode features are highly experimental.
 
+## To Do List
+
+- [ ] Make BtHelper correctly handles multiple devices (Help wanted!!)
+- [ ] Make BtHelper correctly report device type to Bluetooth app
+- [ ] Many more features support (ANC toggle, etc)
+- [ ] Better OnePod mode
+
 ## Requirements
 
 This project depends on AOSP components.<br>
