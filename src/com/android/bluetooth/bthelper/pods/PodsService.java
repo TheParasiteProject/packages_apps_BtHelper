@@ -491,11 +491,11 @@ public class PodsService extends Service {
 
     // Send broadcasts to Android Settings Intelligence, Bluetooth app, System Settings
     // to reflect current device status changes
-    private void broadcastHfIndicatorEventIntent(int battery, BluetoothDevice device) {
+    private void broadcastHfIndicatorEventIntent(int batteryUnified, BluetoothDevice device) {
         // Update battery status for this device
         final Intent intent = new Intent(ACTION_HF_INDICATORS_VALUE_CHANGED);
         intent.putExtra(EXTRA_HF_INDICATORS_IND_ID, HF_INDICATOR_BATTERY_LEVEL_STATUS);
-        intent.putExtra(EXTRA_HF_INDICATORS_IND_VALUE, battery);
+        intent.putExtra(EXTRA_HF_INDICATORS_IND_VALUE, batteryUnified);
         intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
         intent.putExtra(BluetoothDevice.EXTRA_NAME, device.getName());
         sendBroadcastAsUser(intent, UserHandle.ALL, Manifest.permission.BLUETOOTH_CONNECT);
