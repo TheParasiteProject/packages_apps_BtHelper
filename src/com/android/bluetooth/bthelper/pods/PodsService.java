@@ -45,22 +45,41 @@ import java.util.Objects;
 public class PodsService extends Service {
 
     /**
-     * A vendor-specific AT command
+     * Intent used to broadcast the headset's indicator status
      *
+     * <p>This intent will have 3 extras:
+     * <ul>
+     * <li> {@link #EXTRA_HF_INDICATORS_IND_ID} - The Assigned number of headset Indicator which
+     * is supported by the headset ( as indicated by AT+BIND command in the SLC
+     * sequence) or whose value is changed (indicated by AT+BIEV command) </li>
+     * <li> {@link #EXTRA_HF_INDICATORS_IND_VALUE} - Updated value of headset indicator. </li>
+     * <li> {@link BluetoothDevice#EXTRA_DEVICE} - Remote device. </li>
+     * </ul>
+     * <p>{@link #EXTRA_HF_INDICATORS_IND_ID} is defined by Bluetooth SIG and each of the indicators
+     * are given an assigned number. Below shows the assigned number of Indicator added so far
+     * - Enhanced Safety - 1, Valid Values: 0 - Disabled, 1 - Enabled
+     * - Battery Level - 2, Valid Values: 0~100 - Remaining level of Battery
      */
-    private static final String VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV = "+IPHONEACCEV";
+    private static final String ACTION_HF_INDICATORS_VALUE_CHANGED =
+            "android.bluetooth.headset.action.HF_INDICATORS_VALUE_CHANGED";
 
     /**
-     * Battery level indicator associated with
-     * {@link #VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV}
-     *
+     * A int extra field in {@link #ACTION_HF_INDICATORS_VALUE_CHANGED}
+     * intents that contains the assigned number of the headset indicator as defined by
+     * Bluetooth SIG that is being sent. Value range is 0-65535 as defined in HFP 1.7
      */
-    private static final int VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL = 1;
+    private static final String EXTRA_HF_INDICATORS_IND_ID =
+            "android.bluetooth.headset.extra.HF_INDICATORS_IND_ID";
 
-    /*
-     * Apple, Inc.
+    /**
+     * A int extra field in {@link #ACTION_HF_INDICATORS_VALUE_CHANGED}
+     * intents that contains the value of the Headset indicator that is being sent.
      */
-    private static final int APPLE = 0x004C;
+    private static final String EXTRA_HF_INDICATORS_IND_VALUE =
+            "android.bluetooth.headset.extra.HF_INDICATORS_IND_VALUE";
+
+    // Match up with bthf_hf_ind_type_t of bt_hf.h
+    private static final int HF_INDICATOR_BATTERY_LEVEL_STATUS = 2;
 
     /**
      * Broadcast Action: Indicates the battery level of a remote device has
@@ -464,13 +483,7 @@ public class PodsService extends Service {
                     device.METADATA_MAIN_CHARGING, (chargingMain + "").toUpperCase().getBytes());
             device.setMetadata(device.METADATA_MAIN_BATTERY, (batteryUnified + "").getBytes());
 
-            broadcastVendorSpecificEventIntent(
-                    VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV,
-                    APPLE,
-                    BluetoothHeadset.AT_CMD_TYPE_SET,
-                    batteryUnified,
-                    batteryUnifiedArg,
-                    device);
+            broadcastHfIndicatorEventIntent(batteryUnified, device);
 
             statusChanged = false;
         }
@@ -478,34 +491,13 @@ public class PodsService extends Service {
 
     // Send broadcasts to Android Settings Intelligence, Bluetooth app, System Settings
     // to reflect current device status changes
-    private void broadcastVendorSpecificEventIntent(
-            String command,
-            int companyId,
-            int commandType,
-            int batteryUnified,
-            int batteryUnifiedArg,
-            BluetoothDevice device) {
-
-        final Object[] arguments =
-                new Object[] {
-                    1, // Number of key(IndicatorType)/value pairs
-                    VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType:
-                    // Battery Level
-                    batteryUnifiedArg, // Battery Level
-                };
-
+    private void broadcastHfIndicatorEventIntent(int battery, BluetoothDevice device) {
         // Update battery status for this device
-        final Intent intent = new Intent(BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT);
-        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD, command);
-        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD_TYPE, commandType);
-        // assert: all elements of args are Serializable
-        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS, arguments);
+        final Intent intent = new Intent(ACTION_HF_INDICATORS_VALUE_CHANGED);
+        intent.putExtra(EXTRA_HF_INDICATORS_IND_ID, HF_INDICATOR_BATTERY_LEVEL_STATUS);
+        intent.putExtra(EXTRA_HF_INDICATORS_IND_VALUE, battery);
         intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
         intent.putExtra(BluetoothDevice.EXTRA_NAME, device.getName());
-        intent.addCategory(
-                BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY
-                        + "."
-                        + Integer.toString(companyId));
         sendBroadcastAsUser(intent, UserHandle.ALL, Manifest.permission.BLUETOOTH_CONNECT);
 
         // Broadcast battery level changes
