@@ -46,6 +46,7 @@
     <application
         android:icon="@mipmap/ic_bthelper"
         android:label="@string/app_name"
+        android:enableOnBackInvokedCallback="true"
         android:persistent="true">
 
         <provider
