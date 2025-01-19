@@ -336,59 +336,59 @@ public class PodsService extends Service {
             if (!isMetaDataSet) {
                 isModelDataSet =
                         setMetadata(
-                                device,
-                                device.METADATA_MANUFACTURER_NAME,
-                                regularPods.getMenufacturer().getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_MODEL_NAME,
-                                regularPods.getModel().getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_DEVICE_TYPE,
-                                device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_IS_UNTETHERED_HEADSET,
-                                Boolean.toString(true).getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
-                                (regularPods.getLowBattThreshold() + "").getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD,
-                                (regularPods.getLowBattThreshold() + "").getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD,
-                                (regularPods.getLowBattThreshold() + "").getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD,
-                                (regularPods.getLowBattThreshold() + "").getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_MAIN_ICON,
-                                resToUri(regularPods.getDrawable()).toString().getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_UNTETHERED_LEFT_ICON,
-                                resToUri(regularPods.getLeftDrawable())
-                                        .toString()
-                                        .getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_UNTETHERED_RIGHT_ICON,
-                                resToUri(regularPods.getRightDrawable())
-                                        .toString()
-                                        .getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_UNTETHERED_CASE_ICON,
-                                resToUri(regularPods.getCaseDrawable())
-                                        .toString()
-                                        .getBytes());
+                                        device,
+                                        device.METADATA_MANUFACTURER_NAME,
+                                        regularPods.getMenufacturer().getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_MODEL_NAME,
+                                        regularPods.getModel().getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_DEVICE_TYPE,
+                                        device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_IS_UNTETHERED_HEADSET,
+                                        Boolean.toString(true).getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
+                                        (regularPods.getLowBattThreshold() + "").getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD,
+                                        (regularPods.getLowBattThreshold() + "").getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_UNTETHERED_RIGHT_LOW_BATTERY_THRESHOLD,
+                                        (regularPods.getLowBattThreshold() + "").getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_UNTETHERED_CASE_LOW_BATTERY_THRESHOLD,
+                                        (regularPods.getLowBattThreshold() + "").getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_MAIN_ICON,
+                                        resToUri(regularPods.getDrawable()).toString().getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_UNTETHERED_LEFT_ICON,
+                                        resToUri(regularPods.getLeftDrawable())
+                                                .toString()
+                                                .getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_UNTETHERED_RIGHT_ICON,
+                                        resToUri(regularPods.getRightDrawable())
+                                                .toString()
+                                                .getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_UNTETHERED_CASE_ICON,
+                                        resToUri(regularPods.getCaseDrawable())
+                                                .toString()
+                                                .getBytes());
             }
 
             if (statusChanged) {
@@ -426,29 +426,29 @@ public class PodsService extends Service {
             if (!isMetaDataSet) {
                 isModelDataSet =
                         setMetadata(
-                                device,
-                                device.METADATA_MANUFACTURER_NAME,
-                                singlePods.getMenufacturer().getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_DEVICE_TYPE,
-                                device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_IS_UNTETHERED_HEADSET,
-                                Boolean.toString(true).getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_MODEL_NAME,
-                                singlePods.getModel().getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
-                                (singlePods.getLowBattThreshold() + "").getBytes())
-                        && setMetadata(
-                                device,
-                                device.METADATA_MAIN_ICON,
-                                resToUri(singlePods.getDrawable()).toString().getBytes());
+                                        device,
+                                        device.METADATA_MANUFACTURER_NAME,
+                                        singlePods.getMenufacturer().getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_DEVICE_TYPE,
+                                        device.DEVICE_TYPE_UNTETHERED_HEADSET.getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_IS_UNTETHERED_HEADSET,
+                                        Boolean.toString(true).getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_MODEL_NAME,
+                                        singlePods.getModel().getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
+                                        (singlePods.getLowBattThreshold() + "").getBytes())
+                                && setMetadata(
+                                        device,
+                                        device.METADATA_MAIN_ICON,
+                                        resToUri(singlePods.getDrawable()).toString().getBytes());
             }
             chargingMain = singlePods.isCharging();
             batteryUnified = singlePods.getParsedStatus(true);
@@ -462,8 +462,7 @@ public class PodsService extends Service {
         if (statusChanged) {
             device.setMetadata(
                     device.METADATA_MAIN_CHARGING, (chargingMain + "").toUpperCase().getBytes());
-            device.setMetadata(
-                    device.METADATA_MAIN_BATTERY, (batteryUnified + "").getBytes());
+            device.setMetadata(device.METADATA_MAIN_BATTERY, (batteryUnified + "").getBytes());
 
             broadcastVendorSpecificEventIntent(
                     VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV,
@@ -491,7 +490,7 @@ public class PodsService extends Service {
                 new Object[] {
                     1, // Number of key(IndicatorType)/value pairs
                     VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType:
-                                                                                    // Battery Level
+                    // Battery Level
                     batteryUnifiedArg, // Battery Level
                 };
 
@@ -510,8 +509,7 @@ public class PodsService extends Service {
         sendBroadcastAsUser(intent, UserHandle.ALL, Manifest.permission.BLUETOOTH_CONNECT);
 
         // Broadcast battery level changes
-        final Intent batteryIntent =
-                new Intent(ACTION_BATTERY_LEVEL_CHANGED);
+        final Intent batteryIntent = new Intent(ACTION_BATTERY_LEVEL_CHANGED);
         batteryIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, device);
         batteryIntent.putExtra(EXTRA_BATTERY_LEVEL, batteryUnified);
         sendBroadcastAsUser(batteryIntent, UserHandle.ALL, Manifest.permission.BLUETOOTH_CONNECT);

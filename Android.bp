@@ -6,6 +6,9 @@
 
 android_app {
     name: "BtHelper",
+    defaults: [
+        "SettingsLibDefaults",
+    ],
 
     srcs: [
         "src/**/*.java",
@@ -37,17 +40,13 @@ android_app {
         "com.android.bluetooth.bthelper.xml",
     ],
 
-    defaults: [
-        "SettingsLibDefaults",
-    ],
-
     system_ext_specific: true,
     privileged: true,
 }
 
 prebuilt_etc {
     name: "com.android.bluetooth.bthelper.xml",
-    sub_dir: "permissions",
+    relative_install_path: "permissions",
     src: "com.android.bluetooth.bthelper.xml",
     filename_from_src: true,
     system_ext_specific: true,
