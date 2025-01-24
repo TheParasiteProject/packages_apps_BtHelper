@@ -45,4 +45,4 @@ The image assets located in the "res-apple" folder within this repository are th
 
 Bluetooth Devices Helper is licensed under the [GNU General Public License v3.0](LICENSE.md).
 <br>
-Copyright (C) 2023 someone5678
+Copyright (C) 2023-2025 TheParasiteProject
