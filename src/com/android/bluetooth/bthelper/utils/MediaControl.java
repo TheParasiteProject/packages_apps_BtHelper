@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2021-2023 Matthias Urhahn
- *               2023 someone5678
+ * SPDX-FileCopyrightText: Matthias Urhahn
+ * SPDX-FileCopyrightText: TheParasiteProject
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
  */
