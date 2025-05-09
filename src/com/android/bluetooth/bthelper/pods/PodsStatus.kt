@@ -37,7 +37,12 @@ import com.android.bluetooth.bthelper.pods.models.IPods
  *    detection;
  */
 class PodsStatus {
-    var airpods: IPods? = null
+
+    companion object {
+        val DISCONNECTED: PodsStatus = PodsStatus()
+    }
+
+    var pods: IPods? = null
         private set
 
     constructor()
@@ -63,15 +68,15 @@ class PodsStatus {
         val chargeStatus =
             ("" + status[14]).toInt(16) // Charge status (bit 0=left; bit 1=right; bit 2=case)
 
-        val chargeL = (chargeStatus and (if (flip) 2 else 1)) != 0
-        val chargeR = (chargeStatus and (if (flip) 1 else 2)) != 0
-        val chargeCase = (chargeStatus and 4) != 0
-        val chargeSingle = (chargeStatus and 1) != 0
+        val chargeL = (chargeStatus and (if (flip) 0b00000010 else 0b00000001)) != 0
+        val chargeR = (chargeStatus and (if (flip) 0b00000001 else 0b00000010)) != 0
+        val chargeCase = (chargeStatus and 0b00000100) != 0
+        val chargeSingle = (chargeStatus and 0b00000001) != 0
 
         val inEarStatus = ("" + status[11]).toInt(16) // InEar status (bit 1=left; bit 3=right)
 
-        val inEarL = (inEarStatus and (if (flip) 8 else 2)) != 0
-        val inEarR = (inEarStatus and (if (flip) 2 else 8)) != 0
+        val inEarL = (inEarStatus and (if (flip) 0b00001000 else 0b00000010)) != 0
+        val inEarR = (inEarStatus and (if (flip) 0b00000010 else 0b00001000)) != 0
 
         val leftPod = Pod(leftStatus, chargeL, inEarL)
         val rightPod = Pod(rightStatus, chargeR, inEarR)
@@ -83,34 +88,30 @@ class PodsStatus {
 
         // Detect which model
         if ("0220" == idFull) {
-            airpods = AirPods1(color, leftPod, rightPod, casePod) // Airpods 1st gen
+            pods = AirPods1(color, leftPod, rightPod, casePod) // Airpods 1st gen
         } else if ("0F20" == idFull) {
-            airpods = AirPods2(color, leftPod, rightPod, casePod) // Airpods 2nd gen
+            pods = AirPods2(color, leftPod, rightPod, casePod) // Airpods 2nd gen
         } else if ("1320" == idFull) {
-            airpods = AirPods3(color, leftPod, rightPod, casePod) // Airpods 3rd gen
+            pods = AirPods3(color, leftPod, rightPod, casePod) // Airpods 3rd gen
         } else if ("0E20" == idFull) {
-            airpods = AirPodsPro(color, leftPod, rightPod, casePod) // Airpods Pro
+            pods = AirPodsPro(color, leftPod, rightPod, casePod) // Airpods Pro
         } else if ("1420" == idFull) {
-            airpods = AirPodsPro2(color, leftPod, rightPod, casePod) // Airpods Pro 2
+            pods = AirPodsPro2(color, leftPod, rightPod, casePod) // Airpods Pro 2
         } else if ("2420" == idFull) {
-            airpods = AirPodsPro2UsbC(color, leftPod, rightPod, casePod) // Airpods Pro 2 with USB‐C
+            pods = AirPodsPro2UsbC(color, leftPod, rightPod, casePod) // Airpods Pro 2 with USB‐C
         } else if ("0A20" == idFull) {
-            airpods = AirPodsMax(color, singlePod) // Airpods Max
+            pods = AirPodsMax(color, singlePod) // Airpods Max
         }
+    }
+
+    fun isFlipped(str: String): Boolean {
+        return (("" + str[10]).toInt(16) and 0x02) == 0
     }
 
     val isAllDisconnected: Boolean
         get() {
-            if (this === DISCONNECTED) return true
+            if (this == DISCONNECTED) return true
 
-            return airpods!!.isDisconnected
+            return pods?.isDisconnected ?: true
         }
-
-    companion object {
-        val DISCONNECTED: PodsStatus = PodsStatus()
-
-        fun isFlipped(str: String): Boolean {
-            return (("" + str[10]).toInt(16) and 0x02) == 0
-        }
-    }
 }

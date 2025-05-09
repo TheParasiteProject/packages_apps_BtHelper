@@ -6,7 +6,15 @@
 package com.android.bluetooth.bthelper.slices
 
 import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
+import androidx.core.graphics.drawable.IconCompat
+import androidx.slice.builders.ListBuilder
+import androidx.slice.builders.SliceAction
 import com.android.bluetooth.bthelper.Constants
+import com.android.bluetooth.bthelper.R
+import com.android.bluetooth.bthelper.settings.MainSettingsActivity
 
 class SliceCreator(
     private val icon: Int,
@@ -15,13 +23,11 @@ class SliceCreator(
     private val enabled: Boolean,
     private val action: String,
     private val extra: Int,
-    context: Context,
+    private val context: Context,
     private val type: Int,
 ) {
-    private val context: Context = context
-
     fun getSettingRow(sliceUri: Uri): ListBuilder.RowBuilder {
-        val settingRow: ListBuilder.RowBuilder = RowBuilder(sliceUri)
+        val settingRow: ListBuilder.RowBuilder = ListBuilder.RowBuilder(sliceUri)
 
         var ic: Int = R.drawable.ic_dummy
         if (icon != 0) ic = icon

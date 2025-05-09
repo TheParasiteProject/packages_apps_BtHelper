@@ -7,6 +7,10 @@
 package com.android.bluetooth.bthelper.pods
 
 import android.bluetooth.BluetoothAssignedNumbers
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanFilter
+import android.bluetooth.le.ScanResult
+import android.os.SystemClock
 
 /**
  * This method aims to address the unavailability of Bluetooth addresses from incoming BLE beacons
@@ -25,12 +29,33 @@ import android.bluetooth.BluetoothAssignedNumbers
  * - The method proceeds to decode the beacon data for further analysis.
  */
 abstract class PodsStatusScanCallback : ScanCallback() {
-    private val recentBeacons: MutableList<ScanResult> = ArrayList<ScanResult>()
+    private val recentBeacons: MutableList<ScanResult?> = ArrayList<ScanResult?>()
+
+    val scanFilters: MutableList<ScanFilter>
+        get() {
+            val manufacturerData = ByteArray(AIRPODS_DATA_LENGTH)
+            val manufacturerDataMask = ByteArray(AIRPODS_DATA_LENGTH)
+
+            manufacturerData[0] = 7
+            manufacturerData[1] = 25
+
+            manufacturerDataMask[0] = -1
+            manufacturerDataMask[1] = -1
+
+            val builder: ScanFilter.Builder = ScanFilter.Builder()
+            builder.setManufacturerData(
+                BluetoothAssignedNumbers.APPLE,
+                manufacturerData,
+                manufacturerDataMask,
+            )
+
+            return mutableListOf(builder.build())
+        }
 
     abstract fun onStatus(status: PodsStatus)
 
-    override fun onBatchScanResults(scanResults: List<ScanResult?>) {
-        for (result in scanResults) onScanResult(-1, result)
+    override fun onBatchScanResults(scanResults: MutableList<ScanResult>?) {
+        for (result in scanResults.orEmpty()) onScanResult(-1, result)
 
         super.onBatchScanResults(scanResults)
     }
@@ -40,7 +65,7 @@ abstract class PodsStatusScanCallback : ScanCallback() {
         try {
             if (!isAirpodsResult(result)) return
 
-            result.getDevice().getAddress()
+            result?.getDevice()?.getAddress()
 
             result = getBestResult(result)
             if (result == null || result.getRssi() < MIN_RSSI) return
@@ -50,14 +75,20 @@ abstract class PodsStatusScanCallback : ScanCallback() {
         } catch (t: Throwable) {}
     }
 
-    private fun getBestResult(result: ScanResult): ScanResult? {
+    private fun getBestResult(result: ScanResult?): ScanResult? {
         recentBeacons.add(result)
         var strongestBeacon: ScanResult? = null
 
         var i = 0
         while (i < recentBeacons.size) {
+            val beacon = recentBeacons[i]
+            if (beacon == null) {
+                recentBeacons.removeAt(i)
+                continue
+            }
+
             if (
-                SystemClock.elapsedRealtimeNanos() - recentBeacons[i].getTimestampNanos() >
+                SystemClock.elapsedRealtimeNanos() - beacon.getTimestampNanos() >
                     RECENT_BEACONS_MAX_T_NS
             ) {
                 recentBeacons.removeAt(i--)
@@ -65,16 +96,18 @@ abstract class PodsStatusScanCallback : ScanCallback() {
                 continue
             }
 
-            if (strongestBeacon == null || strongestBeacon.getRssi() < recentBeacons[i].getRssi())
-                strongestBeacon = recentBeacons[i]
+            if (strongestBeacon == null || strongestBeacon?.getRssi() < beacon?.getRssi()) {
+                strongestBeacon = beacon
+            }
             i++
         }
 
         if (
             strongestBeacon != null &&
-                strongestBeacon.getDevice().getAddress() == result.getDevice().getAddress()
-        )
+                strongestBeacon.getDevice()?.getAddress() == result?.getDevice()?.getAddress()
+        ) {
             strongestBeacon = result
+        }
 
         return strongestBeacon
     }
@@ -85,35 +118,12 @@ abstract class PodsStatusScanCallback : ScanCallback() {
         const val AIRPODS_DATA_LENGTH: Int = 27
         const val MIN_RSSI: Int = -60
 
-        val scanFilters: List<Any>
-            get() {
-                val manufacturerData = ByteArray(AIRPODS_DATA_LENGTH)
-                val manufacturerDataMask = ByteArray(AIRPODS_DATA_LENGTH)
-
-                manufacturerData[0] = 7
-                manufacturerData[1] = 25
-
-                manufacturerDataMask[0] = -1
-                manufacturerDataMask[1] = -1
-
-                val builder: ScanFilter.Builder = Builder()
-                builder.setManufacturerData(
-                    BluetoothAssignedNumbers.APPLE,
-                    manufacturerData,
-                    manufacturerDataMask,
-                )
-
-                return listOf(builder.build())
-            }
-
         private fun isAirpodsResult(result: ScanResult?): Boolean {
-            return result != null &&
-                result.getScanRecord() != null &&
-                isDataValid(
-                    result
-                        .getScanRecord()
-                        .getManufacturerSpecificData(BluetoothAssignedNumbers.APPLE)
-                )
+            val ret = result
+            val scanRecord = ret?.getScanRecord()
+            return ret != null &&
+                scanRecord != null &&
+                isDataValid(scanRecord.getManufacturerSpecificData(BluetoothAssignedNumbers.APPLE))
         }
 
         private fun isDataValid(data: ByteArray?): Boolean {
@@ -121,11 +131,11 @@ abstract class PodsStatusScanCallback : ScanCallback() {
         }
 
         private fun decodeResult(result: ScanResult?): String? {
-            if (result != null && result.getScanRecord() != null) {
+            val ret = result
+            val scanRecord = ret?.getScanRecord()
+            if (ret != null && scanRecord != null) {
                 val data: ByteArray =
-                    result
-                        .getScanRecord()
-                        .getManufacturerSpecificData(BluetoothAssignedNumbers.APPLE)
+                    scanRecord.getManufacturerSpecificData(BluetoothAssignedNumbers.APPLE)!!
                 if (isDataValid(data)) return decodeHex(data)
             }
             return null

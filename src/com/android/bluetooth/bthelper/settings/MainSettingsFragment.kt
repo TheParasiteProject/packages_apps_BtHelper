@@ -5,8 +5,24 @@
  */
 package com.android.bluetooth.bthelper.settings
 
-import android.app.ActionBar
+import android.app.slice.Slice
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.SharedPreferences
+import android.os.Bundle
+import android.os.UserHandle
+import android.view.LayoutInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
+import androidx.preference.Preference
+import androidx.preference.Preference.OnPreferenceChangeListener
+import androidx.preference.PreferenceFragment
+import androidx.preference.SwitchPreferenceCompat
 import com.android.bluetooth.bthelper.Constants
+import com.android.bluetooth.bthelper.R
+import com.android.bluetooth.bthelper.pods.PodsService
 
 class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
     private var mSharedPrefs: SharedPreferences? = null
@@ -55,39 +71,44 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
             }
         }
 
-    private fun handleSwitchBroadcast(sp: SwitchPreferenceCompat, isChecked: Boolean) {
+    private fun handleSwitchBroadcast(sp: SwitchPreferenceCompat?, isChecked: Boolean) {
         if (mSelfChange) {
             mSelfChange = false
             return
         }
-        sp.setChecked(isChecked)
+        sp?.setChecked(isChecked)
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.main_settings)
-        val mActionBar: ActionBar = getActivity().getActionBar()
-        mActionBar.setDisplayHomeAsUpEnabled(true)
+        getActivity().getActionBar()?.apply { setDisplayHomeAsUpEnabled(true) }
         mSharedPrefs =
             getContext().getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
 
-        mOnePodModePref = findPreference(Constants.KEY_ONEPOD_MODE) as SwitchPreferenceCompat?
-        mOnePodModePref.setEnabled(true)
-        mOnePodModePref.setOnPreferenceChangeListener(this)
-        if (PodsService.isSingleDevice()) {
-            getPreferenceScreen().removePreference(mOnePodModePref)
-        }
+        mOnePodModePref =
+            findPreference<SwitchPreferenceCompat>(Constants.KEY_ONEPOD_MODE)?.apply {
+                setEnabled(true)
+                setOnPreferenceChangeListener(this@MainSettingsFragment)
+                if (PodsService.isSingleDevice) {
+                    getPreferenceScreen().removePreference(this)
+                }
+            }
 
-        mAutoPlayPref = findPreference(Constants.KEY_AUTO_PLAY) as SwitchPreferenceCompat?
-        mAutoPlayPref.setEnabled(true)
-        mAutoPlayPref.setOnPreferenceChangeListener(this)
+        mAutoPlayPref =
+            findPreference<SwitchPreferenceCompat>(Constants.KEY_AUTO_PLAY)?.apply {
+                setEnabled(true)
+                setOnPreferenceChangeListener(this@MainSettingsFragment)
+            }
 
-        mAutoPausePref = findPreference(Constants.KEY_AUTO_PAUSE) as SwitchPreferenceCompat?
-        mAutoPausePref.setEnabled(true)
-        mAutoPausePref.setOnPreferenceChangeListener(this)
+        mAutoPausePref =
+            findPreference<SwitchPreferenceCompat>(Constants.KEY_AUTO_PAUSE)?.apply {
+                setEnabled(true)
+                setOnPreferenceChangeListener(this@MainSettingsFragment)
+            }
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater?,
+        inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?,
     ): View {
@@ -97,7 +118,7 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
         return view
     }
 
-    override fun onViewCreated(view: View?, savedInstanceState: Bundle?) {
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
     }
 

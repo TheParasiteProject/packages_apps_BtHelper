@@ -5,17 +5,27 @@
  */
 package com.android.bluetooth.bthelper.slices
 
-import android.annotation.ColorInt
+import android.content.Context
+import android.content.SharedPreferences
+import android.content.res.TypedArray
+import android.net.Uri
+import androidx.slice.Slice
+import androidx.slice.SliceProvider
+import androidx.slice.builders.ListBuilder
 import com.android.bluetooth.bthelper.Constants
+import com.android.bluetooth.bthelper.R
 
 class BtHelperSliceProvider : SliceProvider() {
     private var mContext: Context? = null
+    private var mSharedPrefs: SharedPreferences? = null
 
     override fun onCreateSliceProvider(): Boolean {
         try {
             mContext = getContext()
-            mSharedPrefs =
-                mContext.getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
+            mContext?.let { ctx ->
+                mSharedPrefs =
+                    ctx.getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
+            }
         } catch (e: NullPointerException) {}
         return true
     }
@@ -24,7 +34,7 @@ class BtHelperSliceProvider : SliceProvider() {
         if (mContext == null) {
             return null
         }
-        val path: String = sliceUri.getPath()
+        val path: String? = sliceUri.getPath()
         when (path) {
             Constants.SLICE_BTHELPER -> return createBtHelperSlice(sliceUri)
         }
@@ -32,24 +42,24 @@ class BtHelperSliceProvider : SliceProvider() {
     }
 
     private fun createBtHelperSlice(sliceUri: Uri): Slice? {
-        try {
-            if (mContext == null) return null
-        } catch (e: NullPointerException) {}
+        val context = mContext
+
+        if (context == null) return null
 
         /*
-                final String ONEPOD_TITLE = mContext.getString(R.string.onepod_mode_title);
-                final boolean onePodModeEnabled = mSharedPrefs.getBoolean(Constants.KEY_ONEPOD_MODE, false);
+                final String ONEPOD_TITLE = mContext.getString(R.string.onepod_mode_title)
+                final boolean onePodModeEnabled = mSharedPrefs.getBoolean(Constants.KEY_ONEPOD_MODE, false)
 
-                final String AUTO_PLAY_TITLE = mContext.getString(R.string.auto_play_title);
-                final boolean autoPlayEnabled = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PLAY, false);
+                final String AUTO_PLAY_TITLE = mContext.getString(R.string.auto_play_title)
+                final boolean autoPlayEnabled = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PLAY, false)
 
-                final String AUTO_PAUSE_TITLE = mContext.getString(R.string.auto_pause_title);
-                final boolean autoPauseEnabled = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PAUSE, false);
+                final String AUTO_PAUSE_TITLE = mContext.getString(R.string.auto_pause_title)
+                final boolean autoPauseEnabled = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PAUSE, false)
         */
-        val MORE_SETTINGS_TITLE: String = mContext.getString(R.string.more_settings_title)
-        val MORE_SETTINGS_SUBTITLE: String = mContext.getString(R.string.more_settings_subtitle)
+        val MORE_SETTINGS_TITLE: String = context.getString(R.string.more_settings_title)
+        val MORE_SETTINGS_SUBTITLE: String = context.getString(R.string.more_settings_subtitle)
 
-        val listBuilder: ListBuilder = ListBuilder(mContext, sliceUri, INFINITY)
+        val listBuilder: ListBuilder = ListBuilder(context, sliceUri, INFINITY)
 
         /*
                 listBuilder.addRow(new SliceCreator(
@@ -61,7 +71,7 @@ class BtHelperSliceProvider : SliceProvider() {
                         Constants.EXTRA_ONEPOD_CHANGED,
                         mContext,
                         Constants.SLICE_TOGGLE
-                    ).getSettingRow(sliceUri));
+                    ).getSettingRow(sliceUri))
 
                 listBuilder.addRow(new SliceCreator(
                         0,
@@ -72,7 +82,7 @@ class BtHelperSliceProvider : SliceProvider() {
                         Constants.EXTRA_AUTO_PLAY_CHANGED,
                         mContext,
                         Constants.SLICE_TOGGLE
-                    ).getSettingRow(sliceUri));
+                    ).getSettingRow(sliceUri))
 
                 listBuilder.addRow(new SliceCreator(
                         0,
@@ -83,7 +93,7 @@ class BtHelperSliceProvider : SliceProvider() {
                         Constants.EXTRA_AUTO_PAUSE_CHANGED,
                         mContext,
                         Constants.SLICE_TOGGLE
-                    ).getSettingRow(sliceUri));
+                    ).getSettingRow(sliceUri))
         */
         listBuilder.addRow(
             SliceCreator(
@@ -93,34 +103,27 @@ class BtHelperSliceProvider : SliceProvider() {
                     false,
                     Constants.ACTION_PENDING_INTENT,
                     Constants.EXTRA_NONE,
-                    mContext,
+                    context,
                     Constants.SLICE_MAIN,
                 )
                 .getSettingRow(sliceUri)
         )
 
-        listBuilder.setAccentColor(getColorAccentDefaultColor(mContext))
+        listBuilder.setAccentColor(getColorAccentDefaultColor(context))
         return listBuilder.build()
     }
 
     companion object {
-        private var mSharedPrefs: SharedPreferences? = null
-
         /** Constant representing infinity. */
         private const val INFINITY: Long = -1
 
-        @ColorInt
         private fun getColorAccentDefaultColor(context: Context): Int {
             return getColorAttrDefaultColor(context, android.R.attr.colorAccent, 0)
         }
 
-        private fun getColorAttrDefaultColor(
-            context: Context,
-            attr: Int,
-            @ColorInt defValue: Int,
-        ): Int {
+        private fun getColorAttrDefaultColor(context: Context, attr: Int, defValue: Int): Int {
             val ta: TypedArray = context.obtainStyledAttributes(intArrayOf(attr))
-            @ColorInt val colorAccent: Int = ta.getColor(0, defValue)
+            val colorAccent: Int = ta.getColor(0, defValue)
             ta.recycle()
             return colorAccent
         }

@@ -18,6 +18,7 @@ class SliceBroadcastReceiver : BroadcastReceiver() {
     private var action: String? = null
     private var enabled = false
     private var context: Context? = null
+    private var mSharedPrefs: SharedPreferences? = null
 
     override fun onReceive(context: Context?, intent: Intent?) {
         try {
@@ -55,20 +56,13 @@ class SliceBroadcastReceiver : BroadcastReceiver() {
     }
 
     private fun handleSliceChange(key: String?, enabled: Boolean) {
-        try {
-            if (context == null || key == null) return
-        } catch (e: NullPointerException) {
-            return
-        }
+        val ctx = context
+        val k = key
+
+        if (k == null || ctx == null) return
 
         val editor: SharedPreferences.Editor =
-            context
-                .getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
-                .edit()
-        editor.putBoolean(key, enabled).apply()
-    }
-
-    companion object {
-        private val mSharedPrefs: SharedPreferences? = null
+            ctx.getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE).edit()
+        editor.putBoolean(k, enabled).apply()
     }
 }

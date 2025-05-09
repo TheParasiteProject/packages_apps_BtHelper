@@ -6,6 +6,8 @@
 package com.android.bluetooth.bthelper.settings
 
 import android.os.Bundle
+import com.android.settingslib.collapsingtoolbar.CollapsingToolbarBaseActivity
+import com.android.settingslib.collapsingtoolbar.R
 
 class MainSettingsActivity : CollapsingToolbarBaseActivity() {
     protected override fun onCreate(savedInstanceState: Bundle?) {

@@ -7,65 +7,50 @@
 package com.android.bluetooth.bthelper.utils
 
 import android.content.Context
+import android.media.AudioManager
+import android.os.SystemClock
+import android.view.KeyEvent
 
 class MediaControl(context: Context) {
-    init {
-        audioManager = context.getSystemService(AudioManager::class.java)
+    private var audioManager: AudioManager = context.getSystemService(AudioManager::class.java)
+
+    val isPlaying: Boolean
+        get() = audioManager.isMusicActive()
+
+    fun sendPlay() {
+        if (isPlaying) {
+            return
+        }
+        sendKey(KeyEvent.KEYCODE_MEDIA_PLAY)
     }
 
-    companion object {
-        private var audioManager: AudioManager
-        private var mInstance: MediaControl? = null
-
-        @Synchronized
-        fun getInstance(context: Context): MediaControl {
-            if (mInstance == null) {
-                mInstance = MediaControl(context)
-            }
-            return mInstance!!
+    fun sendPause() {
+        if (!isPlaying) {
+            return
         }
+        sendKey(KeyEvent.KEYCODE_MEDIA_PAUSE)
+    }
 
-        @JvmStatic
-        val isPlaying: Boolean
-            get() = audioManager.isMusicActive()
-
-        @JvmStatic
-        fun sendPlay() {
-            if (isPlaying) {
-                return
-            }
-            sendKey(KeyEvent.KEYCODE_MEDIA_PLAY)
+    fun sendPlayPause() {
+        if (isPlaying) {
+            sendPause()
+        } else {
+            sendPlay()
         }
+    }
 
-        @JvmStatic
-        fun sendPause() {
-            if (!isPlaying) {
-                return
-            }
-            sendKey(KeyEvent.KEYCODE_MEDIA_PAUSE)
+    private fun sendKey(keyCode: Int) {
+        val eventTime: Long = SystemClock.uptimeMillis()
+        audioManager.dispatchMediaKeyEvent(
+            KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0)
+        )
+        try {
+            Thread.sleep(100)
+        } catch (e: InterruptedException) {
+            Thread.currentThread().interrupt()
         }
-
-        fun sendPlayPause() {
-            if (isPlaying) {
-                sendPause()
-            } else {
-                sendPlay()
-            }
-        }
-
-        private fun sendKey(keyCode: Int) {
-            val eventTime: Long = SystemClock.uptimeMillis()
-            audioManager.dispatchMediaKeyEvent(
-                KeyEvent(eventTime, eventTime, KeyEvent.ACTION_DOWN, keyCode, 0)
-            )
-            try {
-                Thread.sleep(100)
-            } catch (e: InterruptedException) {
-                Thread.currentThread().interrupt()
-            }
-            audioManager.dispatchMediaKeyEvent(
-                KeyEvent(eventTime + 200, eventTime + 200, KeyEvent.ACTION_UP, keyCode, 0)
-            )
-        }
+        audioManager.dispatchMediaKeyEvent(
+            KeyEvent(eventTime + 200, eventTime + 200, KeyEvent.ACTION_UP, keyCode, 0)
+        )
     }
 }

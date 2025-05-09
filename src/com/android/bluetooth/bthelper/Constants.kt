@@ -36,23 +36,23 @@ object Constants {
     const val KEY_AUTO_PAUSE: String = "auto_pause_pref"
 
     object Icons {
-        @JvmField val AirPods: Int = R.drawable.AirPods
-        @JvmField val AirPods_Left: Int = R.drawable.AirPods_Left
-        @JvmField val AirPods_Right: Int = R.drawable.AirPods_Right
-        @JvmField val AirPods_Case: Int = R.drawable.AirPods_Case
-        @JvmField val AirPods_Gen3: Int = R.drawable.AirPods_Gen3
-        @JvmField val AirPods_Gen3_Left: Int = R.drawable.AirPods_Gen3_Left
-        @JvmField val AirPods_Gen3_Right: Int = R.drawable.AirPods_Gen3_Right
-        @JvmField val AirPods_Gen3_Case: Int = R.drawable.AirPods_Gen3_Case
-        @JvmField val AirPods_Pro: Int = R.drawable.AirPods_Pro
-        @JvmField val AirPods_Pro_Left: Int = R.drawable.AirPods_Pro_Left
-        @JvmField val AirPods_Pro_Right: Int = R.drawable.AirPods_Pro_Right
-        @JvmField val AirPods_Pro_Case: Int = R.drawable.AirPods_Pro_Case
-        @JvmField val AirPods_Max_Green: Int = R.drawable.AirPods_Max_Green
-        @JvmField val AirPods_Max_Pink: Int = R.drawable.AirPods_Max_Pink
-        @JvmField val AirPods_Max_Silver: Int = R.drawable.AirPods_Max_Silver
-        @JvmField val AirPods_Max_SkyBlue: Int = R.drawable.AirPods_Max_SkyBlue
-        @JvmField val AirPods_Max_SpaceGray: Int = R.drawable.AirPods_Max_SpaceGray
+        val AirPods: Int = R.drawable.AirPods
+        val AirPods_Left: Int = R.drawable.AirPods_Left
+        val AirPods_Right: Int = R.drawable.AirPods_Right
+        val AirPods_Case: Int = R.drawable.AirPods_Case
+        val AirPods_Gen3: Int = R.drawable.AirPods_Gen3
+        val AirPods_Gen3_Left: Int = R.drawable.AirPods_Gen3_Left
+        val AirPods_Gen3_Right: Int = R.drawable.AirPods_Gen3_Right
+        val AirPods_Gen3_Case: Int = R.drawable.AirPods_Gen3_Case
+        val AirPods_Pro: Int = R.drawable.AirPods_Pro
+        val AirPods_Pro_Left: Int = R.drawable.AirPods_Pro_Left
+        val AirPods_Pro_Right: Int = R.drawable.AirPods_Pro_Right
+        val AirPods_Pro_Case: Int = R.drawable.AirPods_Pro_Case
+        val AirPods_Max_Green: Int = R.drawable.AirPods_Max_Green
+        val AirPods_Max_Pink: Int = R.drawable.AirPods_Max_Pink
+        val AirPods_Max_Silver: Int = R.drawable.AirPods_Max_Silver
+        val AirPods_Max_SkyBlue: Int = R.drawable.AirPods_Max_SkyBlue
+        val AirPods_Max_SpaceGray: Int = R.drawable.AirPods_Max_SpaceGray
 
         val defaultIcons: IntArray =
             intArrayOf(
