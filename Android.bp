@@ -12,6 +12,7 @@ android_app {
 
     srcs: [
         "src/**/*.java",
+        "src/**/*.kt",
     ],
 
     certificate: "platform",
@@ -24,10 +25,14 @@ android_app {
     ],
     static_libs: [
         "androidx.core_core",
+        "androidx.core_core-ktx",
         "androidx.preference_preference",
         "androidx.slice_slice-core",
         "androidx.slice_slice-view",
         "androidx.slice_slice-builders",
+        "kotlin-reflect",
+        "kotlin-stdlib",
+        "kotlin-stdlib-jdk7",
         "SettingsLib",
     ],
 
