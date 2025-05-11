@@ -9,19 +9,12 @@ package com.android.bluetooth.bthelper.pods
 import android.bluetooth.BluetoothDevice
 
 class Pod(val status: Int, val isCharging: Boolean, val isInEar: Boolean) {
-    fun parseStatus(arg: Boolean): Int {
-        if (arg) {
-            return if (
-                status == MAX_CONNECTED_STATUS || (status < MAX_CONNECTED_STATUS && status > 0)
-            )
-                status - 1
-            else BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+    fun parseStatus(): Int {
+        return when {
+            status == MAX_CONNECTED_STATUS -> 100
+            status < MAX_CONNECTED_STATUS -> status * 10
+            else -> BluetoothDevice.BATTERY_LEVEL_UNKNOWN
         }
-
-        return if (status == MAX_CONNECTED_STATUS) 100
-        else
-            (if (status < MAX_CONNECTED_STATUS) (status * 10)
-            else BluetoothDevice.BATTERY_LEVEL_UNKNOWN)
     }
 
     val isConnected: Boolean

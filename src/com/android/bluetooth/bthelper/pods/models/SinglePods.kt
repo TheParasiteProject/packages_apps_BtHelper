@@ -19,8 +19,8 @@ open class SinglePods(val color: String, val pod: Pod) : IPods {
     open val drawable: Int
         get() = -1
 
-    fun getParsedStatus(arg: Boolean): Int {
-        return pod.parseStatus(arg)
+    fun getParsedStatus(): Int {
+        return pod.parseStatus()
     }
 
     override val isSingle: Boolean

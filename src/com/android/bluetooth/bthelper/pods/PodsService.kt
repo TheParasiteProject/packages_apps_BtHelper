@@ -12,7 +12,6 @@ import android.Manifest
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.bluetooth.BluetoothHeadset
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.BluetoothLeScanner
 import android.bluetooth.le.ScanSettings
@@ -317,7 +316,6 @@ class PodsService : Service() {
         val single: Boolean = airpods.isSingle
         sp.setSingleDevice(single)
         var batteryUnified = 0
-        var batteryUnifiedArg = 0
         var chargingMain = false
 
         if (!isMetaDataSet) {
@@ -344,11 +342,9 @@ class PodsService : Service() {
                 val leftCharging: Boolean = regularPods.isCharging(RegularPods.LEFT)
                 val rightCharging: Boolean = regularPods.isCharging(RegularPods.RIGHT)
                 val caseCharging: Boolean = regularPods.isCharging(RegularPods.CASE)
-                val leftBattery: Int = regularPods.getParsedStatus(false, RegularPods.LEFT)
-                val rightBattery: Int = regularPods.getParsedStatus(false, RegularPods.RIGHT)
-                val leftBatteryArg: Int = regularPods.getParsedStatus(true, RegularPods.LEFT)
-                val rightBatteryArg: Int = regularPods.getParsedStatus(true, RegularPods.RIGHT)
-                val caseBattery: Int = regularPods.getParsedStatus(false, RegularPods.CASE)
+                val leftBattery: Int = regularPods.getParsedStatus(RegularPods.LEFT)
+                val rightBattery: Int = regularPods.getParsedStatus(RegularPods.RIGHT)
+                val caseBattery: Int = regularPods.getParsedStatus(RegularPods.CASE)
 
                 device.setMetadataBoolean(
                     BluetoothDevice.METADATA_UNTETHERED_LEFT_CHARGING,
@@ -371,8 +367,6 @@ class PodsService : Service() {
 
                 chargingMain = leftCharging && rightCharging
                 batteryUnified = min(leftBattery.toDouble(), rightBattery.toDouble()).toInt()
-                batteryUnifiedArg =
-                    min(leftBatteryArg.toDouble(), rightBatteryArg.toDouble()).toInt()
             }
         } else {
             val singlePods: SinglePods = airpods as SinglePods
@@ -387,8 +381,7 @@ class PodsService : Service() {
                 isModelDataSet = setSinglePodsMetadata(device, metadata)
             }
             chargingMain = singlePods.isCharging
-            batteryUnified = singlePods.getParsedStatus(true)
-            batteryUnifiedArg = singlePods.getParsedStatus(false)
+            batteryUnified = singlePods.getParsedStatus()
         }
 
         if (!isMetaDataSet) {
@@ -399,14 +392,7 @@ class PodsService : Service() {
             device.setMetadataBoolean(BluetoothDevice.METADATA_MAIN_CHARGING, chargingMain)
             device.setMetadataInt(BluetoothDevice.METADATA_MAIN_BATTERY, batteryUnified)
 
-            broadcastVendorSpecificEventIntent(
-                VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV,
-                APPLE,
-                BluetoothHeadset.AT_CMD_TYPE_SET,
-                batteryUnified,
-                batteryUnifiedArg,
-                device,
-            )
+            broadcastHfIndicatorEventIntent(batteryUnified, device)
 
             statusChanged = false
         }
@@ -414,63 +400,72 @@ class PodsService : Service() {
 
     // Send broadcasts to Android Settings Intelligence, Bluetooth app, System Settings
     // to reflect current device status changes
-    private fun broadcastVendorSpecificEventIntent(
-        command: String,
-        companyId: Int,
-        commandType: Int,
-        batteryUnified: Int,
-        batteryUnifiedArg: Int,
-        device: BluetoothDevice,
-    ) {
-        val arguments =
-            arrayOf<Any>(
-                1, // Number of key(IndicatorType)/value pairs
-                VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL, // IndicatorType:
-                // Battery Level
-                batteryUnifiedArg, // Battery Level
-            )
-
+    private fun broadcastHfIndicatorEventIntent(batteryUnified: Int, device: BluetoothDevice) {
         // Update battery status for this device
-        val intent: Intent = Intent(BluetoothHeadset.ACTION_VENDOR_SPECIFIC_HEADSET_EVENT)
-        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD, command)
-        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_CMD_TYPE, commandType)
-        // assert: all elements of args are Serializable
-        intent.putExtra(BluetoothHeadset.EXTRA_VENDOR_SPECIFIC_HEADSET_EVENT_ARGS, arguments)
-        intent.putExtra(BluetoothDevice.EXTRA_DEVICE, device)
-        intent.putExtra(BluetoothDevice.EXTRA_NAME, device.getName())
-        intent.addCategory(
-            (BluetoothHeadset.VENDOR_SPECIFIC_HEADSET_EVENT_COMPANY_ID_CATEGORY +
-                "." +
-                companyId.toString())
-        )
+        val intent: Intent =
+            Intent(ACTION_HF_INDICATORS_VALUE_CHANGED).apply {
+                putExtra(EXTRA_HF_INDICATORS_IND_ID, HF_INDICATOR_BATTERY_LEVEL_STATUS)
+                putExtra(EXTRA_HF_INDICATORS_IND_VALUE, batteryUnified)
+                putExtra(BluetoothDevice.EXTRA_DEVICE, device)
+            }
         sendBroadcastAsUser(intent, UserHandle.ALL, Manifest.permission.BLUETOOTH_CONNECT)
 
         // Broadcast battery level changes
-        val batteryIntent: Intent = Intent(ACTION_BATTERY_LEVEL_CHANGED)
-        batteryIntent.putExtra(BluetoothDevice.EXTRA_DEVICE, device)
-        batteryIntent.putExtra(EXTRA_BATTERY_LEVEL, batteryUnified)
+        val batteryIntent: Intent =
+            Intent(ACTION_BATTERY_LEVEL_CHANGED).apply {
+                putExtra(BluetoothDevice.EXTRA_DEVICE, device)
+                putExtra(EXTRA_BATTERY_LEVEL, batteryUnified)
+            }
         sendBroadcastAsUser(batteryIntent, UserHandle.ALL, Manifest.permission.BLUETOOTH_CONNECT)
 
         // Update Android Settings Intelligence's battery widget
-        val statusIntent: Intent = Intent(ACTION_ASI_UPDATE_BLUETOOTH_DATA).setPackage(PACKAGE_ASI)
-        statusIntent.putExtra(ACTION_BATTERY_LEVEL_CHANGED, intent)
+        val statusIntent: Intent =
+            Intent(ACTION_ASI_UPDATE_BLUETOOTH_DATA).apply {
+                setPackage(PACKAGE_ASI)
+                putExtra(ACTION_BATTERY_LEVEL_CHANGED, intent)
+            }
         sendBroadcastAsUser(statusIntent, UserHandle.ALL)
     }
 
     companion object {
-        /** A vendor-specific AT command */
-        private const val VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV = "+IPHONEACCEV"
+        /**
+         * Intent used to broadcast the headset's indicator status
+         *
+         * <p>This intent will have 3 extras:
+         * <ul>
+         * <li> {@link #EXTRA_HF_INDICATORS_IND_ID} - The Assigned number of headset Indicator which
+         *   is supported by the headset ( as indicated by AT+BIND command in the SLC sequence) or
+         *   whose value is changed (indicated by AT+BIEV command) </li>
+         * <li> {@link #EXTRA_HF_INDICATORS_IND_VALUE} - Updated value of headset indicator. </li>
+         * <li> {@link BluetoothDevice#EXTRA_DEVICE} - Remote device. </li>
+         * </ul>
+         *
+         * <p>{@link #EXTRA_HF_INDICATORS_IND_ID} is defined by Bluetooth SIG and each of the
+         * indicators are given an assigned number. Below shows the assigned number of Indicator
+         * added so far
+         * - Enhanced Safety - 1, Valid Values: 0 - Disabled, 1 - Enabled
+         * - Battery Level - 2, Valid Values: 0~100 - Remaining level of Battery
+         */
+        private const val ACTION_HF_INDICATORS_VALUE_CHANGED =
+            "android.bluetooth.headset.action.HF_INDICATORS_VALUE_CHANGED"
 
         /**
-         * Battery level indicator associated with
-         * {@link #VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV}
+         * A int extra field in {@link #ACTION_HF_INDICATORS_VALUE_CHANGED} intents that contains
+         * the assigned number of the headset indicator as defined by Bluetooth SIG that is being
+         * sent. Value range is 0-65535 as defined in HFP 1.7
          */
-        private const val VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV_BATTERY_LEVEL = 1
+        private const val EXTRA_HF_INDICATORS_IND_ID =
+            "android.bluetooth.headset.extra.HF_INDICATORS_IND_ID"
 
-        /*
-         * Apple, Inc.
+        /**
+         * A int extra field in {@link #ACTION_HF_INDICATORS_VALUE_CHANGED} intents that contains
+         * the value of the Headset indicator that is being sent.
          */
-        private const val APPLE = 0x004C
+        private const val EXTRA_HF_INDICATORS_IND_VALUE =
+            "android.bluetooth.headset.extra.HF_INDICATORS_IND_VALUE"
+
+        // Match up with bthf_hf_ind_type_t of bt_hf.h
+        private const val HF_INDICATOR_BATTERY_LEVEL_STATUS = 2
 
         /**
          * Broadcast Action: Indicates the battery level of a remote device has been retrieved for
@@ -501,8 +496,5 @@ class PodsService : Service() {
             "batterywidget.impl.action.update_bluetooth_data"
 
         private const val COMPANION_TYPE_NONE = "COMPANION_NONE"
-
-        /** A vendor-specific command for unsolicited result code. */
-        const val VENDOR_RESULT_CODE_COMMAND_ANDROID: String = "+ANDROID"
     }
 }

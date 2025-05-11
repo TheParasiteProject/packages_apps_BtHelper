@@ -25,8 +25,8 @@ open class RegularPods(val color: String?, leftPod: Pod, rightPod: Pod, casePod:
         return pods[pos]
     }
 
-    fun getParsedStatus(arg: Boolean, pos: Int): Int {
-        return pods[pos].parseStatus(arg)
+    fun getParsedStatus(pos: Int): Int {
+        return pods[pos].parseStatus()
     }
 
     open val drawable: Int
