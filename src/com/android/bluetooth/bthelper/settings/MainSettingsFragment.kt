@@ -22,6 +22,7 @@ import androidx.preference.SwitchPreferenceCompat
 import com.android.bluetooth.bthelper.Constants
 import com.android.bluetooth.bthelper.R
 import com.android.bluetooth.bthelper.getSharedPreferences
+import com.android.bluetooth.bthelper.isLowLatencySupported
 import com.android.bluetooth.bthelper.isSingleDevice
 
 class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
@@ -68,6 +69,7 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
                         }
 
                         Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED -> {
+                            if (!getContext().isLowLatencySupported()) return
                             handleSwitchBroadcast(
                                 mLowLatencyAudioSwitchPref,
                                 intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false),
@@ -114,8 +116,12 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
 
         mLowLatencyAudioSwitchPref =
             findPreference<SwitchPreferenceCompat>(Constants.KEY_LOW_LATENCY_AUDIO)?.apply {
-                setEnabled(true)
-                setOnPreferenceChangeListener(this@MainSettingsFragment)
+                if (!getContext().isLowLatencySupported()) {
+                    getPreferenceScreen().removePreference(this)
+                } else {
+                    setEnabled(true)
+                    setOnPreferenceChangeListener(this@MainSettingsFragment)
+                }
             }
     }
 

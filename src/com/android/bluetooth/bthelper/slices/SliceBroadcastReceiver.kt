@@ -13,6 +13,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import com.android.bluetooth.bthelper.Constants
+import com.android.bluetooth.bthelper.isLowLatencySupported
 
 class SliceBroadcastReceiver : BroadcastReceiver() {
     private var action: String? = null
@@ -52,6 +53,7 @@ class SliceBroadcastReceiver : BroadcastReceiver() {
             }
 
             Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED -> {
+                if (!context.isLowLatencySupported()) return
                 enabled = intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false)
                 handleSliceChange(Constants.KEY_LOW_LATENCY_AUDIO, enabled)
                 return

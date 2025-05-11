@@ -93,3 +93,7 @@ fun SharedPreferences.setSingleDevice(single: Boolean) {
 fun SharedPreferences.isSingleDevice(): Boolean {
     return this.getBoolean(Constants.KEY_SINGLE_DEVICE, false)
 }
+
+fun Context.isLowLatencySupported(): Boolean {
+    return this.resources.getBoolean(R.bool.config_low_latency_audio_supported)
+}

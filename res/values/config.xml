@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: TheParasiteProject
+  SPDX-License-Identifier: GPL-3.0-or-later
+  License-Filename: LICENSE
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Low latency audio -->
+    <bool name="config_low_latency_audio_supported">true</bool>
+</resources>
