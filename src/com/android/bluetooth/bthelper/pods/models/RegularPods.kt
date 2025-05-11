@@ -8,6 +8,16 @@ package com.android.bluetooth.bthelper.pods.models
 
 import com.android.bluetooth.bthelper.pods.Pod
 
+data class RegularPodsMetadata(
+    val manufacturer: String,
+    val model: String,
+    val lowBattThreshold: Int,
+    val drawable: Int,
+    val leftDrawable: Int,
+    val rightDrawable: Int,
+    val caseDrawable: Int,
+)
+
 open class RegularPods(val color: String?, leftPod: Pod, rightPod: Pod, casePod: Pod) : IPods {
     private val pods = arrayOf(leftPod, rightPod, casePod)
 
@@ -44,7 +54,7 @@ open class RegularPods(val color: String?, leftPod: Pod, rightPod: Pod, casePod:
         get() = // Most AirPods have same Low Battery Threshold to 20
         20
 
-    override val menufacturer: String
+    override val manufacturer: String
         get() = Constants.UNKNOWN
 
     fun isInEar(pos: Int): Boolean {

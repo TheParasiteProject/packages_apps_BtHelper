@@ -15,5 +15,5 @@ interface IPods {
 
     val lowBattThreshold: Int
 
-    val menufacturer: String
+    val manufacturer: String
 }

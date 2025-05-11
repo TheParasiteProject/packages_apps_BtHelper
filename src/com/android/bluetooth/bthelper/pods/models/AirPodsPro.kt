@@ -26,6 +26,6 @@ class AirPodsPro(color: String?, leftPod: Pod, rightPod: Pod, casePod: Pod) :
     override val model: String
         get() = Constants.MODEL_AIRPODS_PRO
 
-    override val menufacturer: String
+    override val manufacturer: String
         get() = Constants.MANUFACTURER_APPLE
 }

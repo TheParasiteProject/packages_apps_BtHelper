@@ -8,8 +8,16 @@ package com.android.bluetooth.bthelper.pods.models
 
 import com.android.bluetooth.bthelper.pods.Pod
 
-abstract class SinglePods(val color: String, val pod: Pod) : IPods {
-    abstract val drawable: Int
+data class SinglePodsMetadata(
+    val manufacturer: String,
+    val model: String,
+    val lowBattThreshold: Int,
+    val drawable: Int,
+)
+
+open class SinglePods(val color: String, val pod: Pod) : IPods {
+    open val drawable: Int
+        get() = -1
 
     fun getParsedStatus(arg: Boolean): Int {
         return pod.parseStatus(arg)
@@ -25,12 +33,12 @@ abstract class SinglePods(val color: String, val pod: Pod) : IPods {
         get() = // Most AirPods have same Low Battery Threshold to 20
         20
 
-    override val menufacturer: String
+    override val manufacturer: String
         get() = Constants.UNKNOWN
 
-    val isInEar: Boolean
+    open val isInEar: Boolean
         get() = pod.isInEar
 
-    val isCharging: Boolean
+    open val isCharging: Boolean
         get() = pod.isCharging
 }

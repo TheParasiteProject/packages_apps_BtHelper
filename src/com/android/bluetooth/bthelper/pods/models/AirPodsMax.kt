@@ -25,6 +25,6 @@ class AirPodsMax(color: String, singlePod: Pod) : SinglePods(color, singlePod) {
     override val model: String
         get() = Constants.MODEL_AIRPODS_MAX
 
-    override val menufacturer: String
+    override val manufacturer: String
         get() = Constants.MANUFACTURER_APPLE
 }
