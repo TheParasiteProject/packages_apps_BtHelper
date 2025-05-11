@@ -73,6 +73,7 @@ class PodsService : Service() {
             val device: BluetoothDevice? = intent?.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
             if (device != null) {
                 mCurrentDevice = device
+                setLowLatencyAudio()
                 startAirPodsScanner()
             }
         } catch (e: NullPointerException) {}
@@ -84,6 +85,14 @@ class PodsService : Service() {
         mediaControl = null
         mCurrentDevice = null
         stopAirPodsScanner()
+    }
+
+    // Set Low Latency Audio mode to current device
+    fun setLowLatencyAudio() {
+        mSharedPrefs = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
+        mCurrentDevice.setLowLatencyAudioAllowed(
+            mSharedPrefs.getBoolean(Constants.KEY_LOW_LATENCY_AUDIO, false)
+        )
     }
 
     /**

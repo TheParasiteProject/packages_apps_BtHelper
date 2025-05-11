@@ -55,6 +55,10 @@ class BtHelperSliceProvider : SliceProvider() {
 
                 final String AUTO_PAUSE_TITLE = mContext.getString(R.string.auto_pause_title)
                 final boolean autoPauseEnabled = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PAUSE, false)
+
+                final String LOW_LATENCY_TITLE = mContext.getString(R.string.low_latency_audio_title)
+                final String LOW_LATENCY_SUBTITLE = mContext.getString(R.string.low_latency_audio_slice_subtitle)
+                final boolean lowLatencyEnabled = mSharedPrefs.getBoolean(Constants.KEY_LOW_LATENCY_AUDIO, false)
         */
         val MORE_SETTINGS_TITLE: String = context.getString(R.string.more_settings_title)
         val MORE_SETTINGS_SUBTITLE: String = context.getString(R.string.more_settings_subtitle)
@@ -91,6 +95,17 @@ class BtHelperSliceProvider : SliceProvider() {
                         autoPauseEnabled,
                         Constants.ACTION_PENDING_INTENT,
                         Constants.EXTRA_AUTO_PAUSE_CHANGED,
+                        mContext,
+                        Constants.SLICE_TOGGLE
+                    ).getSettingRow(sliceUri))
+
+                listBuilder.addRow(new SliceCreator(
+                        0,
+                        LOW_LATENCY_TITLE,
+                        LOW_LATENCY_SUBTITLE,
+                        lowLatencyEnabled,
+                        Constants.ACTION_PENDING_INTENT,
+                        Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED,
                         mContext,
                         Constants.SLICE_TOGGLE
                     ).getSettingRow(sliceUri))

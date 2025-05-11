@@ -28,6 +28,7 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
     private var mOnePodModePref: SwitchPreferenceCompat? = null
     private var mAutoPlayPref: SwitchPreferenceCompat? = null
     private var mAutoPausePref: SwitchPreferenceCompat? = null
+    private var mLowLatencyAudioSwitchPref: SwitchPreferenceCompat? = null
 
     private var mSelfChange = false
 
@@ -61,6 +62,14 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
                         Constants.EXTRA_AUTO_PAUSE_CHANGED -> {
                             handleSwitchBroadcast(
                                 mAutoPausePref,
+                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false),
+                            )
+                            return
+                        }
+
+                        Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED -> {
+                            handleSwitchBroadcast(
+                                mLowLatencyAudioSwitchPref,
                                 intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false),
                             )
                             return
@@ -102,6 +111,12 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
                 setEnabled(true)
                 setOnPreferenceChangeListener(this@MainSettingsFragment)
             }
+
+        mLowLatencyAudioSwitchPref =
+            findPreference<SwitchPreferenceCompat>(Constants.KEY_LOW_LATENCY_AUDIO)?.apply {
+                setEnabled(true)
+                setOnPreferenceChangeListener(this@MainSettingsFragment)
+            }
     }
 
     override fun onCreateView(
@@ -139,6 +154,13 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
                 sendSwitchBroadcast(
                     Constants.ACTION_PENDING_INTENT,
                     Constants.EXTRA_AUTO_PAUSE_CHANGED,
+                    newValue as Boolean,
+                )
+
+            Constants.KEY_AUTO_PAUSE ->
+                sendSwitchBroadcast(
+                    Constants.ACTION_PENDING_INTENT,
+                    Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED,
                     newValue as Boolean,
                 )
 

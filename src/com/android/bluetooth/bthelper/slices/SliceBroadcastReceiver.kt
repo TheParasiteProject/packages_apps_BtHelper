@@ -51,6 +51,12 @@ class SliceBroadcastReceiver : BroadcastReceiver() {
                 return
             }
 
+            Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED -> {
+                enabled = intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false)
+                handleSliceChange(Constants.KEY_LOW_LATENCY_AUDIO, enabled)
+                return
+            }
+
             else -> return
         }
     }

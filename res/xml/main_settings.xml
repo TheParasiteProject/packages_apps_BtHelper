@@ -25,4 +25,10 @@
         android:defaultValue="false"
         android:title="@string/auto_pause_title"
         android:summary="@string/auto_pause_summary" />
+
+    <SwitchPreferenceCompat
+        android:key="low_latency_audio_pref"
+        android:defaultValue="false"
+        android:title="@string/low_latency_audio_title"
+        android:summary="@string/low_latency_audio_summary" />
 </PreferenceScreen>
