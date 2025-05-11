@@ -9,7 +9,6 @@ import android.app.slice.Slice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.UserHandle
 import android.view.LayoutInflater
@@ -22,10 +21,10 @@ import androidx.preference.PreferenceFragment
 import androidx.preference.SwitchPreferenceCompat
 import com.android.bluetooth.bthelper.Constants
 import com.android.bluetooth.bthelper.R
-import com.android.bluetooth.bthelper.pods.PodsService
+import com.android.bluetooth.bthelper.getSharedPreferences
+import com.android.bluetooth.bthelper.isSingleDevice
 
 class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
-    private var mSharedPrefs: SharedPreferences? = null
     private var mOnePodModePref: SwitchPreferenceCompat? = null
     private var mAutoPlayPref: SwitchPreferenceCompat? = null
     private var mAutoPausePref: SwitchPreferenceCompat? = null
@@ -79,22 +78,15 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
         sp?.setChecked(isChecked)
     }
 
-    // Check whether current device is single model (e.g. AirPods Max)
-    private fun isSingleDevice(): Boolean {
-        return mSharedPrefs?.getBoolean(Constants.KEY_SINGLE_DEVICE, false) ?: false
-    }
-
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.main_settings)
         getActivity().getActionBar()?.apply { setDisplayHomeAsUpEnabled(true) }
-        mSharedPrefs =
-            getContext().getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
 
         mOnePodModePref =
             findPreference<SwitchPreferenceCompat>(Constants.KEY_ONEPOD_MODE)?.apply {
                 setEnabled(true)
                 setOnPreferenceChangeListener(this@MainSettingsFragment)
-                if (isSingleDevice()) {
+                if (getContext().getSharedPreferences().isSingleDevice()) {
                     getPreferenceScreen().removePreference(this)
                 }
             }

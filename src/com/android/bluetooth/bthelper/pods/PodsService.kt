@@ -20,15 +20,16 @@ import android.content.BroadcastReceiver
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.content.res.Resources.NotFoundException
 import android.net.Uri
 import android.os.IBinder
 import android.os.UserHandle
 import com.android.bluetooth.bthelper.Constants
+import com.android.bluetooth.bthelper.getSharedPreferences
 import com.android.bluetooth.bthelper.pods.models.IPods
 import com.android.bluetooth.bthelper.pods.models.RegularPods
 import com.android.bluetooth.bthelper.pods.models.SinglePods
+import com.android.bluetooth.bthelper.setSingleDevice
 import com.android.bluetooth.bthelper.utils.MediaControl
 import java.util.Locale
 import kotlin.math.min
@@ -118,7 +119,7 @@ class PodsService : Service() {
                     override fun onStatus(newStatus: PodsStatus) {
                         setStatusChanged(status, newStatus)
                         status = newStatus
-                        handlePlayPause(status, getApplicationContext())
+                        handlePlayPause(status)
                         updatePodsStatus(status, mCurrentDevice)
                     }
                 }
@@ -145,10 +146,8 @@ class PodsService : Service() {
     }
 
     // Handle Play/Pause media control event based on device wear status
-    private fun handlePlayPause(status: PodsStatus, context: Context) {
-        val sp = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
-
-        if (sp == null) return
+    private fun handlePlayPause(status: PodsStatus) {
+        val sp = this.getSharedPreferences()
 
         val onePodMode: Boolean = sp.getBoolean(Constants.KEY_ONEPOD_MODE, false)
         val autoPlay: Boolean = sp.getBoolean(Constants.KEY_AUTO_PLAY, false)
@@ -208,8 +207,8 @@ class PodsService : Service() {
                 Uri.Builder()
                     .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
                     .authority(Constants.AUTHORITY_BTHELPER)
-                    .appendPath(getApplicationContext().getResources().getResourceTypeName(resId))
-                    .appendPath(getApplicationContext().getResources().getResourceEntryName(resId))
+                    .appendPath(resources.getResourceTypeName(resId))
+                    .appendPath(resources.getResourceEntryName(resId))
                     .build()
             return uri
         } catch (e: NotFoundException) {
@@ -224,21 +223,16 @@ class PodsService : Service() {
         return true
     }
 
-    // Update whether current device is single model (e.g. AirPods Max)
-    private fun setSingleDevice(single: Boolean) {
-        val sp = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
-        sp?.edit()?.putBoolean(Constants.KEY_SINGLE_DEVICE, single)?.apply()
-    }
-
     // Set metadata (icon, battery, charging status, etc.) for current device
     // and send broadcast that device status has changed
     private fun updatePodsStatus(status: PodsStatus, device: BluetoothDevice?) {
         if (device == null) return
 
+        val sp = this.getSharedPreferences()
         val airpods: IPods? = status.pods
         if (airpods == null) return
         val single: Boolean = airpods.isSingle
-        setSingleDevice(single)
+        sp.setSingleDevice(single)
         var batteryUnified = 0
         var batteryUnifiedArg = 0
         var chargingMain = false

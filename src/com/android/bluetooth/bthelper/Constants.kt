@@ -5,6 +5,9 @@
  */
 package com.android.bluetooth.bthelper
 
+import android.content.Context
+import android.content.SharedPreferences
+
 object Constants {
     /* Authority (package name) */
     const val AUTHORITY_BTHELPER: String = "com.android.bluetooth.bthelper"
@@ -76,4 +79,16 @@ object Constants {
                 AirPods_Max_SpaceGray,
             )
     }
+}
+
+fun Context.getSharedPreferences(): SharedPreferences {
+    return this.getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
+}
+
+fun SharedPreferences.setSingleDevice(single: Boolean) {
+    this.edit()?.putBoolean(Constants.KEY_SINGLE_DEVICE, single)?.apply()
+}
+
+fun SharedPreferences.isSingleDevice(): Boolean {
+    return this.getBoolean(Constants.KEY_SINGLE_DEVICE, false)
 }
