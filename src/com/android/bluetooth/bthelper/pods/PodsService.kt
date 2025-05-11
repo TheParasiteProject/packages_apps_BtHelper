@@ -150,9 +150,11 @@ class PodsService : Service() {
         mSharedPrefs = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
         val sp = mSharedPrefs
 
-        val onePodMode: Boolean = sp!!.getBoolean(Constants.KEY_ONEPOD_MODE, false)
-        val autoPlay: Boolean = sp!!.getBoolean(Constants.KEY_AUTO_PLAY, false)
-        val autoPause: Boolean = sp!!.getBoolean(Constants.KEY_AUTO_PAUSE, false)
+        if (sp == null) return
+
+        val onePodMode: Boolean = sp.getBoolean(Constants.KEY_ONEPOD_MODE, false)
+        val autoPlay: Boolean = sp.getBoolean(Constants.KEY_AUTO_PLAY, false)
+        val autoPause: Boolean = sp.getBoolean(Constants.KEY_AUTO_PAUSE, false)
         val autoPlayPause = autoPlay && autoPause
 
         if (mediaControl == null) return
