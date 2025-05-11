@@ -79,6 +79,11 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
         sp?.setChecked(isChecked)
     }
 
+    // Check whether current device is single model (e.g. AirPods Max)
+    private fun isSingleDevice(): Boolean {
+        return mSharedPrefs?.getBoolean(Constants.KEY_SINGLE_DEVICE, false) ?: false
+    }
+
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.main_settings)
         getActivity().getActionBar()?.apply { setDisplayHomeAsUpEnabled(true) }
@@ -89,7 +94,7 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
             findPreference<SwitchPreferenceCompat>(Constants.KEY_ONEPOD_MODE)?.apply {
                 setEnabled(true)
                 setOnPreferenceChangeListener(this@MainSettingsFragment)
-                if (PodsService.isSingleDevice) {
+                if (isSingleDevice()) {
                     getPreferenceScreen().removePreference(this)
                 }
             }

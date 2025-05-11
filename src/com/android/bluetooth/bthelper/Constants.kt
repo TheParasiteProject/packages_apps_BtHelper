@@ -34,6 +34,7 @@ object Constants {
     const val KEY_ONEPOD_MODE: String = "onepod_mode_pref"
     const val KEY_AUTO_PLAY: String = "auto_play_pref"
     const val KEY_AUTO_PAUSE: String = "auto_pause_pref"
+    const val KEY_SINGLE_DEVICE: String = "key_single_device"
 
     object Icons {
         val AirPods: Int = R.drawable.AirPods

@@ -96,7 +96,7 @@ abstract class PodsStatusScanCallback : ScanCallback() {
                 continue
             }
 
-            if (strongestBeacon == null || strongestBeacon?.getRssi() < beacon?.getRssi()) {
+            if (strongestBeacon == null || strongestBeacon.getRssi() < beacon.getRssi()) {
                 strongestBeacon = beacon
             }
             i++

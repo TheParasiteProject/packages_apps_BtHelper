@@ -224,6 +224,11 @@ class PodsService : Service() {
         return true
     }
 
+    // Update whether current device is single model (e.g. AirPods Max)
+    private fun setSingleDevice(single: Boolean) {
+        mSharedPrefs?.edit()?.putBoolean(Constants.KEY_SINGLE_DEVICE, single)?.apply()
+    }
+
     // Set metadata (icon, battery, charging status, etc.) for current device
     // and send broadcast that device status has changed
     private fun updatePodsStatus(status: PodsStatus, device: BluetoothDevice?) {
@@ -232,7 +237,7 @@ class PodsService : Service() {
         val airpods: IPods? = status.pods
         if (airpods == null) return
         val single: Boolean = airpods.isSingle
-        isSingleDevice = single
+        setSingleDevice(single)
         var batteryUnified = 0
         var batteryUnifiedArg = 0
         var chargingMain = false
@@ -477,10 +482,6 @@ class PodsService : Service() {
     }
 
     companion object {
-        // Check whether current device is single model (e.g. AirPods Max)
-        var isSingleDevice: Boolean = false
-            private set
-
         /** A vendor-specific AT command */
         private const val VENDOR_SPECIFIC_HEADSET_EVENT_IPHONEACCEV = "+IPHONEACCEV"
 
