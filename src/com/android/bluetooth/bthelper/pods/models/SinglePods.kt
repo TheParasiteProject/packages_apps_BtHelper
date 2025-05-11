@@ -16,12 +16,15 @@ data class SinglePodsMetadata(
 )
 
 open class SinglePods(val color: String, val pod: Pod) : IPods {
-    open val drawable: Int
-        get() = -1
-
     fun getParsedStatus(): Int {
         return pod.parseStatus()
     }
+
+    open val drawable: Int
+        get() = -1
+
+    override val model: String
+        get() = Constants.UNKNOWN
 
     override val isSingle: Boolean
         get() = true
