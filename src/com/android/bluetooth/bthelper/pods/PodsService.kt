@@ -54,7 +54,6 @@ class PodsService : Service() {
 
     private var statusChanged = false
 
-    private var mSharedPrefs: SharedPreferences? = null
     private var mediaControl: MediaControl? = null
     private var previousWorn = false
 
@@ -147,8 +146,7 @@ class PodsService : Service() {
 
     // Handle Play/Pause media control event based on device wear status
     private fun handlePlayPause(status: PodsStatus, context: Context) {
-        mSharedPrefs = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
-        val sp = mSharedPrefs
+        val sp = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
 
         if (sp == null) return
 
@@ -228,7 +226,8 @@ class PodsService : Service() {
 
     // Update whether current device is single model (e.g. AirPods Max)
     private fun setSingleDevice(single: Boolean) {
-        mSharedPrefs?.edit()?.putBoolean(Constants.KEY_SINGLE_DEVICE, single)?.apply()
+        val sp = getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
+        sp?.edit()?.putBoolean(Constants.KEY_SINGLE_DEVICE, single)?.apply()
     }
 
     // Set metadata (icon, battery, charging status, etc.) for current device
