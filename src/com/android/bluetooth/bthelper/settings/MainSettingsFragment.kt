@@ -95,10 +95,11 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
 
         mOnePodModePref =
             findPreference<SwitchPreferenceCompat>(Constants.KEY_ONEPOD_MODE)?.apply {
-                setEnabled(true)
-                setOnPreferenceChangeListener(this@MainSettingsFragment)
                 if (getContext().getSharedPreferences().isSingleDevice()) {
                     getPreferenceScreen().removePreference(this)
+                } else {
+                    setEnabled(true)
+                    setOnPreferenceChangeListener(this@MainSettingsFragment)
                 }
             }
 
