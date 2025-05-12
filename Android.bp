@@ -40,6 +40,13 @@ android_app {
         "com.android.bluetooth.bthelper.xml",
     ],
 
+    optimize: {
+        enabled: true,
+        shrink: true,
+        optimize: true,
+        proguard_flags_files: ["proguard.flags"],
+    },
+
     system_ext_specific: true,
     privileged: true,
 }
