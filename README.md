@@ -1,8 +1,8 @@
 # Bluetooth Devices Helper
 
-Bluetooth Devices Helper, also known as BtHelper, is an application that enhances the<br>
-functionality of Bluetooth devices by providing<br>
-features such as battery level display and device icons on Android Open Source Project (AOSP).<br>
+Bluetooth Devices Helper, also known as BtHelper, is an application<br>
+that enhances the functionality of Bluetooth devices by providing features<br>
+such as battery level display and device icons on Android Open Source Project (AOSP).<br>
 These features are not currently supported by AOSP.<br>
 
 ## Project Status
