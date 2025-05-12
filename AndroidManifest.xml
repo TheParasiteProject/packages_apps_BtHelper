@@ -50,7 +50,7 @@
 
         <provider
             android:name="androidx.startup.InitializationProvider"
-            android:authorities="${applicationId}.androidx-startup"
+            android:authorities="com.android.bluetooth.bthelper.androidx-startup"
             tools:replace="android:authorities" />
 
         <provider
