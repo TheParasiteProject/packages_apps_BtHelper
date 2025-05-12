@@ -362,21 +362,33 @@ class PodsService : Service() {
                 device.setMetadataBoolean(
                     BluetoothDevice.METADATA_UNTETHERED_LEFT_CHARGING,
                     leftCharging,
+                    true,
                 )
                 device.setMetadataBoolean(
                     BluetoothDevice.METADATA_UNTETHERED_RIGHT_CHARGING,
                     rightCharging,
+                    true,
                 )
                 device.setMetadataBoolean(
                     BluetoothDevice.METADATA_UNTETHERED_CASE_CHARGING,
                     caseCharging,
+                    true,
                 )
-                device.setMetadataInt(BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY, leftBattery)
+                device.setMetadataInt(
+                    BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY,
+                    leftBattery,
+                    true,
+                )
                 device.setMetadataInt(
                     BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY,
                     rightBattery,
+                    true,
                 )
-                device.setMetadataInt(BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY, caseBattery)
+                device.setMetadataInt(
+                    BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY,
+                    caseBattery,
+                    true,
+                )
 
                 chargingMain = leftCharging && rightCharging
                 batteryUnified = min(leftBattery.toDouble(), rightBattery.toDouble()).toInt()
@@ -402,8 +414,8 @@ class PodsService : Service() {
         }
 
         if (statusChanged) {
-            device.setMetadataBoolean(BluetoothDevice.METADATA_MAIN_CHARGING, chargingMain)
-            device.setMetadataInt(BluetoothDevice.METADATA_MAIN_BATTERY, batteryUnified)
+            device.setMetadataBoolean(BluetoothDevice.METADATA_MAIN_CHARGING, chargingMain, true)
+            device.setMetadataInt(BluetoothDevice.METADATA_MAIN_BATTERY, batteryUnified, true)
 
             broadcastHfIndicatorEventIntent(batteryUnified, device)
 
