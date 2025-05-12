@@ -9,7 +9,10 @@ package com.android.bluetooth.bthelper.pods
 import com.android.bluetooth.bthelper.pods.models.AirPods1
 import com.android.bluetooth.bthelper.pods.models.AirPods2
 import com.android.bluetooth.bthelper.pods.models.AirPods3
+import com.android.bluetooth.bthelper.pods.models.AirPods4
+import com.android.bluetooth.bthelper.pods.models.AirPods4Anc
 import com.android.bluetooth.bthelper.pods.models.AirPodsMax
+import com.android.bluetooth.bthelper.pods.models.AirPodsMaxUsbC
 import com.android.bluetooth.bthelper.pods.models.AirPodsPro
 import com.android.bluetooth.bthelper.pods.models.AirPodsPro2
 import com.android.bluetooth.bthelper.pods.models.AirPodsPro2UsbC
@@ -87,21 +90,26 @@ class PodsStatus {
         val idFull = status.substring(6, 10)
 
         // Detect which model
-        if ("0220" == idFull) {
-            pods = AirPods1(color, leftPod, rightPod, casePod) // Airpods 1st gen
-        } else if ("0F20" == idFull) {
-            pods = AirPods2(color, leftPod, rightPod, casePod) // Airpods 2nd gen
-        } else if ("1320" == idFull) {
-            pods = AirPods3(color, leftPod, rightPod, casePod) // Airpods 3rd gen
-        } else if ("0E20" == idFull) {
-            pods = AirPodsPro(color, leftPod, rightPod, casePod) // Airpods Pro
-        } else if ("1420" == idFull) {
-            pods = AirPodsPro2(color, leftPod, rightPod, casePod) // Airpods Pro 2
-        } else if ("2420" == idFull) {
-            pods = AirPodsPro2UsbC(color, leftPod, rightPod, casePod) // Airpods Pro 2 with USB‐C
-        } else if ("0A20" == idFull) {
-            pods = AirPodsMax(color, singlePod) // Airpods Max
-        }
+        pods =
+            when (idFull) {
+                "0220" -> AirPods1(color, leftPod, rightPod, casePod) // Airpods 1st Gen
+                "0F20" -> AirPods2(color, leftPod, rightPod, casePod) // Airpods 2nd Gen
+                "1320" -> AirPods3(color, leftPod, rightPod, casePod) // Airpods 3rd Gen
+                "1920" -> AirPods4(color, leftPod, rightPod, casePod) // Airpods 4th Gen
+                "1B20" -> AirPods4Anc(color, leftPod, rightPod, casePod) // AirPods 4th Gen (ANC)
+                "0E20" -> AirPodsPro(color, leftPod, rightPod, casePod) // Airpods Pro
+                "1420" -> AirPodsPro2(color, leftPod, rightPod, casePod) // Airpods Pro 2nd Gen
+                "2420" ->
+                    AirPodsPro2UsbC(
+                        color,
+                        leftPod,
+                        rightPod,
+                        casePod,
+                    ) // Airpods Pro 2nd Gen (USB‐C)
+                "0A20" -> AirPodsMax(color, singlePod) // Airpods Max
+                "1F20" -> AirPodsMaxUsbC(color, singlePod) // AirPods Max (USB-C)
+                else -> null
+            }
     }
 
     fun isFlipped(str: String): Boolean {

@@ -49,15 +49,24 @@ object Constants {
         val AirPods_Gen3_Left: Int = R.drawable.AirPods_Gen3_Left
         val AirPods_Gen3_Right: Int = R.drawable.AirPods_Gen3_Right
         val AirPods_Gen3_Case: Int = R.drawable.AirPods_Gen3_Case
+        val AirPods_Gen4: Int = R.drawable.AirPods_Gen4
+        val AirPods_Gen4_Left: Int = R.drawable.AirPods_Gen4_Left
+        val AirPods_Gen4_Right: Int = R.drawable.AirPods_Gen4_Right
+        val AirPods_Gen4_Case: Int = R.drawable.AirPods_Gen4_Case
         val AirPods_Pro: Int = R.drawable.AirPods_Pro
         val AirPods_Pro_Left: Int = R.drawable.AirPods_Pro_Left
         val AirPods_Pro_Right: Int = R.drawable.AirPods_Pro_Right
         val AirPods_Pro_Case: Int = R.drawable.AirPods_Pro_Case
+        val AirPods_Max_Blue: Int = R.drawable.AirPods_Max_Blue
         val AirPods_Max_Green: Int = R.drawable.AirPods_Max_Green
+        val AirPods_Max_Midnight: Int = R.drawable.AirPods_Max_Midnight
+        val AirPods_Max_Orange: Int = R.drawable.AirPods_Max_Orange
         val AirPods_Max_Pink: Int = R.drawable.AirPods_Max_Pink
+        val AirPods_Max_Purple: Int = R.drawable.AirPods_Max_Purple
         val AirPods_Max_Silver: Int = R.drawable.AirPods_Max_Silver
         val AirPods_Max_SkyBlue: Int = R.drawable.AirPods_Max_SkyBlue
         val AirPods_Max_SpaceGray: Int = R.drawable.AirPods_Max_SpaceGray
+        val AirPods_Max_StarLight: Int = R.drawable.AirPods_Max_StarLight
 
         val defaultIcons: IntArray =
             intArrayOf(
@@ -69,15 +78,24 @@ object Constants {
                 AirPods_Gen3_Left,
                 AirPods_Gen3_Right,
                 AirPods_Gen3_Case,
+                AirPods_Gen4,
+                AirPods_Gen4_Left,
+                AirPods_Gen4_Right,
+                AirPods_Gen4_Case,
                 AirPods_Pro,
                 AirPods_Pro_Left,
                 AirPods_Pro_Right,
                 AirPods_Pro_Case,
+                AirPods_Max_Blue,
                 AirPods_Max_Green,
+                AirPods_Max_Midnight,
+                AirPods_Max_Orange,
                 AirPods_Max_Pink,
+                AirPods_Max_Purple,
                 AirPods_Max_Silver,
                 AirPods_Max_SkyBlue,
                 AirPods_Max_SpaceGray,
+                AirPods_Max_StarLight,
             )
     }
 }
