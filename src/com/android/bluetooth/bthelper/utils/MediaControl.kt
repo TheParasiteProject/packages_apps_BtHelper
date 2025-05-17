@@ -11,7 +11,7 @@ import android.media.AudioManager
 import android.os.SystemClock
 import android.view.KeyEvent
 
-class MediaControl(context: Context) {
+class MediaControl private constructor(private val context: Context) {
     private var audioManager: AudioManager = context.getSystemService(AudioManager::class.java)
 
     val isPlaying: Boolean
@@ -52,5 +52,22 @@ class MediaControl(context: Context) {
         audioManager.dispatchMediaKeyEvent(
             KeyEvent(eventTime + 200, eventTime + 200, KeyEvent.ACTION_UP, keyCode, 0)
         )
+    }
+
+    companion object {
+        private var instance: MediaControl? = null
+
+        fun get(context: Context): MediaControl {
+            synchronized(this) {
+                if (instance == null) {
+                    instance = MediaControl(context)
+                }
+                return instance!!
+            }
+        }
+
+        fun destroyInstance() {
+            instance = null
+        }
     }
 }

@@ -69,7 +69,7 @@ class PodsService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        mediaControl = MediaControl(this)
+        mediaControl = MediaControl.get(this)
         try {
             val device: BluetoothDevice? = intent?.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
             if (device != null) {
@@ -85,6 +85,7 @@ class PodsService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
+        MediaControl.destroyInstance()
         mediaControl = null
         mCurrentDevice = null
         stopAirPodsScanner()
