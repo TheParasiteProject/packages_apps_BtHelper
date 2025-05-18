@@ -39,6 +39,7 @@ android_app {
     required: [
         "privapp_whitelist_com.android.bluetooth.bthelper",
         "default-permissions_com.android.bluetooth.bthelper",
+        "hidden-api-whitelist_com.android.bluetooth.bthelper",
     ],
 
     optimize: {
@@ -64,6 +65,14 @@ prebuilt_etc {
     name: "default-permissions_com.android.bluetooth.bthelper",
     relative_install_path: "default-permissions",
     src: "default-permissions_com.android.bluetooth.bthelper.xml",
+    filename_from_src: true,
+    system_ext_specific: true,
+}
+
+prebuilt_etc {
+    name: "hidden-api-whitelist_com.android.bluetooth.bthelper",
+    relative_install_path: "sysconfig",
+    src: "hidden-api-whitelist_com.android.bluetooth.bthelper.xml",
     filename_from_src: true,
     system_ext_specific: true,
 }
