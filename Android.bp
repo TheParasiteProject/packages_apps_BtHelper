@@ -29,6 +29,7 @@ android_app {
         "kotlin-stdlib",
         "kotlin-stdlib-jdk7",
         "SettingsLib",
+        "SettingsLibSettingsTheme",
     ],
 
     resource_dirs: [
