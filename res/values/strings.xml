@@ -8,26 +8,34 @@
     <string name="app_name" translatable="false">Bluetooth Devices Helper</string>
 
     <!-- Settings title -->
-    <string name="settings_title">Advanced settings</string>
+    <string name="settings_title">AirPods settings</string>
 
     <!-- More settings title -->
     <string name="more_settings_title">@string/settings_title</string>
-    <string name="more_settings_subtitle">Auto play/pause, and more</string>
+    <string name="more_settings_subtitle">Relative volume, ear detection, and more</string>
   
-    <!-- OnePod mode -->
-    <string name="onepod_mode_title">OnePod mode</string>
-    <string name="onepod_mode_summary">Enable audio playback controls even if one AirPod is in use.</string>
+    <!-- Automatic ear detection -->
+    <string name="automatic_ear_detection_title">Automatic ear detection</string>
 
-    <!-- Auto play -->
-    <string name="auto_play_title">Auto play</string>
-    <string name="auto_play_summary">When the AirPods are worn, audio playback automatically starts.</string>
+    <!-- Conversational awareness -->
+    <string name="relative_conversational_awareness_volume_title">Relative volume</string>
+    <string name="relative_conversational_awareness_volume_summary">Reduce sound when you speak.</string>
+    <string name="conversational_awareness_pause_music_title">Pause Music</string>
+    <string name="conversational_awareness_pause_music_summary">Pause music when you speak.</string>
 
-    <!-- Auto pause -->
-    <string name="auto_pause_title">Auto pause</string>
-    <string name="auto_pause_summary">When the AirPods are removed, audio playback pauses.</string>
+    <!-- Head gesture -->
+    <string name="head_gestures_title">Head gesture</string>
+    <string name="head_gestures_summary">Nod to answer calls, or shake your head to decline.</string>
+
+    <!-- Disconnect when not wearing -->
+    <string name="disconnect_when_not_wearing_title">Disconnect AirPods when not wearing</string>
 
     <!-- Low latency audio -->
     <string name="low_latency_audio_title">Low latency audio</string>
-    <string name="low_latency_audio_summary">Enable to reduce audio delays.\nRequires reconnecting AirPods after turn on. It may increase battery consumption.</string>
+    <string name="low_latency_audio_summary">Reduce audio delays.\nRequires reconnecting AirPods after turn on. It may increase battery consumption.</string>
     <string name="low_latency_audio_slice_subtitle">Requires reconnecting AirPods.</string>
+
+    <!-- Head gesture -->
+    <string name="head_gesture_call_answered_toast">Call answered via head gesture</string>
+    <string name="head_gesture_call_rejected_toast">Call rejected via head gesture</string>
 </resources>

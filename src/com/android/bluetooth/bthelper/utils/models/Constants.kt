@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
  */
-package com.android.bluetooth.bthelper.pods.models
+package com.android.bluetooth.bthelper.utils.models
 
 object Constants {
     const val MODEL_AIRPODS_GEN1: String = "AirPods"

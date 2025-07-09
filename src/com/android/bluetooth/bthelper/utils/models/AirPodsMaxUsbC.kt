@@ -4,20 +4,19 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
  */
-package com.android.bluetooth.bthelper.pods.models
+package com.android.bluetooth.bthelper.utils.models
 
 import com.android.bluetooth.bthelper.Constants.Icons
-import com.android.bluetooth.bthelper.pods.Pod
 
-class AirPodsMaxUsbC(color: String, singlePod: Pod) : SinglePods(color, singlePod) {
+class AirPodsMaxUsbC(color: Int) : SinglePods(color) {
     override val drawable: Int
         get() {
             // Incorrect as we don't have this device
             return when (color) {
-                "01" -> Icons.AirPods_Max_Midnight
-                "03" -> Icons.AirPods_Max_Blue
-                "04" -> Icons.AirPods_Max_Purple
-                "0C" -> Icons.AirPods_Max_StarLight
+                0x01 -> Icons.AirPods_Max_Midnight
+                0x03 -> Icons.AirPods_Max_Blue
+                0x04 -> Icons.AirPods_Max_Purple
+                0x0C -> Icons.AirPods_Max_StarLight
                 else -> Icons.AirPods_Max_Orange
             }
         }

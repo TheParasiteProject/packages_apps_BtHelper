@@ -5,12 +5,7 @@
  */
 package com.android.bluetooth.bthelper.settings
 
-import android.app.slice.Slice
-import android.content.BroadcastReceiver
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.os.UserHandle
 import android.view.LayoutInflater
 import android.view.MenuItem
 import android.view.View
@@ -21,109 +16,54 @@ import androidx.preference.PreferenceFragment
 import androidx.preference.SwitchPreferenceCompat
 import com.android.bluetooth.bthelper.Constants
 import com.android.bluetooth.bthelper.R
-import com.android.bluetooth.bthelper.getSharedPreferences
 import com.android.bluetooth.bthelper.isLowLatencySupported
-import com.android.bluetooth.bthelper.isSingleDevice
 
 class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
-    private var mOnePodModePref: SwitchPreferenceCompat? = null
-    private var mAutoPlayPref: SwitchPreferenceCompat? = null
-    private var mAutoPausePref: SwitchPreferenceCompat? = null
-    private var mLowLatencyAudioSwitchPref: SwitchPreferenceCompat? = null
-
-    private var mSelfChange = false
-
-    private val stateReceiver: BroadcastReceiver =
-        object : BroadcastReceiver() {
-            override fun onReceive(context: Context?, intent: Intent?) {
-                try {
-                    if (intent == null || context == null) return
-                    val action: String = intent.getAction() ?: return
-
-                    val extra: Int =
-                        intent.getIntExtra(Constants.ACTION_PENDING_INTENT, Constants.EXTRA_NONE)
-
-                    when (extra) {
-                        Constants.EXTRA_ONEPOD_CHANGED -> {
-                            handleSwitchBroadcast(
-                                mOnePodModePref,
-                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false),
-                            )
-                            return
-                        }
-
-                        Constants.EXTRA_AUTO_PLAY_CHANGED -> {
-                            handleSwitchBroadcast(
-                                mAutoPlayPref,
-                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false),
-                            )
-                            return
-                        }
-
-                        Constants.EXTRA_AUTO_PAUSE_CHANGED -> {
-                            handleSwitchBroadcast(
-                                mAutoPausePref,
-                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false),
-                            )
-                            return
-                        }
-
-                        Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED -> {
-                            if (!getContext().isLowLatencySupported()) return
-                            handleSwitchBroadcast(
-                                mLowLatencyAudioSwitchPref,
-                                intent.getBooleanExtra(Slice.EXTRA_TOGGLE_STATE, false),
-                            )
-                            return
-                        }
-                    }
-                } catch (e: NullPointerException) {}
-            }
-        }
-
-    private fun handleSwitchBroadcast(sp: SwitchPreferenceCompat?, isChecked: Boolean) {
-        if (mSelfChange) {
-            mSelfChange = false
-            return
-        }
-        sp?.setChecked(isChecked)
+    companion object {
+        const val TAG: String = "MainSettingsFragment"
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         addPreferencesFromResource(R.xml.main_settings)
-        getActivity().getActionBar()?.apply { setDisplayHomeAsUpEnabled(true) }
+        activity?.actionBar?.apply { setDisplayHomeAsUpEnabled(true) }
 
-        mOnePodModePref =
-            findPreference<SwitchPreferenceCompat>(Constants.KEY_ONEPOD_MODE)?.apply {
-                if (getContext().getSharedPreferences().isSingleDevice()) {
-                    getPreferenceScreen().removePreference(this)
-                } else {
-                    setEnabled(true)
-                    setOnPreferenceChangeListener(this@MainSettingsFragment)
-                }
+        findPreference<SwitchPreferenceCompat>(Constants.KEY_AUTOMATIC_EAR_DETECTION)?.apply {
+            isEnabled = true
+            onPreferenceChangeListener = this@MainSettingsFragment
+        }
+
+        findPreference<SwitchPreferenceCompat>(Constants.KEY_CONVERSATIONAL_AWARENESS_PAUSE_MUSIC)
+            ?.apply {
+                isEnabled = true
+                onPreferenceChangeListener = this@MainSettingsFragment
             }
 
-        mAutoPlayPref =
-            findPreference<SwitchPreferenceCompat>(Constants.KEY_AUTO_PLAY)?.apply {
-                setEnabled(true)
-                setOnPreferenceChangeListener(this@MainSettingsFragment)
+        findPreference<SwitchPreferenceCompat>(
+                Constants.KEY_RELATIVE_CONVERSATIONAL_AWARENESS_VOLUME
+            )
+            ?.apply {
+                isEnabled = true
+                onPreferenceChangeListener = this@MainSettingsFragment
             }
 
-        mAutoPausePref =
-            findPreference<SwitchPreferenceCompat>(Constants.KEY_AUTO_PAUSE)?.apply {
-                setEnabled(true)
-                setOnPreferenceChangeListener(this@MainSettingsFragment)
-            }
+        findPreference<SwitchPreferenceCompat>(Constants.KEY_HEAD_GESTURES)?.apply {
+            isEnabled = true
+            onPreferenceChangeListener = this@MainSettingsFragment
+        }
 
-        mLowLatencyAudioSwitchPref =
-            findPreference<SwitchPreferenceCompat>(Constants.KEY_LOW_LATENCY_AUDIO)?.apply {
-                if (!getContext().isLowLatencySupported()) {
-                    getPreferenceScreen().removePreference(this)
-                } else {
-                    setEnabled(true)
-                    setOnPreferenceChangeListener(this@MainSettingsFragment)
-                }
+        findPreference<SwitchPreferenceCompat>(Constants.KEY_DISCONNECT_WHEN_NOT_WEARING)?.apply {
+            isEnabled = true
+            onPreferenceChangeListener = this@MainSettingsFragment
+        }
+
+        findPreference<SwitchPreferenceCompat>(Constants.KEY_LOW_LATENCY_AUDIO)?.apply {
+            if (!context.isLowLatencySupported()) {
+                preferenceScreen.removePreference(this)
+            } else {
+                isEnabled = true
+                onPreferenceChangeListener = this@MainSettingsFragment
             }
+        }
     }
 
     override fun onCreateView(
@@ -141,55 +81,18 @@ class MainSettingsFragment : PreferenceFragment(), OnPreferenceChangeListener {
         super.onViewCreated(view, savedInstanceState)
     }
 
-    override fun onPreferenceChange(preference: Preference, newValue: Any): Boolean {
-        when (preference.getKey()) {
-            Constants.KEY_ONEPOD_MODE ->
-                sendSwitchBroadcast(
-                    Constants.ACTION_PENDING_INTENT,
-                    Constants.EXTRA_ONEPOD_CHANGED,
-                    newValue as Boolean,
-                )
-
-            Constants.KEY_AUTO_PLAY ->
-                sendSwitchBroadcast(
-                    Constants.ACTION_PENDING_INTENT,
-                    Constants.EXTRA_AUTO_PLAY_CHANGED,
-                    newValue as Boolean,
-                )
-
-            Constants.KEY_AUTO_PAUSE ->
-                sendSwitchBroadcast(
-                    Constants.ACTION_PENDING_INTENT,
-                    Constants.EXTRA_AUTO_PAUSE_CHANGED,
-                    newValue as Boolean,
-                )
-
-            Constants.KEY_AUTO_PAUSE ->
-                sendSwitchBroadcast(
-                    Constants.ACTION_PENDING_INTENT,
-                    Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED,
-                    newValue as Boolean,
-                )
-
-            else -> {}
-        }
-        return true
-    }
-
-    private fun sendSwitchBroadcast(action: String, extra: Int, isChecked: Boolean) {
-        mSelfChange = true
-        val intent: Intent = Intent(action)
-        intent.addFlags(Intent.FLAG_RECEIVER_REGISTERED_ONLY)
-        intent.putExtra(Slice.EXTRA_TOGGLE_STATE, extra)
-        intent.putExtra(Slice.EXTRA_TOGGLE_STATE, isChecked)
-        getContext().sendBroadcastAsUser(intent, UserHandle.CURRENT)
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.getItemId() === android.R.id.home) {
             getActivity().onBackPressed()
             return true
         }
         return false
+    }
+
+    override fun onPreferenceChange(preference: Preference, newValue: Any): Boolean {
+        when (preference.getKey()) {
+            else -> {}
+        }
+        return true
     }
 }

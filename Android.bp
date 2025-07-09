@@ -30,6 +30,7 @@ android_app {
         "kotlin-stdlib-jdk7",
         "SettingsLib",
         "SettingsLibSettingsTheme",
+        "custom-sdk_org.lsposed.hiddenapibypass_hiddenapibypass",
     ],
 
     resource_dirs: [

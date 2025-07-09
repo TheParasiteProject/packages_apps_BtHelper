@@ -9,26 +9,37 @@
     android:title="@string/settings_title">
 
     <SwitchPreferenceCompat
-        android:key="onepod_mode_pref"
-        android:defaultValue="false"
-        android:title="@string/onepod_mode_title" 
-        android:summary="@string/onepod_mode_summary" />
+        android:key="automatic_ear_detection"
+        android:defaultValue="true"
+        android:title="@string/automatic_ear_detection_title" />
 
     <SwitchPreferenceCompat
-        android:key="auto_play_pref"
+        android:key="conversational_awareness_pause_music"
         android:defaultValue="false"
-        android:title="@string/auto_play_title"
-        android:summary="@string/auto_play_summary" />
+        android:title="@string/conversational_awareness_pause_music_title" 
+        android:summary="@string/conversational_awareness_pause_music_summary" />
 
     <SwitchPreferenceCompat
-        android:key="auto_pause_pref"
+        android:key="relative_conversational_awareness_volume"
+        android:defaultValue="true"
+        android:title="@string/relative_conversational_awareness_volume_title" 
+        android:summary="@string/relative_conversational_awareness_volume_summary" />
+
+    <SwitchPreferenceCompat
+        android:key="head_gestures"
+        android:defaultValue="true"
+        android:title="@string/head_gestures_title" 
+        android:summary="@string/head_gestures_summary" />
+
+    <SwitchPreferenceCompat
+        android:key="disconnect_when_not_wearing"
         android:defaultValue="false"
-        android:title="@string/auto_pause_title"
-        android:summary="@string/auto_pause_summary" />
+        android:title="@string/disconnect_when_not_wearing_title" />
 
     <SwitchPreferenceCompat
         android:key="low_latency_audio_pref"
         android:defaultValue="false"
         android:title="@string/low_latency_audio_title"
         android:summary="@string/low_latency_audio_summary" />
+
 </PreferenceScreen>

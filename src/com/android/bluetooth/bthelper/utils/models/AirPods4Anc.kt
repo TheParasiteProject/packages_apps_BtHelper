@@ -4,27 +4,25 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
  */
-package com.android.bluetooth.bthelper.pods.models
+package com.android.bluetooth.bthelper.utils.models
 
 import com.android.bluetooth.bthelper.Constants.Icons
-import com.android.bluetooth.bthelper.pods.Pod
 
-class AirPods1(color: String?, leftPod: Pod, rightPod: Pod, casePod: Pod) :
-    RegularPods(color, leftPod, rightPod, casePod) {
+class AirPods4Anc(color: Int) : RegularPods(color) {
     override val drawable: Int
-        get() = Icons.AirPods
+        get() = Icons.AirPods_Gen4
 
     override val leftDrawable: Int
-        get() = Icons.AirPods_Left
+        get() = Icons.AirPods_Gen4_Left
 
     override val rightDrawable: Int
-        get() = Icons.AirPods_Right
+        get() = Icons.AirPods_Gen4_Right
 
     override val caseDrawable: Int
-        get() = Icons.AirPods_Case
+        get() = Icons.AirPods_Gen4_Case
 
     override val model: String
-        get() = Constants.MODEL_AIRPODS_GEN1
+        get() = Constants.MODEL_AIRPODS_GEN4_ANC
 
     override val manufacturer: String
         get() = Constants.MANUFACTURER_APPLE

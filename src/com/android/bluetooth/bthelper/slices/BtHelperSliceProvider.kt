@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.TypedArray
 import android.net.Uri
+import android.util.Log
 import androidx.slice.Slice
 import androidx.slice.SliceProvider
 import androidx.slice.builders.ListBuilder
@@ -16,17 +17,20 @@ import com.android.bluetooth.bthelper.Constants
 import com.android.bluetooth.bthelper.R
 
 class BtHelperSliceProvider : SliceProvider() {
+
     private var mContext: Context? = null
     private var mSharedPrefs: SharedPreferences? = null
 
     override fun onCreateSliceProvider(): Boolean {
         try {
-            mContext = getContext()
+            mContext = context
             mContext?.let { ctx ->
                 mSharedPrefs =
                     ctx.getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
             }
-        } catch (e: NullPointerException) {}
+        } catch (e: NullPointerException) {
+            Log.e(TAG, "Error in onCreateSliceProvider", e)
+        }
         return true
     }
 
@@ -46,70 +50,11 @@ class BtHelperSliceProvider : SliceProvider() {
 
         if (context == null) return null
 
-        /*
-                final String ONEPOD_TITLE = mContext.getString(R.string.onepod_mode_title)
-                final boolean onePodModeEnabled = mSharedPrefs.getBoolean(Constants.KEY_ONEPOD_MODE, false)
-
-                final String AUTO_PLAY_TITLE = mContext.getString(R.string.auto_play_title)
-                final boolean autoPlayEnabled = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PLAY, false)
-
-                final String AUTO_PAUSE_TITLE = mContext.getString(R.string.auto_pause_title)
-                final boolean autoPauseEnabled = mSharedPrefs.getBoolean(Constants.KEY_AUTO_PAUSE, false)
-
-                final String LOW_LATENCY_TITLE = mContext.getString(R.string.low_latency_audio_title)
-                final String LOW_LATENCY_SUBTITLE = mContext.getString(R.string.low_latency_audio_slice_subtitle)
-                final boolean lowLatencyEnabled = mSharedPrefs.getBoolean(Constants.KEY_LOW_LATENCY_AUDIO, false)
-        */
         val MORE_SETTINGS_TITLE: String = context.getString(R.string.more_settings_title)
         val MORE_SETTINGS_SUBTITLE: String = context.getString(R.string.more_settings_subtitle)
 
         val listBuilder: ListBuilder = ListBuilder(context, sliceUri, INFINITY)
 
-        /*
-                listBuilder.addRow(new SliceCreator(
-                        0,
-                        ONEPOD_TITLE,
-                        null,
-                        onePodModeEnabled,
-                        Constants.ACTION_PENDING_INTENT,
-                        Constants.EXTRA_ONEPOD_CHANGED,
-                        mContext,
-                        Constants.SLICE_TOGGLE
-                    ).getSettingRow(sliceUri))
-
-                listBuilder.addRow(new SliceCreator(
-                        0,
-                        AUTO_PLAY_TITLE,
-                        null,
-                        autoPlayEnabled,
-                        Constants.ACTION_PENDING_INTENT,
-                        Constants.EXTRA_AUTO_PLAY_CHANGED,
-                        mContext,
-                        Constants.SLICE_TOGGLE
-                    ).getSettingRow(sliceUri))
-
-                listBuilder.addRow(new SliceCreator(
-                        0,
-                        AUTO_PAUSE_TITLE,
-                        null,
-                        autoPauseEnabled,
-                        Constants.ACTION_PENDING_INTENT,
-                        Constants.EXTRA_AUTO_PAUSE_CHANGED,
-                        mContext,
-                        Constants.SLICE_TOGGLE
-                    ).getSettingRow(sliceUri))
-
-                listBuilder.addRow(new SliceCreator(
-                        0,
-                        LOW_LATENCY_TITLE,
-                        LOW_LATENCY_SUBTITLE,
-                        lowLatencyEnabled,
-                        Constants.ACTION_PENDING_INTENT,
-                        Constants.EXTRA_LOW_LATENCY_AUDIO_CHANGED,
-                        mContext,
-                        Constants.SLICE_TOGGLE
-                    ).getSettingRow(sliceUri))
-        */
         listBuilder.addRow(
             SliceCreator(
                     R.drawable.ic_chevron_right,
@@ -129,6 +74,8 @@ class BtHelperSliceProvider : SliceProvider() {
     }
 
     companion object {
+        const val TAG: String = "BtHelperSliceProvider"
+
         /** Constant representing infinity. */
         private const val INFINITY: Long = -1
 
