@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: TheParasiteProject
+  SPDX-License-Identifier: GPL-3.0-or-later
+  License-Filename: LICENSE
+-->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <files-path name="shared_icons" path="icons/" />
+</paths>

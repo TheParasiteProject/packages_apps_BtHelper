@@ -25,7 +25,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
-import android.content.res.Resources.NotFoundException
+import android.graphics.Bitmap
 import android.hardware.input.InputManager
 import android.net.Uri
 import android.os.Handler
@@ -40,7 +40,10 @@ import android.view.InputDevice
 import android.view.KeyCharacterMap
 import android.view.KeyEvent
 import android.widget.Toast
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.content.edit
+import androidx.core.graphics.drawable.toBitmap
 import com.android.bluetooth.bthelper.Constants
 import com.android.bluetooth.bthelper.Constants.ACTION_ASI_UPDATE_BLUETOOTH_DATA
 import com.android.bluetooth.bthelper.Constants.ACTION_BATTERY_LEVEL_CHANGED
@@ -81,6 +84,9 @@ import com.android.bluetooth.bthelper.utils.setMetadataInt
 import com.android.bluetooth.bthelper.utils.setMetadataString
 import com.android.bluetooth.bthelper.utils.setMetadataUri
 import com.android.bluetooth.bthelper.utils.setMetadataValue
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.io.encoding.Base64
@@ -1167,21 +1173,47 @@ class PodsService :
             .build()
     }
 
-    // Convert internal resource address to URI
-    private fun resToUri(resId: Int): Uri? {
+    private fun resToFile(resId: Int): File? {
+        val drawable = ContextCompat.getDrawable(this, resId) ?: return null
+
+        val iconDir = File(filesDir, "icons")
+        if (!iconDir.exists()) {
+            iconDir.mkdirs()
+        }
+
+        val iconFile = File(iconDir, resources.getResourceEntryName(resId) + ".png")
+        if (iconFile.exists()) {
+            return iconFile
+        }
+
         try {
-            val uri: Uri =
-                Uri.Builder()
-                    .scheme(ContentResolver.SCHEME_ANDROID_RESOURCE)
-                    .authority(Constants.AUTHORITY_BTHELPER)
-                    .appendPath(resources.getResourceTypeName(resId))
-                    .appendPath(resources.getResourceEntryName(resId))
-                    .build()
-            return uri
-        } catch (e: NotFoundException) {
-            Log.e(TAG, "Resource not found for resId: $resId", e)
+            FileOutputStream(iconFile).use { out ->
+                drawable.toBitmap().compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+        } catch (e: IOException) {
+            Log.e(TAG, "Error writing icon to file", e)
             return null
         }
+
+        return iconFile
+    }
+
+    // Convert internal resource address to URI
+    private fun getIconUri(resId: Int): Uri? {
+        val iconFile = resToFile(resId) ?: return null
+
+        val uri = FileProvider.getUriForFile(this, Constants.AUTHORITY_PROVIDER, iconFile)
+
+        Constants.SystemPackages.forEach { pkg ->
+            grantUriPermission(
+                pkg,
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION or
+                    Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION,
+            )
+        }
+
+        return uri
     }
 
     private fun setInitialMetadata(device: BluetoothDevice): Boolean {
@@ -1231,19 +1263,19 @@ class PodsService :
             ) &&
             device.setMetadataUri(
                 BluetoothDevice.METADATA_MAIN_ICON,
-                resToUri(metadata.drawable),
+                getIconUri(metadata.drawable),
             ) &&
             device.setMetadataUri(
                 BluetoothDevice.METADATA_UNTETHERED_LEFT_ICON,
-                resToUri(metadata.leftDrawable),
+                getIconUri(metadata.leftDrawable),
             ) &&
             device.setMetadataUri(
                 BluetoothDevice.METADATA_UNTETHERED_RIGHT_ICON,
-                resToUri(metadata.rightDrawable),
+                getIconUri(metadata.rightDrawable),
             ) &&
             device.setMetadataUri(
                 BluetoothDevice.METADATA_UNTETHERED_CASE_ICON,
-                resToUri(metadata.caseDrawable),
+                getIconUri(metadata.caseDrawable),
             )
     }
 
@@ -1265,7 +1297,7 @@ class PodsService :
                 BluetoothDevice.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
                 metadata.lowBattThreshold,
             ) &&
-            device.setMetadataUri(BluetoothDevice.METADATA_MAIN_ICON, resToUri(metadata.drawable))
+            device.setMetadataUri(BluetoothDevice.METADATA_MAIN_ICON, getIconUri(metadata.drawable))
     }
 
     // Set metadata (icon, battery, charging status, etc.) for current device
