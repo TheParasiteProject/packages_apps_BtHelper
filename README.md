@@ -7,8 +7,7 @@ These features are not currently supported by AOSP.<br>
 
 ## Project Status
 
-Currently, Only Apple AirPods series are supported by this project.<br>
-Media play/pause, OnePod mode features are highly experimental.
+Only Apple AirPods series are supported by this project.<br>
 
 ## Requirements
 
@@ -16,6 +15,9 @@ This project depends on AOSP components.<br>
 You need to add these commits to corresponding repositories.
 
 * packages/apps/Settings: [[HACK] Settings: Bluetooth: Don't check persistable uri permission for BtHelper](https://github.com/TheParasiteProject/packages_apps_Settings/commit/189dcd3b6c62cbc99e170a3b4c898ab3d039c542)
+* packages/modules/Bluetooth:
+  * [l2cap: Remove the code that sents extra packets](https://github.com/TheParasiteProject/packages_modules_Bluetooth/commit/b99e3d32ef2dc89fb257fd1e8fd41830232aedec)
+  * [l2cap: Restore l2cu_send_peer_info_req](https://github.com/TheParasiteProject-Staging/packages_modules_Bluetooth/commit/9433a6d5f454f09ababbfcdeb88a43d80313f223)
 * vendor repository (e.g. vendor/aosp): [vendor: config: common: Build BtHelper](https://github.com/TheParasiteProject/vendor_aosp/commit/424bca6b12a9f1d5fd56374ba6ae4310ea98cde3)
 
 After that clone this repo:<br>
@@ -32,6 +34,7 @@ We would like to express our gratitude to the following projects:
 * [OpenPods](https://github.com/adolfintel/OpenPods): Code base of this project.
 * [CAPod](https://github.com/d4rken-org/capod): Media play/pause, OnePod mode, and many other functionalities.
 * [xingrz](https://github.com/xingrz): Android System Settings integration.
+* [LibrePods](https://github.com/kavishdevar/librepods): Advanced AirPods support with in-depth researches.
 
 ## Trademark
 
