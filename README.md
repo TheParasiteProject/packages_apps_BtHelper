@@ -14,7 +14,6 @@ Only Apple AirPods series are supported by this project.<br>
 This project depends on AOSP components.<br>
 You need to add these commits to corresponding repositories.
 
-* packages/apps/Settings: [[HACK] Settings: Bluetooth: Don't check persistable uri permission for BtHelper](https://github.com/TheParasiteProject/packages_apps_Settings/commit/189dcd3b6c62cbc99e170a3b4c898ab3d039c542)
 * packages/modules/Bluetooth:
   * [l2cap: Remove the code that sents extra packets](https://github.com/TheParasiteProject/packages_modules_Bluetooth/commit/b99e3d32ef2dc89fb257fd1e8fd41830232aedec)
   * [l2cap: Restore l2cu_send_peer_info_req](https://github.com/TheParasiteProject-Staging/packages_modules_Bluetooth/commit/9433a6d5f454f09ababbfcdeb88a43d80313f223)
