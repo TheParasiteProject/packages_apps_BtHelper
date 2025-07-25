@@ -12,7 +12,7 @@ import android.os.ParcelUuid
 object Constants {
     /* Authority (package name) */
     const val AUTHORITY_BTHELPER: String = "com.android.bluetooth.bthelper"
-    const val AUTHORITY_PROVIDER: String = "com.android.bluetooth.bthelper.fileprovider"
+    const val AUTHORITY_FILE: String = "com.android.bluetooth.bthelper.fileprovider"
     const val AUTHORITY_SLICE: String = "com.android.bluetooth.bthelper.sliceprovider"
 
     /* Slices Paths */

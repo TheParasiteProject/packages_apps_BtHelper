@@ -1203,7 +1203,7 @@ class PodsService :
     private fun getIconUri(resId: Int): Uri? {
         val iconFile = resToFile(resId) ?: return null
 
-        val uri = FileProvider.getUriForFile(this, Constants.AUTHORITY_PROVIDER, iconFile)
+        val uri = FileProvider.getUriForFile(this, Constants.AUTHORITY_FILE, iconFile)
 
         Constants.SystemPackages.forEach { pkg ->
             grantUriPermission(
