@@ -10,6 +10,8 @@ import android.content.SharedPreferences
 import android.os.ParcelUuid
 
 object Constants {
+    const val TAG: String = "BtHelper"
+
     /* Authority (package name) */
     const val AUTHORITY_BTHELPER: String = "com.android.bluetooth.bthelper"
     const val AUTHORITY_FILE: String = AUTHORITY_BTHELPER + ".fileprovider"

@@ -39,7 +39,7 @@ class BtHelperSliceProvider : SliceProvider() {
             return null
         }
         val authority: String? = sliceUri.authority
-        if (authority != Constants.AUTHORITY_SLICE) {   
+        if (authority != Constants.AUTHORITY_SLICE) {
             return null
         }
         val path: String? = sliceUri.path

@@ -7,11 +7,21 @@ package com.android.bluetooth.bthelper.utils
 
 import android.bluetooth.BluetoothDevice
 import android.net.Uri
+import android.util.Log
+import com.android.bluetooth.bthelper.Constants.TAG
 import java.util.Locale
 
 fun BluetoothDevice.setMetadataValue(key: Int, value: ByteArray, force: Boolean = false): Boolean {
     if (force || this.getMetadata(key) == null) {
-        return this.setMetadata(key, value)
+        try {
+            val ret = this.setMetadata(key, value)
+            if (!ret) {
+                Log.w(TAG, "Failed to set metadata ${key}")
+            }
+            return ret
+        } catch (e: Exception) {
+            Log.w(TAG, "Excepttion while setting metadata ${key}", e)
+        }
     }
     return true
 }
