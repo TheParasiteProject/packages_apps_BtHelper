@@ -13,10 +13,12 @@ object Constants {
     /* Authority (package name) */
     const val AUTHORITY_BTHELPER: String = "com.android.bluetooth.bthelper"
     const val AUTHORITY_PROVIDER: String = "com.android.bluetooth.bthelper.fileprovider"
+    const val AUTHORITY_SLICE: String = "com.android.bluetooth.bthelper.sliceprovider"
 
     /* Slices Paths */
     const val PATH_BTHELPER: String = "bthelper"
     const val SLICE_BTHELPER: String = "/" + PATH_BTHELPER
+    const val PARAM_MAC_ADDRESS: String = "address"
 
     /* Slices Type */
     const val SLICE_TOGGLE: Int = 101

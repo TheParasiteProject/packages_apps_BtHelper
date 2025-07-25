@@ -1165,11 +1165,12 @@ class PodsService :
     }
 
     // Convert internal content address combined with recieved path value to URI
-    fun getUri(path: String?): Uri {
+    fun getSliceUri(): Uri {
         return Uri.Builder()
             .scheme(ContentResolver.SCHEME_CONTENT)
-            .authority(Constants.AUTHORITY_BTHELPER)
-            .appendPath(path)
+            .authority(Constants.AUTHORITY_SLICE)
+            .appendPath(Constants.PATH_BTHELPER)
+            .appendQueryParameter(Constants.PARAM_MAC_ADDRESS, macAddress)
             .build()
     }
 
@@ -1225,10 +1226,7 @@ class PodsService :
                 BluetoothDevice.METADATA_SOFTWARE_VERSION,
                 COMPANION_TYPE_NONE,
             ) &&
-            device.setMetadataUri(
-                BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI,
-                getUri(Constants.PATH_BTHELPER),
-            )
+            device.setMetadataUri(BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI, getSliceUri())
     }
 
     private fun setRegularPodsMetadata(

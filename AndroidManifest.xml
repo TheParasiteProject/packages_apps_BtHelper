@@ -60,10 +60,14 @@
             tools:replace="android:authorities" />
 
         <provider
-            android:authorities="com.android.bluetooth.bthelper"
+            android:authorities="com.android.bluetooth.bthelper.sliceprovider"
             android:name=".slices.BtHelperSliceProvider"
-            android:grantUriPermissions="true"
-            android:exported="true" />
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.app.slice.category.SLICE"/>
+            </intent-filter>
+        </provider>
 
         <provider
             android:name="androidx.core.content.FileProvider"
