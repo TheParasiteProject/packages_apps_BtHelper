@@ -12,8 +12,8 @@ import android.os.ParcelUuid
 object Constants {
     /* Authority (package name) */
     const val AUTHORITY_BTHELPER: String = "com.android.bluetooth.bthelper"
-    const val AUTHORITY_FILE: String = "com.android.bluetooth.bthelper.fileprovider"
-    const val AUTHORITY_SLICE: String = "com.android.bluetooth.bthelper.sliceprovider"
+    const val AUTHORITY_FILE: String = AUTHORITY_BTHELPER + ".fileprovider"
+    const val AUTHORITY_SLICE: String = AUTHORITY_BTHELPER + ".sliceprovider"
 
     /* Slices Paths */
     const val PATH_BTHELPER: String = "bthelper"
@@ -25,7 +25,7 @@ object Constants {
     const val SLICE_MAIN: Int = 102
 
     /* Slices Intent Action */
-    const val ACTION_PENDING_INTENT: String = "com.android.bluetooth.bthelper.ACTION_PENDING_INTENT"
+    const val ACTION_PENDING_INTENT: String = AUTHORITY_BTHELPER + ".ACTION_PENDING_INTENT"
 
     /* Slices Intent Extra */
     const val EXTRA_NONE: Int = 0
@@ -61,11 +61,11 @@ object Constants {
     const val KEY_RIGHT_LONG_PRESS_ACTION: String = "right_long_press_action"
 
     /* Intent Actions and extras */
-    const val ACTION_CONNECTED: String = "com.android.bluetooth.bthelper.CONNECTED"
-    const val ACTION_DISCONNECTED: String = "com.android.bluetooth.bthelper.DISCONNECTED"
-    const val ACTION_NAME_CHANGED: String = "com.android.bluetooth.bthelper.NAME_CHANGED"
+    const val ACTION_CONNECTED: String = AUTHORITY_BTHELPER + ".CONNECTED"
+    const val ACTION_DISCONNECTED: String = AUTHORITY_BTHELPER + ".DISCONNECTED"
+    const val ACTION_NAME_CHANGED: String = AUTHORITY_BTHELPER + ".NAME_CHANGED"
 
-    const val ACTION_SET_ANC_MODE: String = "com.android.bluetooth.bthelper.SET_ANC_MODE"
+    const val ACTION_SET_ANC_MODE: String = AUTHORITY_BTHELPER + ".SET_ANC_MODE"
     const val EXTRA_MODE: String = "mode"
 
     /* Hidden APIs */
