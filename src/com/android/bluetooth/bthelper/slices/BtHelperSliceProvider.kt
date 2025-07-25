@@ -38,7 +38,11 @@ class BtHelperSliceProvider : SliceProvider() {
         if (mContext == null) {
             return null
         }
-        val path: String? = sliceUri.getPath()
+        val authority: String? = sliceUri.authority
+        if (authority != Constants.AUTHORITY_SLICE) {   
+            return null
+        }
+        val path: String? = sliceUri.path
         when (path) {
             Constants.SLICE_BTHELPER -> return createBtHelperSlice(sliceUri)
         }
