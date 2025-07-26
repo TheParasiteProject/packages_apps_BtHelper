@@ -66,12 +66,8 @@
         <provider
             android:authorities="com.android.bluetooth.bthelper.sliceprovider"
             android:name=".slices.BtHelperSliceProvider"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-                <category android:name="android.app.slice.category.SLICE"/>
-            </intent-filter>
-        </provider>
+            android:grantUriPermissions="true"
+            android:exported="true" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -99,6 +95,7 @@
             android:label="@string/settings_title"
             android:theme="@style/Theme.SubSettingsBase">
             <intent-filter>
+                <action android:name="com.android.bluetooth.bthelper.ACTION_PENDING_INTENT" />
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
