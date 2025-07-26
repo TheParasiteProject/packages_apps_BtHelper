@@ -39,10 +39,10 @@
 
     <protected-broadcast android:name="batterywidget.impl.action.update_bluetooth_data" />
 
-    <protected-broadcast android:name="com.android.bluetooth.bthelper.action.ONEPOD_CHANGED" />
-    <protected-broadcast android:name="com.android.bluetooth.bthelper.action.AUTO_PLAY_CHANGED" />
-    <protected-broadcast android:name="com.android.bluetooth.bthelper.action.AUTO_PAUSE_CHANGED" />
-    <protected-broadcast android:name="com.android.bluetooth.bthelper.action.LOW_LATENCY_AUDIO_CHANGED" />
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.CONNECTED" />
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.DISCONNECTED" />
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.NAME_CHANGED" />
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.SET_ANC_MODE" />
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
