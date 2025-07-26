@@ -5,8 +5,10 @@
  */
 package com.android.bluetooth.bthelper
 
+import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.ParcelUuid
 
 object Constants {
@@ -230,6 +232,23 @@ object Constants {
     const val ACTION_ASI_UPDATE_BLUETOOTH_DATA = "batterywidget.impl.action.update_bluetooth_data"
 
     const val COMPANION_TYPE_NONE = "COMPANION_NONE"
+    const val METADATA_FAST_PAIR_CUSTOMIZED_FIELDS = 25
+}
+
+fun getSliceUri(macAddress: String?): String {
+    var uri =
+        Uri.Builder()
+            .scheme(ContentResolver.SCHEME_CONTENT)
+            .authority(Constants.AUTHORITY_SLICE)
+            .appendPath(Constants.PATH_BTHELPER)
+    if (macAddress != null && !macAddress.isEmpty()) {
+        uri = uri.appendQueryParameter(Constants.PARAM_MAC_ADDRESS, macAddress)
+    }
+    return uri.build().toString()
+}
+
+fun getFastPairSliceUri(macAddress: String?): String {
+    return "${getSliceUri(macAddress)}/"
 }
 
 fun Context.getSharedPreferences(): SharedPreferences {

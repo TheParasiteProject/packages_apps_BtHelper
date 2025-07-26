@@ -19,7 +19,6 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
-import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -55,7 +54,9 @@ import com.android.bluetooth.bthelper.Constants.EXTRA_HF_INDICATORS_IND_VALUE
 import com.android.bluetooth.bthelper.Constants.HF_INDICATOR_BATTERY_LEVEL_STATUS
 import com.android.bluetooth.bthelper.Constants.PACKAGE_ASI
 import com.android.bluetooth.bthelper.R
+import com.android.bluetooth.bthelper.getFastPairSliceUri
 import com.android.bluetooth.bthelper.getSharedPreferences
+import com.android.bluetooth.bthelper.getSliceUri
 import com.android.bluetooth.bthelper.isLowLatencySupported
 import com.android.bluetooth.bthelper.setSingleDevice
 import com.android.bluetooth.bthelper.utils.A2dpReceiver
@@ -1164,16 +1165,6 @@ class PodsService :
         isHeadTrackingActive = false
     }
 
-    // Convert internal content address combined with recieved path value to URI
-    fun getSliceUri(): Uri {
-        return Uri.Builder()
-            .scheme(ContentResolver.SCHEME_CONTENT)
-            .authority(Constants.AUTHORITY_SLICE)
-            .appendPath(Constants.PATH_BTHELPER)
-            .appendQueryParameter(Constants.PARAM_MAC_ADDRESS, macAddress)
-            .build()
-    }
-
     private fun resToFile(resId: Int): File? {
         val drawable = ContextCompat.getDrawable(this, resId) ?: return null
 
@@ -1226,7 +1217,15 @@ class PodsService :
         ret =
             device.setMetadataString(BluetoothDevice.METADATA_SOFTWARE_VERSION, COMPANION_TYPE_NONE)
         ret =
-            device.setMetadataUri(BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI, getSliceUri())
+            device.setMetadataString(
+                BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI,
+                getSliceUri(macAddress),
+            )
+        ret =
+            device.setMetadataString(
+                Constants.METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
+                getFastPairSliceUri(macAddress),
+            )
 
         return ret
     }
