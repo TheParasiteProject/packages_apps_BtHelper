@@ -12,7 +12,8 @@ import com.android.bluetooth.bthelper.Constants.TAG
 import java.util.Locale
 
 fun BluetoothDevice.setMetadataValue(key: Int, value: ByteArray, force: Boolean = false): Boolean {
-    if (force || this.getMetadata(key) == null) {
+    val isValueAlreadySet = this.getMetadata(key)?.contentEquals(value) == true
+    if (force || !isValueAlreadySet) {
         try {
             val ret = this.setMetadata(key, value)
             if (!ret) {

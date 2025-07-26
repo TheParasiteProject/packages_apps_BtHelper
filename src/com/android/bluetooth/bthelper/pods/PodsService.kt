@@ -15,6 +15,7 @@ package com.android.bluetooth.bthelper.pods
 import android.Manifest
 import android.app.Service
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothAdapter.OnMetadataChangedListener
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
@@ -112,7 +113,8 @@ class PodsService :
     PodsUuidListener,
     AACPManager.PacketCallback,
     BLEManager.AirPodsStatusListener,
-    PodsA2dpListener {
+    PodsA2dpListener,
+    OnMetadataChangedListener {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -151,17 +153,9 @@ class PodsService :
 
     private var currentDevice: BluetoothDevice? = null
 
-    private var isMetaDataSet = false
-        @Synchronized get
-        @Synchronized set
-
-    private var isSliceSet = false
-        @Synchronized get
-        @Synchronized set
-
-    private var isModelDataSet = false
-        @Synchronized get
-        @Synchronized set
+    @Volatile private var isMetaDataSet = false
+    @Volatile private var isSliceSet = false
+    @Volatile private var isModelDataSet = false
 
     private var bluetoothAdapter: BluetoothAdapter? = null
     private var aacpManager: AACPManager? = null
@@ -193,10 +187,7 @@ class PodsService :
         }
 
     @Volatile private var isInCall = false
-
-    var cameraActive = false
-        @Synchronized get
-        @Synchronized set
+    @Volatile var cameraActive = false
 
     val earDetectNotif = AirPodsNotifications.EarDetection()
     val ancNotif = AirPodsNotifications.ANC()
@@ -204,9 +195,7 @@ class PodsService :
     val conversAwareNotif = AirPodsNotifications.ConversationalAwarenessNotification()
     val handler = Handler(Looper.getMainLooper())
 
-    var isHeadTrackingActive = false
-        @Synchronized get
-        @Synchronized set
+    @Volatile var isHeadTrackingActive = false
 
     var uuidReceiver: UuidReceiver? = null
     var a2dpReceiver: A2dpReceiver? = null
@@ -823,6 +812,7 @@ class PodsService :
         if (currentDevice == null && intent?.action == Constants.ACTION_CONNECTED) {
             currentDevice = device
             updatePodsStatus(null, device)
+            bluetoothAdapter?.addOnMetadataChangedListener(device!!, mainExecutor, this)
             macAddress = device?.address ?: ""
             sharedPreferences?.edit { putString(Constants.KEY_MAC_ADDRESS, macAddress) }
             serviceScope.launch { bluetoothSocketManager?.connectToSocket(device) }
@@ -1123,8 +1113,6 @@ class PodsService :
 
         disconnectAudio()
 
-        currentDevice = null
-
         bluetoothSocketManager?.disconnect()
         gestureDetector?.stopDetection()
         inputManager = null
@@ -1139,6 +1127,8 @@ class PodsService :
         gestureDetector = null
         telephonyManager?.unregisterTelephonyCallback(callStateCallback as TelephonyCallback)
         telephonyManager = null
+        currentDevice?.let { bluetoothAdapter?.removeOnMetadataChangedListener(it, this) }
+        currentDevice = null
         bluetoothAdapter = null
         uuidReceiver?.onDestroy()
         uuidReceiver = null
@@ -1208,6 +1198,35 @@ class PodsService :
         return uri
     }
 
+    private fun restoreInitialMetadata(device: BluetoothDevice, key: Int) {
+        when (key) {
+            BluetoothDevice.METADATA_COMPANION_APP -> {
+                device.setMetadataString(
+                    BluetoothDevice.METADATA_COMPANION_APP,
+                    Constants.AUTHORITY_BTHELPER,
+                )
+            }
+            BluetoothDevice.METADATA_SOFTWARE_VERSION -> {
+                device.setMetadataString(
+                    BluetoothDevice.METADATA_SOFTWARE_VERSION,
+                    COMPANION_TYPE_NONE,
+                )
+            }
+            BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI -> {
+                device.setMetadataString(
+                    BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI,
+                    getSliceUri(macAddress),
+                )
+            }
+            Constants.METADATA_FAST_PAIR_CUSTOMIZED_FIELDS -> {
+                device.setMetadataString(
+                    Constants.METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
+                    getFastPairSliceUri(macAddress),
+                )
+            }
+        }
+    }
+
     private fun setInitialMetadata(device: BluetoothDevice): Boolean {
         var ret =
             device.setMetadataString(
@@ -1239,18 +1258,18 @@ class PodsService :
                 BluetoothDevice.METADATA_MANUFACTURER_NAME,
                 metadata.manufacturer,
             )
+        ret = device.setMetadataString(BluetoothDevice.METADATA_MODEL_NAME, metadata.model)
         ret =
-            device.setMetadataString(BluetoothDevice.METADATA_MODEL_NAME, metadata.model) &&
-                device.setMetadataValue(
-                    BluetoothDevice.METADATA_DEVICE_TYPE,
-                    BluetoothDevice.DEVICE_TYPE_UNTETHERED_HEADSET.toByteArray(),
-                )
+            device.setMetadataValue(
+                BluetoothDevice.METADATA_DEVICE_TYPE,
+                BluetoothDevice.DEVICE_TYPE_UNTETHERED_HEADSET.toByteArray(),
+            )
+        ret = device.setMetadataBoolean(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET, true)
         ret =
-            device.setMetadataBoolean(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET, true) &&
-                device.setMetadataInt(
-                    BluetoothDevice.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
-                    metadata.lowBattThreshold,
-                )
+            device.setMetadataInt(
+                BluetoothDevice.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
+                metadata.lowBattThreshold,
+            )
         ret =
             device.setMetadataInt(
                 BluetoothDevice.METADATA_UNTETHERED_LEFT_LOW_BATTERY_THRESHOLD,
@@ -1300,16 +1319,23 @@ class PodsService :
                 BluetoothDevice.METADATA_DEVICE_TYPE,
                 BluetoothDevice.DEVICE_TYPE_UNTETHERED_HEADSET.toByteArray(),
             )
+        ret = device.setMetadataBoolean(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET, true)
+        ret = device.setMetadataString(BluetoothDevice.METADATA_MODEL_NAME, metadata.model)
         ret =
-            device.setMetadataBoolean(BluetoothDevice.METADATA_IS_UNTETHERED_HEADSET, true) &&
-                device.setMetadataString(BluetoothDevice.METADATA_MODEL_NAME, metadata.model) &&
-                device.setMetadataInt(
-                    BluetoothDevice.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
-                    metadata.lowBattThreshold,
-                )
+            device.setMetadataInt(
+                BluetoothDevice.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
+                metadata.lowBattThreshold,
+            )
         ret =
             device.setMetadataUri(BluetoothDevice.METADATA_MAIN_ICON, getIconUri(metadata.drawable))
         return ret
+    }
+
+    override fun onMetadataChanged(device: BluetoothDevice, key: Int, value: ByteArray?) {
+        if (currentDevice?.equals(device) != true) return
+        if (isSliceSet) {
+            restoreInitialMetadata(device, key)
+        }
     }
 
     // Set metadata (icon, battery, charging status, etc.) for current device
@@ -1369,33 +1395,18 @@ class PodsService :
             device.setMetadataBoolean(
                 BluetoothDevice.METADATA_UNTETHERED_LEFT_CHARGING,
                 leftCharging,
-                true,
             )
             device.setMetadataBoolean(
                 BluetoothDevice.METADATA_UNTETHERED_RIGHT_CHARGING,
                 rightCharging,
-                true,
             )
             device.setMetadataBoolean(
                 BluetoothDevice.METADATA_UNTETHERED_CASE_CHARGING,
                 caseCharging,
-                true,
             )
-            device.setMetadataInt(
-                BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY,
-                leftBattery,
-                true,
-            )
-            device.setMetadataInt(
-                BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY,
-                rightBattery,
-                true,
-            )
-            device.setMetadataInt(
-                BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY,
-                caseBattery,
-                true,
-            )
+            device.setMetadataInt(BluetoothDevice.METADATA_UNTETHERED_LEFT_BATTERY, leftBattery)
+            device.setMetadataInt(BluetoothDevice.METADATA_UNTETHERED_RIGHT_BATTERY, rightBattery)
+            device.setMetadataInt(BluetoothDevice.METADATA_UNTETHERED_CASE_BATTERY, caseBattery)
 
             chargingMain = leftCharging && rightCharging
             batteryUnified = min(leftBattery.toDouble(), rightBattery.toDouble()).toInt()
@@ -1423,8 +1434,8 @@ class PodsService :
             return
         }
 
-        device.setMetadataBoolean(BluetoothDevice.METADATA_MAIN_CHARGING, chargingMain, true)
-        device.setMetadataInt(BluetoothDevice.METADATA_MAIN_BATTERY, batteryUnified, true)
+        device.setMetadataBoolean(BluetoothDevice.METADATA_MAIN_CHARGING, chargingMain)
+        device.setMetadataInt(BluetoothDevice.METADATA_MAIN_BATTERY, batteryUnified)
 
         broadcastHfIndicatorEventIntent(batteryUnified, device)
     }
