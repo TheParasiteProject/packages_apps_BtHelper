@@ -38,4 +38,5 @@
     <!-- Head gesture -->
     <string name="head_gesture_call_answered_toast">Call answered via head gesture</string>
     <string name="head_gesture_call_rejected_toast">Call rejected via head gesture</string>
+
 </resources>

@@ -26,6 +26,15 @@ class SliceCreator(
     private val context: Context,
     private val type: Int,
 ) {
+    private val sliceIntentAction =
+        context.resources.getString(R.string.config_bt_slice_intent_action) ?: ""
+    private val extraIntent =
+        context.resources.getString(R.string.config_bt_slice_extra_intent) ?: ""
+    private val slicePendingIntentAction =
+        context.resources.getString(R.string.config_bt_slice_pending_intent_action) ?: ""
+    private val extraPendingIntent =
+        context.resources.getString(R.string.config_bt_slice_extra_pending_intent) ?: ""
+
     fun getSettingRow(sliceUri: Uri): ListBuilder.RowBuilder {
         val settingRow: ListBuilder.RowBuilder = ListBuilder.RowBuilder(sliceUri)
 
@@ -55,10 +64,12 @@ class SliceCreator(
 
     private val broadcastIntent: PendingIntent
         get() {
-            val intent: Intent =
-                Intent(context, SliceBroadcastReceiver::class.java)
-                    .setAction(action)
-                    .putExtra(action, extra)
+            val intent: Intent = Intent(context, SliceBroadcastReceiver::class.java)
+            val intentExtra: Intent = Intent(context, SliceBroadcastReceiver::class.java)
+            intent
+                .setAction(sliceIntentAction)
+                .putExtra(extraIntent, intentExtra)
+                .putExtra(action, extra)
             return PendingIntent.getBroadcast(
                 context,
                 0, /* requestCode */
@@ -73,7 +84,12 @@ class SliceCreator(
     }
 
     private fun getMainSettingsSlice(iconCompat: IconCompat, sliceUri: Uri): SliceAction {
-        val intent: Intent = Intent(context, MainSettingsActivity::class.java).setAction(action)
+        val intent: Intent = Intent(context, MainSettingsActivity::class.java)
+        val intentExtra: Intent = Intent(context, MainSettingsActivity::class.java)
+        intent
+            .setAction(sliceIntentAction)
+            .putExtra(extraIntent, intentExtra)
+            .putExtra(action, extra)
         val pendingIntent: PendingIntent =
             PendingIntent.getActivity(
                 context,
