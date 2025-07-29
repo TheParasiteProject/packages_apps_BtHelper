@@ -55,9 +55,7 @@ import com.android.bluetooth.bthelper.Constants.EXTRA_HF_INDICATORS_IND_VALUE
 import com.android.bluetooth.bthelper.Constants.HF_INDICATOR_BATTERY_LEVEL_STATUS
 import com.android.bluetooth.bthelper.Constants.PACKAGE_ASI
 import com.android.bluetooth.bthelper.R
-import com.android.bluetooth.bthelper.getFastPairSliceUri
 import com.android.bluetooth.bthelper.getSharedPreferences
-import com.android.bluetooth.bthelper.getSliceUri
 import com.android.bluetooth.bthelper.isLowLatencySupported
 import com.android.bluetooth.bthelper.setSingleDevice
 import com.android.bluetooth.bthelper.utils.A2dpReceiver
@@ -1213,17 +1211,9 @@ class PodsService :
                     COMPANION_TYPE_NONE,
                 )
             }
-            BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI -> {
-                device.setMetadataString(
-                    BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI,
-                    getSliceUri(macAddress),
-                )
-            }
+            BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI,
             Constants.METADATA_FAST_PAIR_CUSTOMIZED_FIELDS -> {
-                device.setMetadataString(
-                    Constants.METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
-                    getFastPairSliceUri(macAddress),
-                )
+                sendSliceSetupIntent(device, key)
             }
         }
     }
@@ -1236,18 +1226,20 @@ class PodsService :
             )
         ret =
             device.setMetadataString(BluetoothDevice.METADATA_SOFTWARE_VERSION, COMPANION_TYPE_NONE)
-        ret =
-            device.setMetadataString(
-                BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI,
-                getSliceUri(macAddress),
-            )
-        ret =
-            device.setMetadataString(
-                Constants.METADATA_FAST_PAIR_CUSTOMIZED_FIELDS,
-                getFastPairSliceUri(macAddress),
-            )
+        sendSliceSetupIntent(device, BluetoothDevice.METADATA_ENHANCED_SETTINGS_UI_URI)
+        sendSliceSetupIntent(device, Constants.METADATA_FAST_PAIR_CUSTOMIZED_FIELDS)
 
         return ret
+    }
+
+    private fun sendSliceSetupIntent(device: BluetoothDevice, key: Int) {
+        val sliceIntent: Intent =
+            Intent(Constants.ACTION_SET_SLICE).apply {
+                putExtra(BluetoothDevice.EXTRA_DEVICE, device)
+                putExtra(Constants.EXTRA_METADATA_KEY, key)
+                setPackage(Constants.PACKAGE_BTHELPER_ADAPTER)
+            }
+        sendBroadcastAsUser(sliceIntent, UserHandle.ALL)
     }
 
     private fun setRegularPodsMetadata(

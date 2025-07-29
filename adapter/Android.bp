@@ -1,0 +1,48 @@
+//
+// SPDX-FileCopyrightText: TheParasiteProject
+// SPDX-License-Identifier: GPL-3.0-or-later
+// License-Filename: LICENSE
+//
+
+android_app {
+    name: "BtHelperAdapter",
+    defaults: [
+        "SettingsLibDefaults",
+    ],
+
+    srcs: [
+        "src/**/*.java",
+        "src/**/*.kt",
+    ],
+
+    certificate: "platform",
+
+    platform_apis: true,
+    static_libs: [
+        "androidx.core_core",
+        "androidx.core_core-ktx",
+        "androidx.preference_preference",
+        "androidx.slice_slice-core",
+        "androidx.slice_slice-view",
+        "androidx.slice_slice-builders",
+        "kotlin-reflect",
+        "kotlin-stdlib",
+        "kotlin-stdlib-jdk7",
+        "SettingsLib",
+        "SettingsLibSettingsTheme",
+    ],
+
+    resource_dirs: [
+        "res",
+    ],
+
+    optimize: {
+        enabled: true,
+        shrink: true,
+        optimize: true,
+        proguard_flags_files: ["proguard.flags"],
+    },
+
+    system_ext_specific: true,
+    privileged: true,
+}

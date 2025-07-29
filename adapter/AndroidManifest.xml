@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: TheParasiteProject
+  SPDX-License-Identifier: GPL-3.0-or-later
+  License-Filename: LICENSE
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.android.bluetooth.bthelper.adapter"
+    android:versionCode="1"
+    android:versionName="1.0"
+    android:sharedUserId="android.uid.system">
+
+    <queries>
+        <package android:name="com.android.bluetooth.bthelper" />
+        <package android:name="com.android.systemui" />
+        <package android:name="com.android.settings" />
+        <package android:name="com.android.bluetooth" />
+        <package android:name="com.google.android.bluetooth" />
+        <package android:name="com.google.android.settings.intelligence" />
+    </queries>
+
+    <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+    <uses-permission android:name="android.permission.BLUETOOTH_PRIVILEGED" />
+    <uses-permission
+        android:name="android.permission.BLUETOOTH_SCAN"
+        android:usesPermissionFlags="neverForLocation"
+        tools:targetApi="s" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.UPDATE_DEVICE_STATS" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS_FULL" />
+    <uses-permission android:name="android.permission.INTERACT_ACROSS_USERS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.MODIFY_PHONE_STATE" />
+    <uses-permission android:name="android.permission.LOCAL_MAC_ADDRESS" />
+
+    <attribution
+        android:tag="BtHelperAdapter"
+        android:label="@string/app_name" />
+
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.SET_SLICE" />
+
+    <application
+        android:icon="@mipmap/ic_bthelper"
+        android:label="@string/app_name"
+        android:enableOnBackInvokedCallback="true"
+        android:persistent="true">
+
+        <activity
+            android:name=".settings.MainSettingsActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:label="@string/settings_title"
+            android:theme="@style/Theme.SubSettingsBase">
+            <intent-filter>
+                <action android:name="com.android.bluetooth.bthelper.ACTION_PENDING_INTENT" />
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="com.android.bluetooth.bthelper.adapter.androidx-startup"
+            tools:replace="android:authorities" />
+
+        <provider
+            android:authorities="com.android.bluetooth.bthelper.sliceprovider"
+            android:name=".slices.BtHelperSliceProvider"
+            android:grantUriPermissions="true"
+            android:exported="true" />
+
+        <receiver
+            android:name=".slices.SliceBroadcastReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="com.android.bluetooth.bthelper.ACTION_PENDING_INTENT" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name=".StartupReceiver"
+            android:enabled="true"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="com.android.bluetooth.bthelper.SET_SLICE" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

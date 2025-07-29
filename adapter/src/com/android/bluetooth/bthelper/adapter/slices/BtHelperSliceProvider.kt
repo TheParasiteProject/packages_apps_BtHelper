@@ -3,31 +3,25 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
  */
-package com.android.bluetooth.bthelper.slices
+package com.android.bluetooth.bthelper.adapter.slices
 
 import android.content.Context
-import android.content.SharedPreferences
 import android.content.res.TypedArray
 import android.net.Uri
 import android.util.Log
 import androidx.slice.Slice
 import androidx.slice.SliceProvider
 import androidx.slice.builders.ListBuilder
-import com.android.bluetooth.bthelper.Constants
-import com.android.bluetooth.bthelper.R
+import com.android.bluetooth.bthelper.adapter.Constants
+import com.android.bluetooth.bthelper.adapter.R
 
 class BtHelperSliceProvider : SliceProvider() {
 
     private var mContext: Context? = null
-    private var mSharedPrefs: SharedPreferences? = null
 
     override fun onCreateSliceProvider(): Boolean {
         try {
             mContext = context
-            mContext?.let { ctx ->
-                mSharedPrefs =
-                    ctx.getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
-            }
         } catch (e: NullPointerException) {
             Log.e(TAG, "Error in onCreateSliceProvider", e)
         }

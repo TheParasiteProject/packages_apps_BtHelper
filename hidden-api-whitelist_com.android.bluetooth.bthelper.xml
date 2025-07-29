@@ -6,4 +6,5 @@
 -->
 <config>
   <hidden-api-whitelisted-app package="com.android.bluetooth.bthelper" />
+  <hidden-api-whitelisted-app package="com.android.bluetooth.bthelper.adapter" />
 </config>

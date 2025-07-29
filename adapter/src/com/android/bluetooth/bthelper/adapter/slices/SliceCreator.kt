@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
  */
-package com.android.bluetooth.bthelper.slices
+package com.android.bluetooth.bthelper.adapter.slices
 
 import android.app.PendingIntent
 import android.content.Context
@@ -12,9 +12,9 @@ import android.net.Uri
 import androidx.core.graphics.drawable.IconCompat
 import androidx.slice.builders.ListBuilder
 import androidx.slice.builders.SliceAction
-import com.android.bluetooth.bthelper.Constants
-import com.android.bluetooth.bthelper.R
-import com.android.bluetooth.bthelper.settings.MainSettingsActivity
+import com.android.bluetooth.bthelper.adapter.Constants
+import com.android.bluetooth.bthelper.adapter.R
+import com.android.bluetooth.bthelper.adapter.settings.MainSettingsActivity
 
 class SliceCreator(
     private val icon: Int,

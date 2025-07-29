@@ -12,6 +12,15 @@
     android:versionCode="1"
     android:versionName="1.0">
 
+    <queries>
+        <package android:name="com.android.bluetooth.bthelper.adapter" />
+        <package android:name="com.android.systemui" />
+        <package android:name="com.android.settings" />
+        <package android:name="com.android.bluetooth" />
+        <package android:name="com.google.android.bluetooth" />
+        <package android:name="com.google.android.settings.intelligence" />
+    </queries>
+
     <attribution
         android:tag="BtHelper"
         android:label="@string/app_name" />
@@ -44,6 +53,7 @@
     <protected-broadcast android:name="com.android.bluetooth.bthelper.DISCONNECTED" />
     <protected-broadcast android:name="com.android.bluetooth.bthelper.NAME_CHANGED" />
     <protected-broadcast android:name="com.android.bluetooth.bthelper.SET_ANC_MODE" />
+    <protected-broadcast android:name="com.android.bluetooth.bthelper.SET_SLICE" />
 
     <uses-feature
         android:name="android.hardware.bluetooth_le"
@@ -63,13 +73,6 @@
             android:name="androidx.startup.InitializationProvider"
             android:authorities="com.android.bluetooth.bthelper.androidx-startup"
             tools:replace="android:authorities" />
-
-        <provider
-            android:authorities="com.android.bluetooth.bthelper.sliceprovider"
-            android:name=".slices.BtHelperSliceProvider"
-            android:grantUriPermissions="true"
-            android:exported="true" />
-
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="com.android.bluetooth.bthelper.fileprovider"
@@ -79,16 +82,6 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
-
-        <receiver
-            android:name=".slices.SliceBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true"
-            android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="com.android.bluetooth.bthelper.ACTION_PENDING_INTENT" />
-            </intent-filter>
-        </receiver>
 
         <activity
             android:name=".settings.MainSettingsActivity"

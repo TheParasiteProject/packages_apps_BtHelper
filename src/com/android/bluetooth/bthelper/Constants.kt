@@ -5,10 +5,8 @@
  */
 package com.android.bluetooth.bthelper
 
-import android.content.ContentResolver
 import android.content.Context
 import android.content.SharedPreferences
-import android.net.Uri
 import android.os.ParcelUuid
 
 object Constants {
@@ -17,7 +15,7 @@ object Constants {
     /* Authority (package name) */
     const val AUTHORITY_BTHELPER: String = "com.android.bluetooth.bthelper"
     const val AUTHORITY_FILE: String = AUTHORITY_BTHELPER + ".fileprovider"
-    const val AUTHORITY_SLICE: String = AUTHORITY_BTHELPER + ".sliceprovider"
+    const val PACKAGE_BTHELPER_ADAPTER: String = AUTHORITY_BTHELPER + ".adapter"
 
     /* Slices Paths */
     const val PATH_BTHELPER: String = "bthelper"
@@ -68,6 +66,9 @@ object Constants {
     const val ACTION_CONNECTED: String = AUTHORITY_BTHELPER + ".CONNECTED"
     const val ACTION_DISCONNECTED: String = AUTHORITY_BTHELPER + ".DISCONNECTED"
     const val ACTION_NAME_CHANGED: String = AUTHORITY_BTHELPER + ".NAME_CHANGED"
+
+    const val ACTION_SET_SLICE: String = AUTHORITY_BTHELPER + ".SET_SLICE"
+    const val EXTRA_METADATA_KEY: String = "metadata_key"
 
     const val ACTION_SET_ANC_MODE: String = AUTHORITY_BTHELPER + ".SET_ANC_MODE"
     const val EXTRA_MODE: String = "mode"
@@ -233,22 +234,6 @@ object Constants {
 
     const val COMPANION_TYPE_NONE = "COMPANION_NONE"
     const val METADATA_FAST_PAIR_CUSTOMIZED_FIELDS = 25
-}
-
-fun getSliceUri(macAddress: String?): String {
-    var uri =
-        Uri.Builder()
-            .scheme(ContentResolver.SCHEME_CONTENT)
-            .authority(Constants.AUTHORITY_SLICE)
-            .appendPath(Constants.PATH_BTHELPER)
-    if (macAddress != null && !macAddress.isEmpty()) {
-        uri = uri.appendQueryParameter(Constants.PARAM_MAC_ADDRESS, macAddress)
-    }
-    return uri.build().toString()
-}
-
-fun getFastPairSliceUri(macAddress: String?): String {
-    return "${getSliceUri(macAddress)}/"
 }
 
 fun Context.getSharedPreferences(): SharedPreferences {

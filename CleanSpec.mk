@@ -47,6 +47,8 @@ $(call add-clean-step, rm -rf $(OUT_DIR)/target/common/obj/APPS/BtHelper_interme
 $(call add-clean-step, rm -rf $(OUT_DIR)/target/common/obj/ETC/com.android.bluetooth.bthelper.xml_intermediates)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system_ext/etc/permissions/com.android.bluetooth.bthelper.xml)
 $(call add-clean-step, rm -rf $(PRODUCT_OUT)/system_ext/priv-app/BtHelper)
+$(call add-clean-step, rm -rf $(OUT_DIR)/target/common/obj/APPS/BtHelperAdapter_intermediates)
+$(call add-clean-step, rm -rf $(PRODUCT_OUT)/system_ext/priv-app/BtHelperAdapter)
 # ************************************************
 # NEWER CLEAN STEPS MUST BE AT THE END OF THE LIST
 # ************************************************

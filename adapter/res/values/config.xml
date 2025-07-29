@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  SPDX-FileCopyrightText: TheParasiteProject
+  SPDX-License-Identifier: GPL-3.0-or-later
+  License-Filename: LICENSE
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Bluetooth Slice configs. Should be matched Settings -->
+    <string name="config_bt_slice_extra_intent"></string>
+    <string name="config_bt_slice_extra_pending_intent"></string>
+    <string name="config_bt_slice_intent_action"></string>
+    <string name="config_bt_slice_pending_intent_action"></string>
+
+</resources>

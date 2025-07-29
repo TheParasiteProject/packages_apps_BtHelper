@@ -39,6 +39,7 @@ android_app {
     ],
 
     required: [
+        "BtHelperAdapter",
         "privapp_whitelist_com.android.bluetooth.bthelper",
         "default-permissions_com.android.bluetooth.bthelper",
         "hidden-api-whitelist_com.android.bluetooth.bthelper",
