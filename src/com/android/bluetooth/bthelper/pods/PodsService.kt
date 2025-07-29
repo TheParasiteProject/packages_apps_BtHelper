@@ -891,6 +891,7 @@ class PodsService :
 
     fun disconnect() {
         val bluetoothAdapter = bluetoothAdapter ?: return
+        val currentDevice = currentDevice ?: return
 
         bluetoothAdapter.getProfileProxy(
             this,
