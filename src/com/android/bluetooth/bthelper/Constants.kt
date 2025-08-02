@@ -152,17 +152,9 @@ object Constants {
 
     val PodsUUIDS: MutableSet<ParcelUuid> = HashSet<ParcelUuid>()
 
-    val SystemPackages: MutableSet<String> = HashSet<String>()
-
     init {
         PodsUUIDS.add(PODS_UUID)
         // PodsUUIDS.add(BEATS_UUID)
-
-        SystemPackages.add("com.android.systemui")
-        SystemPackages.add("com.android.settings")
-        SystemPackages.add("com.android.bluetooth")
-        SystemPackages.add("com.google.android.bluetooth")
-        SystemPackages.add(PACKAGE_ASI)
     }
 
     const val ACTION_AVRCP_CONNECTION_STATE_CHANGED =
@@ -250,4 +242,8 @@ fun SharedPreferences.isSingleDevice(): Boolean {
 
 fun Context.isLowLatencySupported(): Boolean {
     return this.resources.getBoolean(R.bool.config_low_latency_audio_supported)
+}
+
+fun Context.getUriAllowlist(): Array<String> {
+    return this.resources.getStringArray(R.array.config_uri_access_allow_list)
 }

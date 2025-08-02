@@ -8,4 +8,14 @@
     <!-- Low latency audio -->
     <bool name="config_low_latency_audio_supported">true</bool>
 
+    <!-- Uri access allow list -->
+    <string-array name="config_uri_access_allow_list" translatable="false">
+        <item>com.android.systemui</item> <!-- System UI -->
+        <item>com.android.settings</item> <!-- Settings -->
+        <item>com.android.bluetooth</item> <!-- Bluetooth -->
+        <item>com.google.android.bluetooth</item> <!-- Bluetooth Google -->
+        <item>com.google.android.gms</item> <!-- Google Play Services -->
+        <item>com.google.android.settings.intelligence</item> <!-- Android Settings Intelligence -->
+    </string-array>
+
 </resources>

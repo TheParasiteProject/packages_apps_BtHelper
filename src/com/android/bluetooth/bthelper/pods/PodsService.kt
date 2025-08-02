@@ -57,6 +57,7 @@ import com.android.bluetooth.bthelper.Constants.PACKAGE_ASI
 import com.android.bluetooth.bthelper.R
 import com.android.bluetooth.bthelper.getSharedPreferences
 import com.android.bluetooth.bthelper.isLowLatencySupported
+import com.android.bluetooth.bthelper.getUriAllowlist
 import com.android.bluetooth.bthelper.setSingleDevice
 import com.android.bluetooth.bthelper.utils.A2dpReceiver
 import com.android.bluetooth.bthelper.utils.AACPManager
@@ -1185,7 +1186,7 @@ class PodsService :
 
         val uri = FileProvider.getUriForFile(this, Constants.AUTHORITY_FILE, iconFile)
 
-        Constants.SystemPackages.forEach { pkg ->
+        getUriAllowlist().forEach { pkg ->
             grantUriPermission(
                 pkg,
                 uri,
