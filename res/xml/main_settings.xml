@@ -14,6 +14,12 @@
         android:title="@string/automatic_ear_detection_title" />
 
     <SwitchPreferenceCompat
+        android:key="conversational_awareness"
+        android:defaultValue="true"
+        android:title="@string/conversational_awareness_title" 
+        android:summary="@string/conversational_awareness_summary" />
+
+    <SwitchPreferenceCompat
         android:key="conversational_awareness_pause_music"
         android:defaultValue="false"
         android:title="@string/conversational_awareness_pause_music_title" 

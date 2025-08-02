@@ -18,10 +18,12 @@
     <string name="automatic_ear_detection_title">Automatic ear detection</string>
 
     <!-- Conversational awareness -->
+    <string name="conversational_awareness_title">Conversational awareness</string>
+    <string name="conversational_awareness_summary">Lowers media volume and reduces background noise when you speak.</string>
     <string name="relative_conversational_awareness_volume_title">Relative volume</string>
-    <string name="relative_conversational_awareness_volume_summary">Reduce sound when you speak.</string>
-    <string name="conversational_awareness_pause_music_title">Pause Music</string>
-    <string name="conversational_awareness_pause_music_summary">Pause music when you speak.</string>
+    <string name="relative_conversational_awareness_volume_summary">Reduces to a percentage of current volume instead of maximum.</string>
+    <string name="conversational_awareness_pause_music_title">Pause media</string>
+    <string name="conversational_awareness_pause_music_summary">Stop media playback when you speak.</string>
 
     <!-- Head gesture -->
     <string name="head_gestures_title">Head gesture</string>

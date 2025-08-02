@@ -629,6 +629,12 @@ class PodsService :
 
         val config = config ?: return
         when (key) {
+            Constants.KEY_CONVERSATIONAL_AWARENESS ->
+                aacpManager?.sendControlCommand(
+                    AACPManager.Companion.ControlCommandIdentifiers.CONVERSATION_DETECT_CONFIG
+                        .value,
+                    preferences.getBoolean(key, true),
+                )
             Constants.KEY_AUTOMATIC_EAR_DETECTION ->
                 config.earDetectionEnabled = preferences.getBoolean(key, true)
             Constants.KEY_CONVERSATIONAL_AWARENESS_PAUSE_MUSIC ->
