@@ -56,8 +56,8 @@ import com.android.bluetooth.bthelper.Constants.HF_INDICATOR_BATTERY_LEVEL_STATU
 import com.android.bluetooth.bthelper.Constants.PACKAGE_ASI
 import com.android.bluetooth.bthelper.R
 import com.android.bluetooth.bthelper.getSharedPreferences
-import com.android.bluetooth.bthelper.isLowLatencySupported
 import com.android.bluetooth.bthelper.getUriAllowlist
+import com.android.bluetooth.bthelper.isLowLatencySupported
 import com.android.bluetooth.bthelper.setSingleDevice
 import com.android.bluetooth.bthelper.utils.A2dpReceiver
 import com.android.bluetooth.bthelper.utils.AACPManager
@@ -120,8 +120,6 @@ class PodsService :
     companion object {
         const val TAG: String = "PodsService"
     }
-
-    var macAddress = ""
 
     data class ServiceConfig(
         var earDetectionEnabled: Boolean = true,
@@ -646,7 +644,6 @@ class PodsService :
                 config.disconnectWhenNotWearing = preferences.getBoolean(key, false)
             Constants.KEY_CONVERSATIONAL_AWARENESS_VOLUME ->
                 config.conversationalAwarenessVolume = preferences.getInt(key, 43)
-            Constants.KEY_MAC_ADDRESS -> macAddress = preferences.getString(key, "") ?: ""
             Constants.KEY_LEFT_SINGLE_PRESS_ACTION -> {
                 config.leftSinglePressAction =
                     StemAction.fromString(
@@ -818,8 +815,6 @@ class PodsService :
             currentDevice = device
             updatePodsStatus(null, device)
             bluetoothAdapter?.addOnMetadataChangedListener(device!!, mainExecutor, this)
-            macAddress = device?.address ?: ""
-            sharedPreferences?.edit { putString(Constants.KEY_MAC_ADDRESS, macAddress) }
             serviceScope.launch { bluetoothSocketManager?.connectToSocket(device) }
             connect()
             serviceScope.launch { bleManager?.startScanning() }
