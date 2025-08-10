@@ -33,7 +33,8 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
 import android.os.UserHandle
-import android.telephony.TelephonyCallback
+import android.telecom.TelecomManager
+import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import android.util.Log
 import android.view.InputDevice
@@ -160,11 +161,13 @@ class PodsService :
 
     private var inputManager: InputManager? = null
 
+    private var telecomManager: TelecomManager? = null
     private var gestureDetector: GestureDetector? = null
     private var telephonyManager: TelephonyManager? = null
-    private var callStateCallback =
-        object : TelephonyCallback(), TelephonyCallback.CallStateListener {
-            override fun onCallStateChanged(state: Int) {
+    private var phoneStateListener: PhoneStateListener =
+        object : PhoneStateListener() {
+            override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+                super.onCallStateChanged(state, phoneNumber)
                 val bleManager = bleManager ?: return
                 when (state) {
                     TelephonyManager.CALL_STATE_RINGING -> {
@@ -300,9 +303,7 @@ class PodsService :
                 checkSelfPermission(Manifest.permission.ANSWER_PHONE_CALLS) ==
                     PackageManager.PERMISSION_GRANTED
             ) {
-                val intent = Intent(this, PodsInCallService::class.java)
-                intent.action = PodsInCallService.ACTION_ANSWER_CALL
-                startService(intent)
+                telecomManager?.acceptRingingCall()
             }
 
             sendToast(getString(R.string.head_gesture_call_answered_toast))
@@ -317,9 +318,7 @@ class PodsService :
                 checkSelfPermission(Manifest.permission.ANSWER_PHONE_CALLS) ==
                     PackageManager.PERMISSION_GRANTED
             ) {
-                val intent = Intent(this, PodsInCallService::class.java)
-                intent.action = PodsInCallService.ACTION_REJECT_CALL
-                startService(intent)
+                telecomManager?.endCall()
             }
             sendToast(getString(R.string.head_gesture_call_rejected_toast))
         } catch (e: Exception) {
@@ -779,11 +778,9 @@ class PodsService :
         inputManager = getSystemService(Context.INPUT_SERVICE) as InputManager
         gestureDetector = GestureDetector(this) { stopHeadTracking() }
 
+        telecomManager = getSystemService(TELECOM_SERVICE) as TelecomManager
         telephonyManager = getSystemService(TELEPHONY_SERVICE) as TelephonyManager
-        telephonyManager?.registerTelephonyCallback(
-            mainExecutor,
-            callStateCallback as TelephonyCallback,
-        )
+        telephonyManager?.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
 
         bluetoothAdapter = (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
 
@@ -1126,10 +1123,11 @@ class PodsService :
         bleManager = null
         MediaController.onDestroy()
         gestureDetector = null
-        telephonyManager?.unregisterTelephonyCallback(callStateCallback as TelephonyCallback)
+        telephonyManager?.listen(phoneStateListener, PhoneStateListener.LISTEN_NONE)
         telephonyManager = null
         currentDevice?.let { bluetoothAdapter?.removeOnMetadataChangedListener(it, this) }
         currentDevice = null
+        telecomManager = null
         bluetoothAdapter = null
         uuidReceiver?.onDestroy()
         uuidReceiver = null

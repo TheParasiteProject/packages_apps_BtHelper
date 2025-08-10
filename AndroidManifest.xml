@@ -109,18 +109,6 @@
             android:enabled="true"
             android:exported="true" />
 
-        <service
-            android:name=".pods.PodsInCallService"
-            android:exported="true"
-            android:permission="android.permission.BIND_INCALL_SERVICE">
-            <meta-data
-                android:name="android.telecom.IN_CALL_SERVICE_UI"
-                android:value="false" />
-            <intent-filter>
-                <action android:name="android.telecom.InCallService" />
-            </intent-filter>
-        </service>
-
         <receiver
             android:name=".StartupReceiver"
             android:enabled="true"
