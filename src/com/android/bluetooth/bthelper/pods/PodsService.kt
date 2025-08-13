@@ -186,8 +186,8 @@ class PodsService :
             }
         }
 
-    @Volatile private var isInCall = false
-    @Volatile var cameraActive = false
+    private var isInCall = false
+    var cameraActive = false
 
     val earDetectNotif = AirPodsNotifications.EarDetection()
     val ancNotif = AirPodsNotifications.ANC()
@@ -274,7 +274,7 @@ class PodsService :
     @Synchronized
     fun handleIncomingCall() {
         if (isInCall) return
-        if (config?.headGestures == true) {
+        if (config?.headGestures == true && !isInCall) {
             startHeadTracking()
             gestureDetector?.startDetection { accepted ->
                 if (accepted) {
