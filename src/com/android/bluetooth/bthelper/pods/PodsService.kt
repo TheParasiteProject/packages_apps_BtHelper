@@ -97,8 +97,10 @@ import kotlin.math.min
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -168,25 +170,11 @@ class PodsService :
         object : PhoneStateListener() {
             override fun onCallStateChanged(state: Int, phoneNumber: String?) {
                 super.onCallStateChanged(state, phoneNumber)
-                val bleManager = bleManager ?: return
-                when (state) {
-                    TelephonyManager.CALL_STATE_RINGING -> {
-                        if (config?.headGestures == true) {
-                            handleIncomingCall()
-                        }
-                    }
-                    TelephonyManager.CALL_STATE_OFFHOOK -> {
-                        isInCall = true
-                    }
-                    TelephonyManager.CALL_STATE_IDLE -> {
-                        isInCall = false
-                        gestureDetector?.stopDetection()
-                    }
-                }
+                handleCallStateChange(state)
             }
         }
 
-    private var isInCall = false
+    private var incomingCallJob: Job? = null
     var cameraActive = false
 
     val earDetectNotif = AirPodsNotifications.EarDetection()
@@ -271,17 +259,34 @@ class PodsService :
         return null
     }
 
-    @Synchronized
-    fun handleIncomingCall() {
-        if (isInCall) return
-        if (config?.headGestures == true && !isInCall) {
-            startHeadTracking()
-            gestureDetector?.startDetection { accepted ->
-                if (accepted) {
-                    answerCall()
-                } else {
-                    rejectCall()
+    private fun handleCallStateChange(state: Int) {
+        incomingCallJob?.cancel()
+
+        incomingCallJob =
+            serviceScope.launch {
+                delay(100)
+                handleIncomingCall(state)
+            }
+    }
+
+    suspend fun handleIncomingCall(state: Int) {
+        val bleManager = bleManager ?: return
+        when (state) {
+            TelephonyManager.CALL_STATE_RINGING -> {
+                if (config?.headGestures == true) {
+                    startHeadTracking()
+                    gestureDetector?.startDetection { accepted ->
+                        if (accepted) {
+                            answerCall()
+                        } else {
+                            rejectCall()
+                        }
+                    }
                 }
+            }
+            TelephonyManager.CALL_STATE_OFFHOOK,
+            TelephonyManager.CALL_STATE_IDLE -> {
+                gestureDetector?.stopDetection()
             }
         }
     }
