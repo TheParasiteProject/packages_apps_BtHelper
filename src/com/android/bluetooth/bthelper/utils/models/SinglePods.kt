@@ -6,16 +6,18 @@
  */
 package com.android.bluetooth.bthelper.utils.models
 
+import com.android.bluetooth.bthelper.R
+
 data class SinglePodsMetadata(
-    val manufacturer: String,
-    val model: String,
-    val lowBattThreshold: Int,
-    val drawable: Int,
+    val manufacturer: String = Constants.UNKNOWN,
+    val model: String = Constants.UNKNOWN,
+    val lowBattThreshold: Int = 20,
+    val drawable: Int = R.drawable.ic_headphones,
 )
 
 open class SinglePods(val color: Int) : IPods {
     open val drawable: Int
-        get() = -1
+        get() = R.drawable.ic_headphones
 
     override val model: String
         get() = Constants.UNKNOWN

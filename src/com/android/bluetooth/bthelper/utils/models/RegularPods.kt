@@ -6,28 +6,30 @@
  */
 package com.android.bluetooth.bthelper.utils.models
 
+import com.android.bluetooth.bthelper.R
+
 data class RegularPodsMetadata(
-    val manufacturer: String,
-    val model: String,
-    val lowBattThreshold: Int,
-    val drawable: Int,
-    val leftDrawable: Int,
-    val rightDrawable: Int,
-    val caseDrawable: Int,
+    val manufacturer: String = Constants.UNKNOWN,
+    val model: String = Constants.UNKNOWN,
+    val lowBattThreshold: Int = 20,
+    val drawable: Int = R.drawable.ic_earbuds,
+    val leftDrawable: Int = R.drawable.ic_earbud_left,
+    val rightDrawable: Int = R.drawable.ic_earbud_right,
+    val caseDrawable: Int = R.drawable.ic_earbud_case,
 )
 
 open class RegularPods(val color: Int) : IPods {
     open val drawable: Int
-        get() = -1
+        get() = R.drawable.ic_earbuds
 
     open val leftDrawable: Int
-        get() = -1
+        get() = R.drawable.ic_earbud_left
 
     open val rightDrawable: Int
-        get() = -1
+        get() = R.drawable.ic_earbud_right
 
     open val caseDrawable: Int
-        get() = -1
+        get() = R.drawable.ic_earbud_case
 
     override val model: String
         get() = Constants.UNKNOWN

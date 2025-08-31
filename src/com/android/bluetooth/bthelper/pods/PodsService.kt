@@ -1295,21 +1295,38 @@ class PodsService :
                 metadata.lowBattThreshold,
             )
         ret =
-            device.setMetadataUri(BluetoothDevice.METADATA_MAIN_ICON, getIconUri(metadata.drawable))
+            setRegularPodsIconMetadata(
+                device,
+                metadata.drawable,
+                metadata.leftDrawable,
+                metadata.rightDrawable,
+                metadata.caseDrawable,
+            )
+        return ret
+    }
+
+    private fun setRegularPodsIconMetadata(
+        device: BluetoothDevice,
+        drawable: Int,
+        leftDrawable: Int,
+        rightDrawable: Int,
+        caseDrawable: Int,
+    ): Boolean {
+        var ret = device.setMetadataUri(BluetoothDevice.METADATA_MAIN_ICON, getIconUri(drawable))
         ret =
             device.setMetadataUri(
                 BluetoothDevice.METADATA_UNTETHERED_LEFT_ICON,
-                getIconUri(metadata.leftDrawable),
+                getIconUri(leftDrawable),
             )
         ret =
             device.setMetadataUri(
                 BluetoothDevice.METADATA_UNTETHERED_RIGHT_ICON,
-                getIconUri(metadata.rightDrawable),
+                getIconUri(rightDrawable),
             )
         ret =
             device.setMetadataUri(
                 BluetoothDevice.METADATA_UNTETHERED_CASE_ICON,
-                getIconUri(metadata.caseDrawable),
+                getIconUri(caseDrawable),
             )
         return ret
     }
@@ -1335,8 +1352,12 @@ class PodsService :
                 BluetoothDevice.METADATA_MAIN_LOW_BATTERY_THRESHOLD,
                 metadata.lowBattThreshold,
             )
-        ret =
-            device.setMetadataUri(BluetoothDevice.METADATA_MAIN_ICON, getIconUri(metadata.drawable))
+        ret = setSinglePodsIconMetadata(device, metadata.drawable)
+        return ret
+    }
+
+    private fun setSinglePodsIconMetadata(device: BluetoothDevice, drawable: Int): Boolean {
+        var ret = device.setMetadataUri(BluetoothDevice.METADATA_MAIN_ICON, getIconUri(drawable))
         return ret
     }
 
@@ -1380,6 +1401,19 @@ class PodsService :
                         caseDrawable = regularPods.caseDrawable,
                     )
                 isModelDataSet = setRegularPodsMetadata(device, metadata)
+            } else if (regularPods != null) {
+                val iconDir = File(filesDir, "icons")
+                val mainIconFile =
+                    File(iconDir, resources.getResourceEntryName(regularPods.drawable) + ".png")
+                if (!mainIconFile.exists()) {
+                    setRegularPodsIconMetadata(
+                        device,
+                        regularPods.drawable,
+                        regularPods.leftDrawable,
+                        regularPods.rightDrawable,
+                        regularPods.caseDrawable,
+                    )
+                }
             }
 
             val leftCharging: Boolean =
@@ -1430,6 +1464,13 @@ class PodsService :
                         drawable = singlePods.drawable,
                     )
                 isModelDataSet = setSinglePodsMetadata(device, metadata)
+            } else if (singlePods != null) {
+                val iconDir = File(filesDir, "icons")
+                val mainIconFile =
+                    File(iconDir, resources.getResourceEntryName(singlePods.drawable) + ".png")
+                if (!mainIconFile.exists()) {
+                    setSinglePodsIconMetadata(device, singlePods.drawable)
+                }
             }
             // chargingMain = singlePods.isCharging
             // batteryUnified = singlePods.getParsedStatus()
