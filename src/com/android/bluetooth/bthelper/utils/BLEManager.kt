@@ -28,7 +28,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
 
 /** Manager for Bluetooth Low Energy scanning operations specifically for AirPods */
 @OptIn(ExperimentalEncodingApi::class)
-class BLEManager(private val context: Context) {
+class BLEManager(private val context: Context, private val keyStorageManager: KeyStorageManager) {
 
     data class AirPodsStatus(
         val address: String = "",
@@ -165,18 +165,21 @@ class BLEManager(private val context: Context) {
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    private fun getEncryptionKeyFromPreferences(): ByteArray? {
-        val keyBase64 =
-            sharedPreferences.getString(AACPManager.Companion.ProximityKeyType.ENC_KEY.name, null)
-        return if (keyBase64 != null) {
-            try {
-                Base64.decode(keyBase64)
+    private fun getKeyFromPreferences(type: AACPManager.Companion.ProximityKeyType): ByteArray? {
+        val encryptedKeyBase64 = sharedPreferences.getString(type.name + "_encrypted", null)
+        val ivBase64 = sharedPreferences.getString(type.name + "_iv", null)
+
+        if (encryptedKeyBase64 != null && ivBase64 != null) {
+            return try {
+                val encryptedKey = Base64.decode(encryptedKeyBase64)
+                val iv = Base64.decode(ivBase64)
+                keyStorageManager.decrypt(iv, encryptedKey)
             } catch (e: Exception) {
-                null
+                null // Decryption failed
             }
-        } else {
-            null
         }
+
+        return null
     }
 
     private fun decryptLastBytes(data: ByteArray, key: ByteArray): ByteArray? {
@@ -214,7 +217,7 @@ class BLEManager(private val context: Context) {
             if (manufacturerData.size <= 20) return
 
             if (!verifiedAddresses.contains(address)) {
-                val irk = getIrkFromPreferences()
+                val irk = getKeyFromPreferences(AACPManager.Companion.ProximityKeyType.IRK)
                 if (irk == null || !BluetoothCryptography.verifyRPA(address, irk)) {
                     return
                 }
@@ -224,7 +227,8 @@ class BLEManager(private val context: Context) {
             processedAddresses.add(address)
             lastBroadcastTime = System.currentTimeMillis()
 
-            val encryptionKey = getEncryptionKeyFromPreferences()
+            val encryptionKey =
+                getKeyFromPreferences(AACPManager.Companion.ProximityKeyType.ENC_KEY)
             val decryptedData =
                 if (encryptionKey != null) decryptLastBytes(manufacturerData, encryptionKey)
                 else null
@@ -308,21 +312,6 @@ class BLEManager(private val context: Context) {
         ) {
             currentGlobalLidState = false
             airPodsStatusListener?.onLidStateChanged(null, false)
-        }
-    }
-
-    @OptIn(ExperimentalEncodingApi::class)
-    private fun getIrkFromPreferences(): ByteArray? {
-        val irkBase64 =
-            sharedPreferences.getString(AACPManager.Companion.ProximityKeyType.IRK.name, null)
-        return if (irkBase64 != null) {
-            try {
-                Base64.decode(irkBase64)
-            } catch (e: Exception) {
-                null
-            }
-        } else {
-            null
         }
     }
 

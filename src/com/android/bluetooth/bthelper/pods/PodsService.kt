@@ -71,6 +71,7 @@ import com.android.bluetooth.bthelper.utils.BluetoothConnectionManager
 import com.android.bluetooth.bthelper.utils.BluetoothSocketManager
 import com.android.bluetooth.bthelper.utils.GestureDetector
 import com.android.bluetooth.bthelper.utils.HeadTracking
+import com.android.bluetooth.bthelper.utils.KeyStorageManager
 import com.android.bluetooth.bthelper.utils.MediaController
 import com.android.bluetooth.bthelper.utils.PodsA2dpListener
 import com.android.bluetooth.bthelper.utils.PodsUuidListener
@@ -188,6 +189,7 @@ class PodsService :
     var uuidReceiver: UuidReceiver? = null
     var a2dpReceiver: A2dpReceiver? = null
     var bleManager: BLEManager? = null
+    var keyStorageManager: KeyStorageManager? = null
 
     override fun onDeviceStatusChanged(
         device: BLEManager.AirPodsStatus,
@@ -387,10 +389,14 @@ class PodsService :
 
     override fun onProximityKeysReceived(proximityKeys: ByteArray) {
         val keys = aacpManager?.parseProximityKeysResponse(proximityKeys) ?: return
+        val keyStorageManager = this.keyStorageManager ?: return
         sharedPreferences?.edit {
             for (key in keys) {
-                putString(key.key.name, Base64.encode(key.value))
+                val (iv, encryptedValue) = keyStorageManager.encrypt(key.value)
+                putString("${key.key.name}_encrypted", Base64.encode(encryptedValue))
+                putString("${key.key.name}_iv", Base64.encode(iv))
             }
+            apply()
         }
     }
 
@@ -775,6 +781,7 @@ class PodsService :
         initializeConfig()
         sharedPreferences?.registerOnSharedPreferenceChangeListener(this@PodsService)
 
+        keyStorageManager = KeyStorageManager()
         uuidReceiver = UuidReceiver(this)
         a2dpReceiver = A2dpReceiver(this)
 
@@ -804,7 +811,7 @@ class PodsService :
 
         registerReceiver(ancModeReceiver, ancModeFilter, RECEIVER_NOT_EXPORTED)
 
-        bleManager = BLEManager(this)
+        bleManager = BLEManager(this, keyStorageManager!!)
         bleManager?.setAirPodsStatusListener(this)
     }
 
@@ -919,7 +926,10 @@ class PodsService :
 
         if (config.earDetectionEnabled == enabled) return
         config.earDetectionEnabled = enabled
-        sharedPreferences?.edit { putBoolean(Constants.KEY_AUTOMATIC_EAR_DETECTION, enabled) }
+        sharedPreferences?.edit {
+            putBoolean(Constants.KEY_AUTOMATIC_EAR_DETECTION, enabled)
+            apply()
+        }
     }
 
     fun cameraOpened() {
@@ -1138,6 +1148,7 @@ class PodsService :
         uuidReceiver = null
         a2dpReceiver?.onDestroy()
         a2dpReceiver = null
+        keyStorageManager = null
 
         serviceScope.cancel()
 
