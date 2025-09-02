@@ -87,7 +87,7 @@
             android:name=".settings.MainSettingsActivity"
             android:exported="true"
             android:label="@string/settings_title"
-            android:theme="@style/Theme.SubSettingsBase">
+            android:theme="@style/Theme.SubSettingsBase.Expressive">
             <intent-filter>
                 <action android:name="com.android.bluetooth.bthelper.ACTION_PENDING_INTENT" />
                 <action android:name="android.intent.action.MAIN" />

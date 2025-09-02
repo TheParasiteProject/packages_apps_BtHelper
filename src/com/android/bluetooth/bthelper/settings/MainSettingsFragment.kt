@@ -8,13 +8,13 @@ package com.android.bluetooth.bthelper.settings
 import android.os.Bundle
 import androidx.preference.Preference
 import androidx.preference.Preference.OnPreferenceChangeListener
-import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreferenceCompat
 import com.android.bluetooth.bthelper.Constants
 import com.android.bluetooth.bthelper.R
 import com.android.bluetooth.bthelper.isLowLatencySupported
+import com.android.settingslib.widget.SettingsBasePreferenceFragment
 
-class MainSettingsFragment : PreferenceFragmentCompat(), OnPreferenceChangeListener {
+class MainSettingsFragment : SettingsBasePreferenceFragment(), OnPreferenceChangeListener {
     companion object {
         const val TAG: String = "MainSettingsFragment"
     }
