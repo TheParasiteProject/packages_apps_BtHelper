@@ -13,13 +13,9 @@ class MainSettingsActivity : CollapsingToolbarBaseActivity() {
     protected override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        getFragmentManager()
+        supportFragmentManager
             .beginTransaction()
-            .replace(R.id.content_frame, MainSettingsFragment(), TAG)
+            .replace(R.id.content_frame, MainSettingsFragment())
             .commit()
-    }
-
-    companion object {
-        private const val TAG = "BtHelper"
     }
 }
