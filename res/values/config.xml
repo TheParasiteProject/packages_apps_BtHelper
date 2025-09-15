@@ -15,7 +15,10 @@
         <item>com.android.bluetooth</item> <!-- Bluetooth -->
         <item>com.google.android.bluetooth</item> <!-- Bluetooth Google -->
         <item>com.google.android.gms</item> <!-- Google Play Services -->
-        <item>com.google.android.settings.intelligence</item> <!-- Android Settings Intelligence -->
+        <item>com.android.settings.intelligence</item> <!-- Android Settings Intelligence -->
+        <item>com.google.android.settings.intelligence</item> <!-- Google Android Settings Intelligence -->
+        <item>com.google.android.apps.turbo</item> <!-- Device Health Services -->
+        <item>com.google.android.turboadapter</item> <!-- Device Health Services -->
     </string-array>
 
 </resources>
