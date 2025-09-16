@@ -20,6 +20,7 @@ class MainSettingsFragment : SettingsBasePreferenceFragment(), OnPreferenceChang
     }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+        preferenceManager.setStorageDeviceProtected()
         setPreferencesFromResource(R.xml.main_settings, rootKey)
 
         findPreference<SwitchPreferenceCompat>(Constants.KEY_AUTOMATIC_EAR_DETECTION)?.apply {

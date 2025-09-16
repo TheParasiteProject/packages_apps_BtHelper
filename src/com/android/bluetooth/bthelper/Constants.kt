@@ -230,7 +230,8 @@ object Constants {
 }
 
 fun Context.getSharedPreferences(): SharedPreferences {
-    return this.getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
+    return this.createDeviceProtectedStorageContext()
+        .getSharedPreferences(Constants.PREFERENCES_BTHELPER, Context.MODE_PRIVATE)
 }
 
 fun SharedPreferences.setSingleDevice(single: Boolean) {
