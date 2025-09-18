@@ -17,10 +17,6 @@ import com.android.bluetooth.bthelper.adapter.utils.setMetadataString
 
 class StartupReceiver : BroadcastReceiver() {
 
-    companion object {
-        const val TAG: String = "StartupReceiver"
-    }
-
     init {
         BtActionsFilter.onCreate()
     }
@@ -61,5 +57,9 @@ class StartupReceiver : BroadcastReceiver() {
                 )
             }
         }
+    }
+
+    companion object {
+        const val TAG: String = "StartupReceiver"
     }
 }

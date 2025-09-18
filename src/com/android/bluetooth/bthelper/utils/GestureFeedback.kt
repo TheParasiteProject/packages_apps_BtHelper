@@ -17,10 +17,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class GestureFeedback(private val context: Context) {
 
-    companion object {
-        const val TAG: String = "GestureFeedback"
-    }
-
     private val soundsLoaded = AtomicBoolean(false)
 
     private val soundPool =
@@ -152,5 +148,9 @@ class GestureFeedback(private val context: Context) {
         if (soundId != 0 && soundsLoaded.get()) {
             val streamId = soundPool.play(soundId, 1.0f, 1.0f, 1, 0, 1.0f)
         }
+    }
+
+    companion object {
+        const val TAG: String = "GestureFeedback"
     }
 }

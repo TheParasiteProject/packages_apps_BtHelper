@@ -21,10 +21,6 @@ import com.android.bluetooth.bthelper.utils.BtActionsFilter
 
 class StartupReceiver : BroadcastReceiver() {
 
-    companion object {
-        const val TAG: String = "StartupReceiver"
-    }
-
     init {
         BtActionsFilter.onCreate()
     }
@@ -109,5 +105,9 @@ class StartupReceiver : BroadcastReceiver() {
                 putExtra(BluetoothDevice.EXTRA_NAME, name)
             }
         context.startServiceAsUser(serviceIntent, UserHandle.CURRENT)
+    }
+
+    companion object {
+        const val TAG: String = "StartupReceiver"
     }
 }

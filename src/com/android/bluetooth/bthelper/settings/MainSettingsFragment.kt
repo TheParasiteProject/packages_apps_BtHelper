@@ -15,9 +15,6 @@ import com.android.bluetooth.bthelper.isLowLatencySupported
 import com.android.settingslib.widget.SettingsBasePreferenceFragment
 
 class MainSettingsFragment : SettingsBasePreferenceFragment(), OnPreferenceChangeListener {
-    companion object {
-        const val TAG: String = "MainSettingsFragment"
-    }
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         preferenceManager.setStorageDeviceProtected()
@@ -67,5 +64,9 @@ class MainSettingsFragment : SettingsBasePreferenceFragment(), OnPreferenceChang
             else -> {}
         }
         return true
+    }
+
+    companion object {
+        const val TAG: String = "MainSettingsFragment"
     }
 }

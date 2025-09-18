@@ -14,10 +14,6 @@ import android.util.Log
 
 class SliceBroadcastReceiver : BroadcastReceiver() {
 
-    companion object {
-        const val TAG: String = "SliceBroadcastReceiver"
-    }
-
     private var action: String? = null
     private var enabled = false
     private var context: Context? = null
@@ -32,5 +28,9 @@ class SliceBroadcastReceiver : BroadcastReceiver() {
             Log.e(TAG, "Error in onReceive", e)
             return
         }
+    }
+
+    companion object {
+        const val TAG: String = "SliceBroadcastReceiver"
     }
 }

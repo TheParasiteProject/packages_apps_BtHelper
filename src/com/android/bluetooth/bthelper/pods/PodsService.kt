@@ -121,10 +121,6 @@ class PodsService :
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    companion object {
-        const val TAG: String = "PodsService"
-    }
-
     data class ServiceConfig(
         var earDetectionEnabled: Boolean = true,
         var conversationalAwarenessPauseMusic: Boolean = false,
@@ -1517,5 +1513,9 @@ class PodsService :
                 putExtra(ACTION_BATTERY_LEVEL_CHANGED, intent)
             }
         sendBroadcastAsUser(statusIntent, UserHandle.ALL)
+    }
+
+    companion object {
+        const val TAG: String = "PodsService"
     }
 }

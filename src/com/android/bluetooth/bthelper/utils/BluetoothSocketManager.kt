@@ -29,10 +29,6 @@ class BluetoothSocketManager(
     private val onSocketClosed: () -> Unit,
 ) {
 
-    companion object {
-        const val TAG: String = "BluetoothSocketManager"
-    }
-
     private var currentSocket: BluetoothSocket? = null
 
     init {
@@ -163,5 +159,9 @@ class BluetoothSocketManager(
         } catch (e: Exception) {
             Log.e(TAG, "Error closing socket", e)
         }
+    }
+
+    companion object {
+        const val TAG: String = "BluetoothSocketManager"
     }
 }
