@@ -29,10 +29,6 @@ class StartupReceiver : BroadcastReceiver() {
         if (intent == null || context == null) return
 
         val action = intent.action
-        if (action == Intent.ACTION_SHUTDOWN) {
-            stopPodsService(context)
-            return
-        }
         if (action == null || !BtActionsFilter.shouldHandleAction(action)) return
 
         val device: BluetoothDevice =
@@ -90,10 +86,6 @@ class StartupReceiver : BroadcastReceiver() {
                 putExtra(BluetoothDevice.EXTRA_DEVICE, device)
             }
         context.startServiceAsUser(serviceIntent, UserHandle.CURRENT)
-    }
-
-    private fun stopPodsService(context: Context) {
-        context.stopServiceAsUser(Intent(context, PodsService::class.java), UserHandle.CURRENT)
     }
 
     private fun maybeRenamePods(context: Context, intent: Intent, device: BluetoothDevice) {

@@ -187,6 +187,19 @@ class PodsService :
     var bleManager: BLEManager? = null
     var keyStorageManager: KeyStorageManager? = null
 
+    val shutdownFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_SHUTDOWN)
+            setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY)
+        }
+    val shutdownReceiver: BroadcastReceiver =
+        object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                if (intent?.action == Intent.ACTION_SHUTDOWN) {
+                    stopSelf()
+                }
+            }
+        }
+
     override fun onDeviceStatusChanged(
         device: BLEManager.AirPodsStatus,
         previousStatus: BLEManager.AirPodsStatus?,
@@ -806,6 +819,7 @@ class PodsService :
             )
 
         registerReceiver(ancModeReceiver, ancModeFilter, RECEIVER_NOT_EXPORTED)
+        registerReceiver(shutdownReceiver, shutdownFilter, RECEIVER_NOT_EXPORTED)
 
         bleManager = BLEManager(this, keyStorageManager!!)
         bleManager?.setAirPodsStatusListener(this)
@@ -1116,6 +1130,7 @@ class PodsService :
     override fun onDestroy() {
         sharedPreferences?.unregisterOnSharedPreferenceChangeListener(this)
 
+        unregisterReceiver(shutdownReceiver)
         unregisterReceiver(ancModeReceiver)
 
         bleManager?.stopScanning()
