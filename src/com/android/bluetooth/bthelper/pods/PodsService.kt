@@ -786,6 +786,8 @@ class PodsService :
         }
 
     override fun onCreate() {
+        super.onCreate()
+
         sharedPreferences = getSharedPreferences()
         initializeConfig()
         sharedPreferences?.registerOnSharedPreferenceChangeListener(this@PodsService)
