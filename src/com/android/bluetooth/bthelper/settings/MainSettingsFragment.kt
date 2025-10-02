@@ -6,6 +6,7 @@
 package com.android.bluetooth.bthelper.settings
 
 import android.os.Bundle
+import android.view.View
 import androidx.preference.Preference
 import androidx.preference.Preference.OnPreferenceChangeListener
 import androidx.preference.SwitchPreferenceCompat
@@ -17,8 +18,13 @@ import com.android.settingslib.widget.SettingsBasePreferenceFragment
 class MainSettingsFragment : SettingsBasePreferenceFragment(), OnPreferenceChangeListener {
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        preferenceManager.setStorageDeviceProtected()
         setPreferencesFromResource(R.xml.main_settings, rootKey)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        preferenceManager.setStorageDeviceProtected()
 
         findPreference<SwitchPreferenceCompat>(Constants.KEY_AUTOMATIC_EAR_DETECTION)?.apply {
             isEnabled = true

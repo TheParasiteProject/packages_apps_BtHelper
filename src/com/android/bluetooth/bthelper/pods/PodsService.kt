@@ -187,7 +187,8 @@ class PodsService :
     var bleManager: BLEManager? = null
     var keyStorageManager: KeyStorageManager? = null
 
-    val shutdownFilter = IntentFilter().apply {
+    val shutdownFilter =
+        IntentFilter().apply {
             addAction(Intent.ACTION_SHUTDOWN)
             setPriority(IntentFilter.SYSTEM_HIGH_PRIORITY)
         }
