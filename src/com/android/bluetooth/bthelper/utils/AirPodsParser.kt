@@ -159,6 +159,7 @@ object AirPodsParser {
             0x0E20 -> AirPodsPro(color)
             0x1420 -> AirPodsPro2(color)
             0x2420 -> AirPodsPro2UsbC(color)
+            0x2720 -> AirPodsPro3(color)
             0x0A20 -> AirPodsMax(color)
             0x1F20 -> AirPodsMaxUsbC(color)
             else -> null

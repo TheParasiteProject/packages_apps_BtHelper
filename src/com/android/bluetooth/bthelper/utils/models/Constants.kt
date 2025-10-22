@@ -15,6 +15,7 @@ object Constants {
     const val MODEL_AIRPODS_PRO: String = "AirPods Pro"
     const val MODEL_AIRPODS_PRO_2: String = "AirPods Pro"
     const val MODEL_AIRPODS_PRO_2_USB_C: String = "AirPods Pro"
+    const val MODEL_AIRPODS_PRO_3: String = "AirPods Pro"
     const val MODEL_AIRPODS_MAX: String = "AirPods Max"
     const val MODEL_AIRPODS_MAX_USB_C: String = "AirPods Max"
     const val UNKNOWN: String = "unknown"
