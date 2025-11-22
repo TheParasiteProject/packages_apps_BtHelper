@@ -126,6 +126,7 @@ class PodsService :
 
     data class ServiceConfig(
         var earDetectionEnabled: Boolean = true,
+        var conversationalAwareness: Boolean = false,
         var conversationalAwarenessPauseMusic: Boolean = false,
         var relativeConversationalAwarenessVolume: Boolean = true,
         var headGestures: Boolean = true,
@@ -154,6 +155,7 @@ class PodsService :
 
     private var config: ServiceConfig? = null
     private var bluetoothSocketManager: BluetoothSocketManager? = null
+    private var attManager: ATTManager? = null
 
     private var currentDevice: BluetoothDevice? = null
 
@@ -737,11 +739,16 @@ class PodsService :
 
         val config = config ?: return
         when (key) {
+            Constants.KEY_PERSONALIZED_VOLUME ->
+                AACPManager.sendControlCommand(
+                    AACPManager.Companion.ControlCommandIdentifiers.ADAPTIVE_VOLUME_CONFIG.value,
+                    preferences.getBoolean(key, false),
+                )
             Constants.KEY_CONVERSATIONAL_AWARENESS ->
                 AACPManager.sendControlCommand(
                     AACPManager.Companion.ControlCommandIdentifiers.CONVERSATION_DETECT_CONFIG
                         .value,
-                    preferences.getBoolean(key, true),
+                    preferences.getBoolean(key, false),
                 )
             Constants.KEY_AUTOMATIC_EAR_DETECTION ->
                 config.earDetectionEnabled = preferences.getBoolean(key, true)
@@ -915,10 +922,14 @@ class PodsService :
         bluetoothSocketManager =
             BluetoothSocketManager(
                 serviceScope,
+                { startAttManager() },
                 { startHeadTracking() },
                 { stopHeadTracking() },
                 { setupStemActions() },
-                { BluetoothConnectionManager.isConnected = false },
+                {
+                    stopAttManager()
+                    BluetoothConnectionManager.isConnected = false
+                },
             )
 
         registerReceiver(ancModeReceiver, ancModeFilter, RECEIVER_NOT_EXPORTED)
@@ -930,6 +941,16 @@ class PodsService :
         cameraStateMonitor = CameraStateMonitor(this)
         cameraStateMonitor?.onCreate()
         cameraStateMonitor?.registerListener(this)
+    }
+
+    fun startAttManager() {
+        attManager = ATTManager(serviceScope)
+        attManager?.connect()
+    }
+
+    fun stopAttManager() {
+        attManager?.disconnect()
+        attManager = null
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -1230,6 +1251,7 @@ class PodsService :
 
         disconnectAudio()
 
+        stopAttManager()
         bluetoothSocketManager?.disconnect()
         gestureDetector?.stopDetection()
         inputManager = null

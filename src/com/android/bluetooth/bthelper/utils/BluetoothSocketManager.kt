@@ -23,6 +23,7 @@ import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 class BluetoothSocketManager(
     private val serviceScope: CoroutineScope,
+    private val onSocketOpened: () -> Unit,
     private val onIncomingCall: () -> Unit,
     private val onCallReceived: () -> Unit,
     private val onDeviceConnected: () -> Unit,
@@ -31,7 +32,6 @@ class BluetoothSocketManager(
 
     private var currentSocket: BluetoothSocket? = null
     private var socketJob: Job? = null
-    private var attManager: ATTManager? = null
 
     init {
         HiddenApiBypass.addHiddenApiExemptions(Constants.HIDDEN_API_BLUETOOTH_SOCKET)
@@ -60,9 +60,7 @@ class BluetoothSocketManager(
                     currentSocket.connect()
                     BluetoothConnectionManager.isConnected = true
                     BluetoothConnectionManager.currentSocket = currentSocket
-
-                    attManager = ATTManager(serviceScope)
-                    attManager?.connect()
+                    onSocketOpened()
                 }
             }
 
@@ -115,13 +113,11 @@ class BluetoothSocketManager(
                                 AACPManager.receivePacket(data)
                             } else if (bytesRead == -1) {
                                 currentSocket.close()
-                                destroyATTManager()
                                 break
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error reading from socket", e)
                             currentSocket.close()
-                            destroyATTManager()
                             break
                         }
                     }
@@ -130,13 +126,11 @@ class BluetoothSocketManager(
             Log.e(TAG, "Error connecting to socket", e)
             try {
                 currentSocket.close()
-                destroyATTManager()
             } catch (closeException: Exception) {
                 Log.e(TAG, "Error closing socket", closeException)
             }
         } finally {
             onSocketClosed()
-            destroyATTManager()
         }
     }
 
@@ -163,19 +157,12 @@ class BluetoothSocketManager(
     }
 
     @Synchronized
-    fun destroyATTManager() {
-        attManager?.disconnect()
-        attManager = null
-    }
-
-    @Synchronized
     fun disconnect() {
         try {
             socketJob?.cancel()
             socketJob = null
             currentSocket?.close()
             currentSocket = null
-            destroyATTManager()
         } catch (e: Exception) {
             Log.e(TAG, "Error closing socket", e)
         }

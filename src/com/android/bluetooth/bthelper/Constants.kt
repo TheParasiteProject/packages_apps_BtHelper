@@ -44,6 +44,7 @@ object Constants {
     const val KEY_SINGLE_DEVICE: String = "key_single_device"
     const val KEY_MAC_ADDRESS: String = "mac_address"
     const val KEY_AUTOMATIC_EAR_DETECTION: String = "automatic_ear_detection"
+    const val KEY_PERSONALIZED_VOLUME: String = "personalized_volume"
     const val KEY_CONVERSATIONAL_AWARENESS: String = "conversational_awareness"
     const val KEY_CONVERSATIONAL_AWARENESS_PAUSE_MUSIC: String =
         "conversational_awareness_pause_music"
@@ -63,6 +64,7 @@ object Constants {
     const val KEY_LEFT_LONG_PRESS_ACTION: String = "left_long_press_action"
     const val KEY_RIGHT_LONG_PRESS_ACTION: String = "right_long_press_action"
     const val KEY_CAMERA_ACTION: String = "camera_action"
+    const val KEY_LOUD_SOUND_REDUCTION: String = "loud_sound_reduction"
 
     /* Intent Actions and extras */
     const val ACTION_CONNECTED: String = AUTHORITY_BTHELPER + ".CONNECTED"

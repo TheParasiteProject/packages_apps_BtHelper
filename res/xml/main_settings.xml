@@ -14,8 +14,14 @@
         android:title="@string/automatic_ear_detection_title" />
 
     <SwitchPreferenceCompat
+        android:key="personalized_volume"
+        android:defaultValue="false"
+        android:title="@string/personalized_volume_title" 
+        android:summary="@string/personalized_volume_summary" />
+
+    <SwitchPreferenceCompat
         android:key="conversational_awareness"
-        android:defaultValue="true"
+        android:defaultValue="false"
         android:title="@string/conversational_awareness_title" 
         android:summary="@string/conversational_awareness_summary" />
 
@@ -41,6 +47,12 @@
         android:key="disconnect_when_not_wearing"
         android:defaultValue="false"
         android:title="@string/disconnect_when_not_wearing_title" />
+
+    <SwitchPreferenceCompat
+        android:key="use_alternate_head_tracking_packets"
+        android:defaultValue="false"
+        android:title="@string/use_alternate_head_tracking_packets_title"
+        android:summary="@string/use_alternate_head_tracking_packets_summary" />
 
     <SwitchPreferenceCompat
         android:key="low_latency_audio_pref"

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
+  SPDX-FileCopyrightText: LibrePods Contributors
   SPDX-FileCopyrightText: TheParasiteProject
   SPDX-License-Identifier: GPL-3.0-or-later
   License-Filename: LICENSE
@@ -17,6 +18,10 @@
     <!-- Automatic ear detection -->
     <string name="automatic_ear_detection_title">Automatic ear detection</string>
 
+    <!-- Personalized volume -->
+    <string name="personalized_volume_title">Personalized volume</string>
+    <string name="personalized_volume_summary">Adjusts the volume of media in response to your environment.</string>
+
     <!-- Conversational awareness -->
     <string name="conversational_awareness_title">Conversational awareness</string>
     <string name="conversational_awareness_summary">Lowers media volume and reduces background noise when you speak.</string>
@@ -28,6 +33,10 @@
     <!-- Head gesture -->
     <string name="head_gestures_title">Head gesture</string>
     <string name="head_gestures_summary">Nod to answer calls, or shake your head to decline.</string>
+
+    <!-- Advanced -->
+    <string name="use_alternate_head_tracking_packets_title">Alternate head tracking packets</string>
+    <string name="use_alternate_head_tracking_packets_summary">Sending different data to AirPods for requesting/stopping head tracking. Enable this option if head tracking doesn\'t work.</string>
 
     <!-- Disconnect when not wearing -->
     <string name="disconnect_when_not_wearing_title">Disconnect when not wearing</string>
