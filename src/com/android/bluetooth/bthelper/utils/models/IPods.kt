@@ -6,12 +6,9 @@
  */
 package com.android.bluetooth.bthelper.utils.models
 
-interface IPods {
-    val model: String
-
-    val isSingle: Boolean
-
-    val lowBattThreshold: Int
-
-    val manufacturer: String
+open class IPods {
+    open val model: String = Constants.UNKNOWN
+    open val isSingle: Boolean = false
+    open val lowBattThreshold: Int = -1
+    open val manufacturer: String = Constants.UNKNOWN
 }

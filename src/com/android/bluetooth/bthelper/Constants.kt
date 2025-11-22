@@ -62,6 +62,7 @@ object Constants {
     const val KEY_RIGHT_TRIPLE_PRESS_ACTION: String = "right_triple_press_action"
     const val KEY_LEFT_LONG_PRESS_ACTION: String = "left_long_press_action"
     const val KEY_RIGHT_LONG_PRESS_ACTION: String = "right_long_press_action"
+    const val KEY_CAMERA_ACTION: String = "camera_action"
 
     /* Intent Actions and extras */
     const val ACTION_CONNECTED: String = AUTHORITY_BTHELPER + ".CONNECTED"

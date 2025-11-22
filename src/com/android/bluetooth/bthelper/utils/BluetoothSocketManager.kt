@@ -14,6 +14,7 @@ import android.os.ParcelUuid
 import android.util.Log
 import com.android.bluetooth.bthelper.Constants
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -22,7 +23,6 @@ import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 class BluetoothSocketManager(
     private val serviceScope: CoroutineScope,
-    private val aacpManager: AACPManager,
     private val onIncomingCall: () -> Unit,
     private val onCallReceived: () -> Unit,
     private val onDeviceConnected: () -> Unit,
@@ -30,13 +30,14 @@ class BluetoothSocketManager(
 ) {
 
     private var currentSocket: BluetoothSocket? = null
+    private var socketJob: Job? = null
 
     init {
         HiddenApiBypass.addHiddenApiExemptions(Constants.HIDDEN_API_BLUETOOTH_SOCKET)
     }
 
     @Synchronized
-    fun connectToSocket(device: BluetoothDevice?) {
+    fun connectToSocket(device: BluetoothDevice?, aacpManager: AACPManager) {
         if (device == null) return
         if (BluetoothConnectionManager.isConnected) return
 
@@ -70,54 +71,55 @@ class BluetoothSocketManager(
                     .toByte()
             )
 
-            serviceScope.launch {
-                aacpManager.sendPacket(aacpManager.createHandshakePacket())
-                delay(200)
-                aacpManager.sendSetFeatureFlagsPacket()
-                delay(200)
-                aacpManager.sendNotificationRequest()
-                delay(200)
-                aacpManager.sendRequestProximityKeys(
-                    (AACPManager.Companion.ProximityKeyType.IRK.value +
-                            AACPManager.Companion.ProximityKeyType.ENC_KEY.value)
-                        .toByte()
-                )
-                onIncomingCall()
-
-                Handler(Looper.getMainLooper())
-                    .postDelayed(
-                        {
-                            aacpManager.sendPacket(aacpManager.createHandshakePacket())
-                            aacpManager.sendSetFeatureFlagsPacket()
-                            aacpManager.sendNotificationRequest()
-                            aacpManager.sendRequestProximityKeys(
-                                AACPManager.Companion.ProximityKeyType.IRK.value
-                            )
-                            onCallReceived()
-                        },
-                        5000,
+            socketJob =
+                serviceScope.launch {
+                    aacpManager.sendPacket(aacpManager.createHandshakePacket())
+                    delay(200)
+                    aacpManager.sendSetFeatureFlagsPacket()
+                    delay(200)
+                    aacpManager.sendNotificationRequest()
+                    delay(200)
+                    aacpManager.sendRequestProximityKeys(
+                        (AACPManager.Companion.ProximityKeyType.IRK.value +
+                                AACPManager.Companion.ProximityKeyType.ENC_KEY.value)
+                            .toByte()
                     )
+                    onIncomingCall()
 
-                onDeviceConnected()
+                    Handler(Looper.getMainLooper())
+                        .postDelayed(
+                            {
+                                aacpManager.sendPacket(aacpManager.createHandshakePacket())
+                                aacpManager.sendSetFeatureFlagsPacket()
+                                aacpManager.sendNotificationRequest()
+                                aacpManager.sendRequestProximityKeys(
+                                    AACPManager.Companion.ProximityKeyType.IRK.value
+                                )
+                                onCallReceived()
+                            },
+                            5000,
+                        )
 
-                while (currentSocket.isConnected) {
-                    try {
-                        val buffer = ByteArray(1024)
-                        val bytesRead = currentSocket.inputStream.read(buffer)
-                        if (bytesRead > 0) {
-                            val data = buffer.copyOfRange(0, bytesRead)
-                            aacpManager.receivePacket(data)
-                        } else if (bytesRead == -1) {
+                    onDeviceConnected()
+
+                    while (currentSocket.isConnected) {
+                        try {
+                            val buffer = ByteArray(1024)
+                            val bytesRead = currentSocket.inputStream.read(buffer)
+                            if (bytesRead > 0) {
+                                val data = buffer.copyOfRange(0, bytesRead)
+                                aacpManager.receivePacket(data)
+                            } else if (bytesRead == -1) {
+                                currentSocket.close()
+                                break
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error reading from socket", e)
                             currentSocket.close()
                             break
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error reading from socket", e)
-                        currentSocket.close()
-                        break
                     }
                 }
-            }
         } catch (e: Exception) {
             Log.e(TAG, "Error connecting to socket", e)
             try {
@@ -155,6 +157,7 @@ class BluetoothSocketManager(
     @Synchronized
     fun disconnect() {
         try {
+            socketJob?.cancel()
             currentSocket?.close()
         } catch (e: Exception) {
             Log.e(TAG, "Error closing socket", e)

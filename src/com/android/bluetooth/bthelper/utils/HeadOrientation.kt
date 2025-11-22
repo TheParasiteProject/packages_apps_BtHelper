@@ -1,5 +1,6 @@
 /*
  * SPDX-FileCopyrightText: LibrePods Contributors
+ * SPDX-FileCopyrightText: TheParasiteProject
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
  */

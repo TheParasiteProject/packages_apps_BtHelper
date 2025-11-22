@@ -28,6 +28,7 @@ android_app {
         "kotlin-reflect",
         "kotlin-stdlib",
         "kotlin-stdlib-jdk7",
+        "PlatformComposeCore",
         "SettingsLib",
         "SettingsLibSettingsTheme",
         "custom-sdk_org.lsposed.hiddenapibypass_hiddenapibypass",

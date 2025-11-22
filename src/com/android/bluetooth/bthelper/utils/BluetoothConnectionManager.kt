@@ -17,4 +17,12 @@ object BluetoothConnectionManager {
     var isConnected = false
         @Synchronized get
         @Synchronized set
+
+    var currentAttSocket: BluetoothSocket? = null
+        @Synchronized get
+        @Synchronized set
+
+    var isAttConnected = false
+        @Synchronized get
+        @Synchronized set
 }

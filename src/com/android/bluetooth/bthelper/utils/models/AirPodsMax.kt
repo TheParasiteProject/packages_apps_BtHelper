@@ -1,5 +1,6 @@
 /*
  * SPDX-FileCopyrightText: Federico Dossena
+ * SPDX-FileCopyrightText: LibrePods contributors
  * SPDX-FileCopyrightText: TheParasiteProject
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
@@ -8,7 +9,13 @@ package com.android.bluetooth.bthelper.utils.models
 
 import com.android.bluetooth.bthelper.Constants.Icons
 
-class AirPodsMax(color: Int) : SinglePods(color) {
+class AirPodsMax(color: Int = 0) : SinglePods(color) {
+    override val modelId: Int
+        get() = 0x0A20
+
+    override val modelNumbers: List<String>
+        get() = listOf("A2096")
+
     override val drawable: Int
         get() {
             return when (color) {

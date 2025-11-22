@@ -1,4 +1,5 @@
 /*
+ * SPDX-FileCopyrightText: Federico Dossena
  * SPDX-FileCopyrightText: LibrePods Contributors
  * SPDX-FileCopyrightText: TheParasiteProject
  * SPDX-License-Identifier: GPL-3.0-or-later
@@ -11,6 +12,21 @@ import com.android.bluetooth.bthelper.Constants
 import com.android.bluetooth.bthelper.utils.models.*
 
 object AirPodsParser {
+
+    val models: List<IPods> =
+        listOf(
+            AirPods1(),
+            AirPods2(),
+            AirPods3(),
+            AirPods4(),
+            AirPods4Anc(),
+            AirPodsPro(),
+            AirPodsPro2(),
+            AirPodsPro2UsbC(),
+            AirPodsPro3(),
+            AirPodsMax(),
+            AirPodsMaxUsbC(),
+        )
 
     fun parseProximityMessage(address: String, data: ByteArray): BLEManager.AirPodsStatus {
         val paired = data[2].toInt() == 1
@@ -150,20 +166,9 @@ object AirPodsParser {
     }
 
     private fun getModel(modelId: Int, color: Int): IPods? {
-        return when (modelId) {
-            0x0220 -> AirPods1(color)
-            0x0F20 -> AirPods2(color)
-            0x1320 -> AirPods3(color)
-            0x1920 -> AirPods4(color)
-            0x1B20 -> AirPods4Anc(color)
-            0x0E20 -> AirPodsPro(color)
-            0x1420 -> AirPodsPro2(color)
-            0x2420 -> AirPodsPro2UsbC(color)
-            0x2720 -> AirPodsPro3(color)
-            0x0A20 -> AirPodsMax(color)
-            0x1F20 -> AirPodsMaxUsbC(color)
-            else -> null
-        }
+        val model = models.find { modelId == it.modelId }
+        model?.color = color
+        return model
     }
 
     private fun getConnectionState(data: Int): String {

@@ -1,5 +1,6 @@
 /*
  * SPDX-FileCopyrightText: Federico Dossena
+ * SPDX-FileCopyrightText: LibrePods contributors
  * SPDX-FileCopyrightText: TheParasiteProject
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
@@ -15,7 +16,13 @@ data class SinglePodsMetadata(
     val drawable: Int = R.drawable.ic_headphones,
 )
 
-open class SinglePods(val color: Int) : IPods {
+open class SinglePods(var color: Int = 0) : IPods {
+    open val modelId: Int
+        get() = 0
+
+    open val modelNumbers: List<String>
+        get() = emptyList()
+
     open val drawable: Int
         get() = R.drawable.ic_headphones
 
@@ -31,4 +38,7 @@ open class SinglePods(val color: Int) : IPods {
 
     override val manufacturer: String
         get() = Constants.UNKNOWN
+
+    open val capabilities: Set<Constants.Capability>
+        get() = emptySet()
 }

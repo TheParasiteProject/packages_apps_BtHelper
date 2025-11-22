@@ -33,6 +33,7 @@ import android.os.IBinder
 import android.os.Looper
 import android.os.SystemClock
 import android.os.UserHandle
+import android.provider.Settings
 import android.telecom.TelecomManager
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
@@ -142,8 +143,12 @@ class PodsService :
         var rightTriplePressAction: StemAction =
             StemAction.defaultActions[StemPressType.TRIPLE_PRESS]!!,
         var leftLongPressAction: StemAction = StemAction.defaultActions[StemPressType.LONG_PRESS]!!,
-        var rightLongPressAction: StemAction = StemAction.defaultActions[StemPressType.LONG_PRESS]!!,
+        var rightLongPressAction: StemAction =
+            StemAction.defaultActions[StemPressType.LONG_PRESS]!!,
+        var cameraAction: StemPressType? = null,
     )
+
+    private var localMac = ""
 
     private var config: ServiceConfig? = null
     private var bluetoothSocketManager: BluetoothSocketManager? = null
@@ -173,6 +178,8 @@ class PodsService :
 
     private var incomingCallJob: Job? = null
     var cameraActive = false
+    private var disconnectedBecauseReversed = false
+    private var otherDeviceTookOver = false
 
     val earDetectNotif = AirPodsNotifications.EarDetection()
     val ancNotif = AirPodsNotifications.ANC()
@@ -388,7 +395,37 @@ class PodsService :
         }
     }
 
-    override fun onDeviceMetadataReceived(deviceMetadata: ByteArray) {}
+    override fun onOwnershipChangeReceived(owns: Boolean) {
+        if (!owns) {
+            MediaController.recentlyLostOwnership = true
+            handler.postDelayed({ MediaController.recentlyLostOwnership = false }, 3000)
+            MediaController.sendPause()
+            MediaController.pausedForOtherDevice = true
+            otherDeviceTookOver = true
+            disconnectAudio(device)
+        }
+    }
+
+    override fun onOwnershipToFalseRequest(sender: String, reasonReverseTapped: Boolean) {
+        val senderName =
+            aacpManager.connectedDevices.find { it.mac == sender }?.type ?: "Other device"
+        aacpManager.sendControlCommand(
+            AACPManager.Companion.ControlCommandIdentifiers.OWNS_CONNECTION.value,
+            byteArrayOf(0x00),
+        )
+        otherDeviceTookOver = true
+        disconnectAudio(device)
+        if (reasonReverseTapped) {
+            disconnectedBecauseReversed = true
+            disconnectAudio(device)
+        }
+        MediaController.sendPause()
+    }
+
+    override fun onShowNearbyUI(sender: String) {
+        val senderName =
+            aacpManager.connectedDevices.find { it.mac == sender }?.type ?: "Other device"
+    }
 
     override fun onHeadTrackingReceived(headTracking: ByteArray) {
         if (isHeadTrackingActive) {
@@ -415,7 +452,46 @@ class PodsService :
 
         val action = getActionFor(bud, stemPressType)
 
+        if (cameraActive && config.cameraAction != null && stemPressType == config.cameraAction) {
+            executeStemAction(StemAction.CAMERA_SHUTTER)
+            return
+        }
+
         action?.let { executeStemAction(it) }
+    }
+
+    override fun onAudioSourceReceived(audioSource: ByteArray) {
+        if (
+            aacpManager.audioSource?.type != AACPManager.Companion.AudioSourceType.NONE &&
+                aacpManager.audioSource?.mac != localMac
+        ) {
+            aacpManager.sendControlCommand(
+                AACPManager.Companion.ControlCommandIdentifiers.OWNS_CONNECTION.value,
+                byteArrayOf(0x00),
+            )
+        }
+    }
+
+    override fun onConnectedDevicesReceived(
+        connectedDevices: List<AACPManager.Companion.ConnectedDevice>
+    ) {
+        val newDevices =
+            connectedDevices.filter { newDevice ->
+                val notInOld =
+                    aacpManager.oldConnectedDevices.none { oldDevice ->
+                        oldDevice.mac == newDevice.mac
+                    }
+                val notLocal = newDevice.mac != localMac
+                notInOld && notLocal
+            }
+
+        for (device in newDevices) {
+            aacpManager.sendMediaInformationNewDevice(
+                selfMacAddress = localMac,
+                targetMacAddress = device.mac,
+            )
+            aacpManager.sendAddTiPiDevice(selfMacAddress = localMac, targetMacAddress = device.mac)
+        }
     }
 
     override fun onUnknownPacketReceived(packet: ByteArray) {}
@@ -496,53 +572,55 @@ class PodsService :
             )
         var justEnabledA2dp = false
         earDetectNotif.setStatus(earDetection)
-        if (config?.earDetectionEnabled == true) {
-            val data = earDetection.copyOfRange(earDetection.size - 2, earDetection.size)
-            inEar = data[0] == 0x00.toByte() && data[1] == 0x00.toByte()
+        if (config?.earDetectionEnabled != true) return
 
-            val newInEarData = listOf(data[0] == 0x00.toByte(), data[1] == 0x00.toByte())
+        val data = earDetection.copyOfRange(earDetection.size - 2, earDetection.size)
+        inEar = data[0] == 0x00.toByte() && data[1] == 0x00.toByte()
 
-            if (newInEarData.contains(true) && inEarData == listOf(false, false)) {
-                connectAudio()
-                justEnabledA2dp = true
-                registerA2dpConnectionReceiver()
-                if (MediaController.getMusicActive() == true) {
-                    MediaController.userPlayedTheMedia = true
-                }
-            } else if (newInEarData == listOf(false, false)) {
-                MediaController.sendPause(force = true)
-                if (config?.disconnectWhenNotWearing == true) {
-                    disconnectAudio()
-                }
+        val newInEarData = listOf(data[0] == 0x00.toByte(), data[1] == 0x00.toByte())
+
+        if (newInEarData.contains(true) && inEarData == listOf(false, false)) {
+            connectAudio()
+            justEnabledA2dp = true
+            registerA2dpConnectionReceiver()
+            if (MediaController.getMusicActive() == true) {
+                MediaController.userPlayedTheMedia = true
             }
-
-            if (inEarData.contains(false) && newInEarData == listOf(true, true)) {
-                MediaController.userPlayedTheMedia = false
+        } else if (newInEarData == listOf(false, false)) {
+            MediaController.sendPause(force = true)
+            if (config?.disconnectWhenNotWearing == true) {
+                disconnectAudio()
             }
+        }
 
-            if (newInEarData.contains(false) && inEarData == listOf(true, true)) {
-                MediaController.userPlayedTheMedia = false
-            }
+        if (inEarData.contains(false) && newInEarData == listOf(true, true)) {
+            MediaController.userPlayedTheMedia = false
+        }
 
-            if (newInEarData.sorted() != inEarData.sorted()) {
-                inEarData = newInEarData
-                if (inEar == true) {
-                    if (!justEnabledA2dp) {
-                        justEnabledA2dp = false
-                        MediaController.sendPlay()
-                        MediaController.userPausedTheMedia = false
-                    }
-                } else {
-                    MediaController.sendPause()
+        if (newInEarData.contains(false) && inEarData == listOf(true, true)) {
+            MediaController.userPlayedTheMedia = false
+        }
+
+        if (newInEarData.sorted() != inEarData.sorted()) {
+            inEarData = newInEarData
+            if (inEar == true) {
+                if (!justEnabledA2dp) {
+                    justEnabledA2dp = false
+                    MediaController.sendPlay()
+                    MediaController.userPausedTheMedia = false
                 }
+            } else {
+                MediaController.sendPause()
             }
         }
     }
 
     @Synchronized
     override fun onPodsA2dpDetected(device: BluetoothDevice?) {
-        MediaController.sendPlay()
-        MediaController.userPausedTheMedia = false
+        if (currentDevice != null && currentDevice?.equals(device) == true) {
+            MediaController.sendPlay()
+            MediaController.userPausedTheMedia = false
+        }
     }
 
     @Synchronized
@@ -639,6 +717,13 @@ class PodsService :
                             StemAction.DIGITAL_ASSISTANT.name,
                         ) ?: StemAction.DIGITAL_ASSISTANT.name
                     )!!,
+                cameraAction =
+                    StemPressType.valueOf(
+                        sharedPreferences.getString(
+                            Constants.KEY_CAMERA_ACTION,
+                            StemPressType.SINGLE_PRESS.name,
+                        ) ?: StemPressType.SINGLE_PRESS.name
+                    )!!,
             )
     }
 
@@ -728,6 +813,13 @@ class PodsService :
                     )!!
                 setupStemActions()
             }
+            Constants.KEY_CAMERA_ACTION -> {
+                config.cameraAction =
+                    StemPressType.valueOf(
+                        preferences.getString(key, StemPressType.SINGLE_PRESS.name)
+                            ?: StemPressType.SINGLE_PRESS.name
+                    )!!
+            }
             Constants.KEY_LOW_LATENCY_AUDIO -> {
                 if (isLowLatencySupported()) {
                     currentDevice?.setLowLatencyAudioAllowed(preferences.getBoolean(key, false))
@@ -788,6 +880,9 @@ class PodsService :
 
     override fun onCreate() {
         super.onCreate()
+
+        localMac =
+            Settings.Secure.getString(context.contentResolver, Settings.Secure.BLUETOOTH_ADDRESS)
 
         sharedPreferences = getSharedPreferences()
         initializeConfig()
@@ -946,24 +1041,8 @@ class PodsService :
     }
 
     fun cameraOpened() {
-        val config = config ?: return
-        val isCameraShutterUsed =
-            listOf(
-                    config.leftSinglePressAction,
-                    config.rightSinglePressAction,
-                    config.leftDoublePressAction,
-                    config.rightDoublePressAction,
-                    config.leftTriplePressAction,
-                    config.rightTriplePressAction,
-                    config.leftLongPressAction,
-                    config.rightLongPressAction,
-                )
-                .any { it == StemAction.CAMERA_SHUTTER }
-
-        if (isCameraShutterUsed) {
-            cameraActive = true
-            setupStemActions(isCameraActive = true)
-        }
+        cameraActive = true
+        setupStemActions()
     }
 
     fun cameraClosed() {
@@ -971,15 +1050,10 @@ class PodsService :
         setupStemActions()
     }
 
-    fun isCustomAction(
-        action: StemAction?,
-        default: StemAction?,
-        isCameraActive: Boolean = false,
-    ): Boolean {
-        return action != default && (action != StemAction.CAMERA_SHUTTER || isCameraActive)
-    }
+    fun isCustomAction(action: StemAction?, default: StemAction?): Boolean =
+        action != null && default != null && action != default
 
-    fun setupStemActions(isCameraActive: Boolean = false) {
+    fun setupStemActions() {
         val config = config ?: return
 
         val singlePressDefault = StemAction.defaultActions[StemPressType.SINGLE_PRESS]
@@ -988,17 +1062,20 @@ class PodsService :
         val longPressDefault = StemAction.defaultActions[StemPressType.LONG_PRESS]
 
         val singlePressCustomized =
-            isCustomAction(config.leftSinglePressAction, singlePressDefault, isCameraActive) ||
-                isCustomAction(config.rightSinglePressAction, singlePressDefault, isCameraActive)
+            isCustomAction(config.leftSinglePressAction, singlePressDefault) ||
+                isCustomAction(config.rightSinglePressAction, singlePressDefault) ||
+                (cameraActive && config.cameraAction == StemPressType.SINGLE_PRESS)
         val doublePressCustomized =
-            isCustomAction(config.leftDoublePressAction, doublePressDefault, isCameraActive) ||
-                isCustomAction(config.rightDoublePressAction, doublePressDefault, isCameraActive)
+            isCustomAction(config.leftDoublePressAction, doublePressDefault) ||
+                isCustomAction(config.rightDoublePressAction, doublePressDefault)
         val triplePressCustomized =
-            isCustomAction(config.leftTriplePressAction, triplePressDefault, isCameraActive) ||
-                isCustomAction(config.rightTriplePressAction, triplePressDefault, isCameraActive)
+            isCustomAction(config.leftTriplePressAction, triplePressDefault) ||
+                isCustomAction(config.rightTriplePressAction, triplePressDefault)
         val longPressCustomized =
-            isCustomAction(config.leftLongPressAction, longPressDefault, isCameraActive) ||
-                isCustomAction(config.rightLongPressAction, longPressDefault, isCameraActive)
+            isCustomAction(config.leftLongPressAction, longPressDefault) ||
+                isCustomAction(config.rightLongPressAction, longPressDefault) ||
+                (cameraActive && config.cameraAction == StemPressType.LONG_PRESS)
+
         aacpManager?.sendStemConfigPacket(
             singlePressCustomized,
             doublePressCustomized,

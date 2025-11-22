@@ -1,5 +1,6 @@
 /*
  * SPDX-FileCopyrightText: LibrePods Contributors
+ * SPDX-FileCopyrightText: TheParasiteProject
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
  */
@@ -26,9 +27,7 @@ class GestureFeedback(private val context: Context) {
                 AudioAttributes.Builder()
                     .setUsage(AudioAttributes.USAGE_ASSISTANCE_ACCESSIBILITY)
                     .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                    .setFlags(
-                        AudioAttributes.FLAG_LOW_LATENCY or AudioAttributes.FLAG_AUDIBILITY_ENFORCED
-                    )
+                    .setFlags(AudioAttributes.FLAG_AUDIBILITY_ENFORCED)
                     .build()
             )
             .build()

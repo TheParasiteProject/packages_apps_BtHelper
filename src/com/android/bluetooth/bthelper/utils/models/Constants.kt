@@ -1,5 +1,6 @@
 /*
  * SPDX-FileCopyrightText: Federico Dossena
+ * SPDX-FileCopyrightText: LibrePods contributors
  * SPDX-FileCopyrightText: TheParasiteProject
  * SPDX-License-Identifier: GPL-3.0-or-later
  * License-Filename: LICENSE
@@ -18,6 +19,21 @@ object Constants {
     const val MODEL_AIRPODS_PRO_3: String = "AirPods Pro"
     const val MODEL_AIRPODS_MAX: String = "AirPods Max"
     const val MODEL_AIRPODS_MAX_USB_C: String = "AirPods Max"
-    const val UNKNOWN: String = "unknown"
+    const val UNKNOWN: String = "Unknown"
     const val MANUFACTURER_APPLE: String = "Apple Inc."
+
+    enum class Capability {
+        LISTENING_MODE,
+        CONVERSATION_AWARENESS,
+        STEM_CONFIG,
+        HEAD_GESTURES,
+        LOUD_SOUND_REDUCTION,
+        PPE,
+        SLEEP_DETECTION,
+        HEARING_AID,
+        ADAPTIVE_AUDIO,
+        ADAPTIVE_VOLUME,
+        SWIPE_FOR_VOLUME,
+        HRM,
+    }
 }
