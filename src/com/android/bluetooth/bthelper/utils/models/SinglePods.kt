@@ -16,10 +16,7 @@ data class SinglePodsMetadata(
     val drawable: Int = R.drawable.ic_headphones,
 )
 
-open class SinglePods(var color: Int = 0) : IPods {
-    open val modelId: Int
-        get() = 0
-
+open class SinglePods : IPods() {
     open val modelNumbers: List<String>
         get() = emptyList()
 

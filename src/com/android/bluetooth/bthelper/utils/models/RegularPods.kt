@@ -19,10 +19,7 @@ data class RegularPodsMetadata(
     val caseDrawable: Int = R.drawable.ic_earbud_case,
 )
 
-open class RegularPods(var color: Int = 0) : IPods {
-    open val modelId: Int
-        get() = 0
-
+open class RegularPods : IPods() {
     open val modelNumbers: List<String>
         get() = emptyList()
 

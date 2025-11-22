@@ -22,12 +22,12 @@ enum class StemAction {
             return entries.find { it.name == action }
         }
 
-        val defaultActions: Map<AACPManager.Companion.StemPressType, StemAction> =
+        val defaultActions: Map<AACPManager.StemPressType, StemAction> =
             mapOf(
-                AACPManager.Companion.StemPressType.SINGLE_PRESS to PLAY_PAUSE,
-                AACPManager.Companion.StemPressType.DOUBLE_PRESS to NEXT_TRACK,
-                AACPManager.Companion.StemPressType.TRIPLE_PRESS to PREVIOUS_TRACK,
-                AACPManager.Companion.StemPressType.LONG_PRESS to CYCLE_NOISE_CONTROL_MODES,
+                AACPManager.StemPressType.SINGLE_PRESS to PLAY_PAUSE,
+                AACPManager.StemPressType.DOUBLE_PRESS to NEXT_TRACK,
+                AACPManager.StemPressType.TRIPLE_PRESS to PREVIOUS_TRACK,
+                AACPManager.StemPressType.LONG_PRESS to CYCLE_NOISE_CONTROL_MODES,
             )
     }
 }

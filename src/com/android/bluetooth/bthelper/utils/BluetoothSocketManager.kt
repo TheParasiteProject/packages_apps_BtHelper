@@ -23,7 +23,7 @@ import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 class BluetoothSocketManager(
     private val serviceScope: CoroutineScope,
-    private val onSocketOpened: () -> Unit,
+    private val onSocketOpened: (BluetoothDevice) -> Unit,
     private val onIncomingCall: () -> Unit,
     private val onCallReceived: () -> Unit,
     private val onDeviceConnected: () -> Unit,
@@ -60,7 +60,7 @@ class BluetoothSocketManager(
                     currentSocket.connect()
                     BluetoothConnectionManager.isConnected = true
                     BluetoothConnectionManager.currentSocket = currentSocket
-                    onSocketOpened()
+                    onSocketOpened(device)
                 }
             }
 
@@ -68,8 +68,8 @@ class BluetoothSocketManager(
             AACPManager.sendSetFeatureFlagsPacket()
             AACPManager.sendNotificationRequest()
             AACPManager.sendRequestProximityKeys(
-                (AACPManager.Companion.ProximityKeyType.IRK.value +
-                        AACPManager.Companion.ProximityKeyType.ENC_KEY.value)
+                (AACPManager.ProximityKeyType.IRK.value +
+                        AACPManager.ProximityKeyType.ENC_KEY.value)
                     .toByte()
             )
 
@@ -82,8 +82,8 @@ class BluetoothSocketManager(
                     AACPManager.sendNotificationRequest()
                     delay(200)
                     AACPManager.sendRequestProximityKeys(
-                        (AACPManager.Companion.ProximityKeyType.IRK.value +
-                                AACPManager.Companion.ProximityKeyType.ENC_KEY.value)
+                        (AACPManager.ProximityKeyType.IRK.value +
+                                AACPManager.ProximityKeyType.ENC_KEY.value)
                             .toByte()
                     )
                     onIncomingCall()
@@ -95,7 +95,7 @@ class BluetoothSocketManager(
                                 AACPManager.sendSetFeatureFlagsPacket()
                                 AACPManager.sendNotificationRequest()
                                 AACPManager.sendRequestProximityKeys(
-                                    AACPManager.Companion.ProximityKeyType.IRK.value
+                                    AACPManager.ProximityKeyType.IRK.value
                                 )
                                 onCallReceived()
                             },

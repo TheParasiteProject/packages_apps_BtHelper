@@ -63,7 +63,8 @@ import com.android.bluetooth.bthelper.isLowLatencySupported
 import com.android.bluetooth.bthelper.setSingleDevice
 import com.android.bluetooth.bthelper.utils.A2dpReceiver
 import com.android.bluetooth.bthelper.utils.AACPManager
-import com.android.bluetooth.bthelper.utils.AACPManager.Companion.StemPressType
+import com.android.bluetooth.bthelper.utils.AACPManager.StemPressType
+import com.android.bluetooth.bthelper.utils.ATTManager
 import com.android.bluetooth.bthelper.utils.AirPodsNotifications
 import com.android.bluetooth.bthelper.utils.BLEManager
 import com.android.bluetooth.bthelper.utils.BatteryComponent
@@ -183,7 +184,6 @@ class PodsService :
     private var incomingCallJob: Job? = null
     var cameraActive = false
     private var disconnectedBecauseReversed = false
-    private var otherDeviceTookOver = false
 
     val earDetectNotif = AirPodsNotifications.EarDetection()
     val ancNotif = AirPodsNotifications.ANC()
@@ -367,7 +367,7 @@ class PodsService :
         if (
             (batteryNotif.getBattery()[0].status == BatteryStatus.CHARGING &&
                 batteryNotif.getBattery()[1].status == BatteryStatus.CHARGING) ||
-                (isHeadset && getBattery()[3].status == BatteryStatus.CHARGING)
+                (isHeadset && batteryNotif.getBattery()[3].status == BatteryStatus.CHARGING)
         ) {
             disconnectAudio()
         } else {
@@ -392,10 +392,7 @@ class PodsService :
 
     override fun onControlCommandReceived(controlCommand: ByteArray) {
         val command = AACPManager.ControlCommand.fromByteArray(controlCommand) ?: return
-        if (
-            command.identifier ==
-                AACPManager.Companion.ControlCommandIdentifiers.LISTENING_MODE.value
-        ) {
+        if (command.identifier == AACPManager.ControlCommandIdentifiers.LISTENING_MODE.value) {
             ancNotif.setStatus(
                 byteArrayOf(command.value.takeIf { it.isNotEmpty() }?.get(0) ?: 0x00.toByte())
             )
@@ -404,12 +401,8 @@ class PodsService :
 
     override fun onOwnershipChangeReceived(owns: Boolean) {
         if (!owns) {
-            MediaController.recentlyLostOwnership = true
-            handler.postDelayed({ MediaController.recentlyLostOwnership = false }, 3000)
-            MediaController.sendPause()
-            MediaController.pausedForOtherDevice = true
-            otherDeviceTookOver = true
-            disconnectAudio(device)
+            MediaController.sendPause(true)
+            disconnectAudio()
         }
     }
 
@@ -417,16 +410,15 @@ class PodsService :
         val senderName =
             AACPManager.connectedDevices.find { it.mac == sender }?.type ?: "Other device"
         AACPManager.sendControlCommand(
-            AACPManager.Companion.ControlCommandIdentifiers.OWNS_CONNECTION.value,
+            AACPManager.ControlCommandIdentifiers.OWNS_CONNECTION.value,
             byteArrayOf(0x00),
         )
-        otherDeviceTookOver = true
-        disconnectAudio(device)
+        disconnectAudio()
         if (reasonReverseTapped) {
             disconnectedBecauseReversed = true
-            disconnectAudio(device)
+            disconnectAudio()
         }
-        MediaController.sendPause()
+        MediaController.sendPause(true)
     }
 
     override fun onShowNearbyUI(sender: String) {
@@ -459,7 +451,7 @@ class PodsService :
 
         val action = getActionFor(bud, stemPressType)
 
-        if (cameraActive && config.cameraAction != null && stemPressType == config.cameraAction) {
+        if (cameraActive && stemPressType != null && config?.cameraAction != stemPressType) {
             executeStemAction(StemAction.CAMERA_SHUTTER)
             return
         }
@@ -469,19 +461,17 @@ class PodsService :
 
     override fun onAudioSourceReceived(audioSource: ByteArray) {
         if (
-            AACPManager.audioSource?.type != AACPManager.Companion.AudioSourceType.NONE &&
+            AACPManager.audioSource?.type != AACPManager.AudioSourceType.NONE &&
                 AACPManager.audioSource?.mac != localMac
         ) {
             AACPManager.sendControlCommand(
-                AACPManager.Companion.ControlCommandIdentifiers.OWNS_CONNECTION.value,
+                AACPManager.ControlCommandIdentifiers.OWNS_CONNECTION.value,
                 byteArrayOf(0x00),
             )
         }
     }
 
-    override fun onConnectedDevicesReceived(
-        connectedDevices: List<AACPManager.Companion.ConnectedDevice>
-    ) {
+    override fun onConnectedDevicesReceived(connectedDevices: List<AACPManager.ConnectedDevice>) {
         val newDevices =
             connectedDevices.filter { newDevice ->
                 val notInOld =
@@ -503,23 +493,20 @@ class PodsService :
 
     override fun onUnknownPacketReceived(packet: ByteArray) {}
 
-    private fun getActionFor(
-        bud: AACPManager.Companion.StemPressBudType,
-        type: StemPressType,
-    ): StemAction? {
+    private fun getActionFor(bud: AACPManager.StemPressBudType, type: StemPressType): StemAction? {
         val config = config ?: return null
         return when (type) {
             StemPressType.SINGLE_PRESS ->
-                if (bud == AACPManager.Companion.StemPressBudType.LEFT) config.leftSinglePressAction
+                if (bud == AACPManager.StemPressBudType.LEFT) config.leftSinglePressAction
                 else config.rightSinglePressAction
             StemPressType.DOUBLE_PRESS ->
-                if (bud == AACPManager.Companion.StemPressBudType.LEFT) config.leftDoublePressAction
+                if (bud == AACPManager.StemPressBudType.LEFT) config.leftDoublePressAction
                 else config.rightDoublePressAction
             StemPressType.TRIPLE_PRESS ->
-                if (bud == AACPManager.Companion.StemPressBudType.LEFT) config.leftTriplePressAction
+                if (bud == AACPManager.StemPressBudType.LEFT) config.leftTriplePressAction
                 else config.rightTriplePressAction
             StemPressType.LONG_PRESS ->
-                if (bud == AACPManager.Companion.StemPressBudType.LEFT) config.leftLongPressAction
+                if (bud == AACPManager.StemPressBudType.LEFT) config.leftLongPressAction
                 else config.rightLongPressAction
         }
     }
@@ -741,13 +728,12 @@ class PodsService :
         when (key) {
             Constants.KEY_PERSONALIZED_VOLUME ->
                 AACPManager.sendControlCommand(
-                    AACPManager.Companion.ControlCommandIdentifiers.ADAPTIVE_VOLUME_CONFIG.value,
+                    AACPManager.ControlCommandIdentifiers.ADAPTIVE_VOLUME_CONFIG.value,
                     preferences.getBoolean(key, false),
                 )
             Constants.KEY_CONVERSATIONAL_AWARENESS ->
                 AACPManager.sendControlCommand(
-                    AACPManager.Companion.ControlCommandIdentifiers.CONVERSATION_DETECT_CONFIG
-                        .value,
+                    AACPManager.ControlCommandIdentifiers.CONVERSATION_DETECT_CONFIG.value,
                     preferences.getBoolean(key, false),
                 )
             Constants.KEY_AUTOMATIC_EAR_DETECTION ->
@@ -762,7 +748,7 @@ class PodsService :
             Constants.KEY_CONVERSATIONAL_AWARENESS_VOLUME ->
                 config.conversationalAwarenessVolume = preferences.getInt(key, 43)
             Constants.KEY_USE_ALTERNATE_HEAD_TRACKING_PACKETS ->
-                config.conversationalAwarenessVolume = preferences.getBoolean(key, false)
+                config.useAlternatePackets = preferences.getBoolean(key, false)
             Constants.KEY_LEFT_SINGLE_PRESS_ACTION -> {
                 config.leftSinglePressAction =
                     StemAction.fromString(
@@ -851,7 +837,7 @@ class PodsService :
                     val mode = intent.getIntExtra(Constants.EXTRA_MODE, -1)
                     if (mode in 1..4) {
                         AACPManager.sendControlCommand(
-                            AACPManager.Companion.ControlCommandIdentifiers.LISTENING_MODE.value,
+                            AACPManager.ControlCommandIdentifiers.LISTENING_MODE.value,
                             mode,
                         )
                     }
@@ -860,8 +846,7 @@ class PodsService :
                 val currentMode = ancNotif.status
                 val allowOffModeValue =
                     AACPManager.controlCommandStatusList?.find {
-                        it.identifier ==
-                            AACPManager.Companion.ControlCommandIdentifiers.ALLOW_OFF_OPTION
+                        it.identifier == AACPManager.ControlCommandIdentifiers.ALLOW_OFF_OPTION
                     }
                 val allowOffMode =
                     allowOffModeValue?.value?.takeIf { it.isNotEmpty() }?.get(0) == 0x01.toByte()
@@ -886,7 +871,7 @@ class PodsService :
                     }
 
                 AACPManager.sendControlCommand(
-                    AACPManager.Companion.ControlCommandIdentifiers.LISTENING_MODE.value,
+                    AACPManager.ControlCommandIdentifiers.LISTENING_MODE.value,
                     nextMode,
                 )
             }
@@ -896,7 +881,7 @@ class PodsService :
         super.onCreate()
 
         localMac =
-            Settings.Secure.getString(context.contentResolver, Settings.Secure.BLUETOOTH_ADDRESS)
+            Settings.Secure.getString(this.contentResolver, Settings.Secure.BLUETOOTH_ADDRESS)
 
         sharedPreferences = getSharedPreferences()
         initializeConfig()
@@ -922,7 +907,7 @@ class PodsService :
         bluetoothSocketManager =
             BluetoothSocketManager(
                 serviceScope,
-                { startAttManager() },
+                { device -> startAttManager(device) },
                 { startHeadTracking() },
                 { stopHeadTracking() },
                 { setupStemActions() },
@@ -943,9 +928,9 @@ class PodsService :
         cameraStateMonitor?.registerListener(this)
     }
 
-    fun startAttManager() {
+    fun startAttManager(device: BluetoothDevice) {
         attManager = ATTManager(serviceScope)
-        attManager?.connect()
+        attManager?.connectToSocket(device)
     }
 
     fun stopAttManager() {

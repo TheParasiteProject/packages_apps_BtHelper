@@ -8,7 +8,8 @@
 
 package com.android.bluetooth.bthelper.utils
 
-import com.android.bluetooth.bthelper.utils.AACPManager.Companion.ControlCommandIdentifiers.entries
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 /**
@@ -1003,147 +1004,140 @@ object AACPManager {
         audioSource = null
     }
 
-    companion object {
-        private const val TAG = "AACPManager"
+    private const val TAG = "AACPManager"
 
-        object Opcodes {
-            const val SET_FEATURE_FLAGS: Byte = 0x4D
-            const val REQUEST_NOTIFICATIONS: Byte = 0x0F
-            const val BATTERY_INFO: Byte = 0x04
-            const val CONTROL_COMMAND: Byte = 0x09
-            const val EAR_DETECTION: Byte = 0x06
-            const val CONVERSATION_AWARENESS: Byte = 0x4B
-            const val RENAME: Byte = 0x1E
-            const val HEADTRACKING: Byte = 0x17
-            const val PROXIMITY_KEYS_REQ: Byte = 0x30
-            const val PROXIMITY_KEYS_RSP: Byte = 0x31
-            const val STEM_PRESS: Byte = 0x19
-            const val EQ_DATA: Byte = 0x53
-            const val CONNECTED_DEVICES: Byte = 0x2E // TiPi 1
-            const val AUDIO_SOURCE: Byte = 0x0E // TiPi 2
-            const val SMART_ROUTING: Byte = 0x10
-            const val TIPI_3: Byte = 0x0C // Unknown
-            const val SMART_ROUTING_RESP: Byte = 0x11
-            const val SEND_CONNECTED_MAC: Byte = 0x14
-        }
-
-        private val HEADER_BYTES = byteArrayOf(0x04, 0x00, 0x04, 0x00)
-
-        data class ControlCommandStatus(
-            val identifier: ControlCommandIdentifiers,
-            val value: ByteArray,
-        ) {
-            override fun equals(other: Any?): Boolean {
-                if (this === other) return true
-                if (javaClass != other?.javaClass) return false
-
-                other as ControlCommandStatus
-
-                if (identifier != other.identifier) return false
-                if (!value.contentEquals(other.value)) return false
-
-                return true
-            }
-
-            override fun hashCode(): Int {
-                var result: Int = identifier.hashCode()
-                result = 31 * result + value.contentHashCode()
-                return result
-            }
-        }
-
-        enum class ControlCommandIdentifiers(val value: Byte) {
-            MIC_MODE(0x01),
-            BUTTON_SEND_MODE(0x05),
-            VOICE_TRIGGER(0x12),
-            SINGLE_CLICK_MODE(0x14),
-            DOUBLE_CLICK_MODE(0x15),
-            CLICK_HOLD_MODE(0x16),
-            DOUBLE_CLICK_INTERVAL(0x17),
-            CLICK_HOLD_INTERVAL(0x18),
-            LISTENING_MODE_CONFIGS(0x1A),
-            ONE_BUD_ANC_MODE(0x1B),
-            CROWN_ROTATION_DIRECTION(0x1C),
-            LISTENING_MODE(0x0D),
-            AUTO_ANSWER_MODE(0x1E),
-            CHIME_VOLUME(0x1F),
-            VOLUME_SWIPE_INTERVAL(0x23),
-            CALL_MANAGEMENT_CONFIG(0x24),
-            VOLUME_SWIPE_MODE(0x25),
-            ADAPTIVE_VOLUME_CONFIG(0x26),
-            SOFTWARE_MUTE_CONFIG(0x27),
-            CONVERSATION_DETECT_CONFIG(0x28),
-            SSL(0x29),
-            HEARING_AID(0x2C),
-            AUTO_ANC_STRENGTH(0x2E),
-            HPS_GAIN_SWIPE(0x2F),
-            HRM_STATE(0x30),
-            IN_CASE_TONE_CONFIG(0x31),
-            SIRI_MULTITONE_CONFIG(0x32),
-            HEARING_ASSIST_CONFIG(0x33),
-            ALLOW_OFF_OPTION(0x34),
-            STEM_CONFIG(0x39),
-            SLEEP_DETECTION_CONFIG(0x35),
-            ALLOW_AUTO_CONNECT(0x36), // Unknown
-            EAR_DETECTION_CONFIG(0x0A),
-            AUTOMATIC_CONNECTION_CONFIG(0x20),
-            OWNS_CONNECTION(0x06),
-            PPE_TOGGLE_CONFIG(0x37),
-            PPE_CAP_LEVEL_CONFIG(0x38);
-
-            companion object {
-                fun fromByte(byte: Byte): ControlCommandIdentifiers? =
-                    entries.find { it.value == byte }
-            }
-        }
-
-        enum class ProximityKeyType(val value: Byte) {
-            IRK(0x01),
-            ENC_KEY(0x04);
-
-            companion object {
-                fun fromByte(byte: Byte): ProximityKeyType? =
-                    ProximityKeyType.entries.find { it.value == byte }
-            }
-        }
-
-        enum class StemPressType(val value: Byte) {
-            SINGLE_PRESS(0x05),
-            DOUBLE_PRESS(0x06),
-            TRIPLE_PRESS(0x07),
-            LONG_PRESS(0x08);
-
-            companion object {
-                fun fromByte(byte: Byte): StemPressType? = entries.find { it.value == byte }
-            }
-        }
-
-        enum class StemPressBudType(val value: Byte) {
-            LEFT(0x01),
-            RIGHT(0x02);
-
-            companion object {
-                fun fromByte(byte: Byte): StemPressBudType? = entries.find { it.value == byte }
-            }
-        }
-
-        enum class AudioSourceType(val value: Byte) {
-            NONE(0x00),
-            CALL(0x01),
-            MEDIA(0x02);
-
-            companion object {
-                fun fromByte(byte: Byte): AudioSourceType? = entries.find { it.value == byte }
-            }
-        }
-
-        data class AudioSource(val mac: String, val type: AudioSourceType)
-
-        data class ConnectedDevice(
-            val mac: String,
-            val info1: Byte,
-            val info2: Byte,
-            var type: String?,
-        )
+    object Opcodes {
+        const val SET_FEATURE_FLAGS: Byte = 0x4D
+        const val REQUEST_NOTIFICATIONS: Byte = 0x0F
+        const val BATTERY_INFO: Byte = 0x04
+        const val CONTROL_COMMAND: Byte = 0x09
+        const val EAR_DETECTION: Byte = 0x06
+        const val CONVERSATION_AWARENESS: Byte = 0x4B
+        const val RENAME: Byte = 0x1E
+        const val HEADTRACKING: Byte = 0x17
+        const val PROXIMITY_KEYS_REQ: Byte = 0x30
+        const val PROXIMITY_KEYS_RSP: Byte = 0x31
+        const val STEM_PRESS: Byte = 0x19
+        const val EQ_DATA: Byte = 0x53
+        const val CONNECTED_DEVICES: Byte = 0x2E // TiPi 1
+        const val AUDIO_SOURCE: Byte = 0x0E // TiPi 2
+        const val SMART_ROUTING: Byte = 0x10
+        const val TIPI_3: Byte = 0x0C // Unknown
+        const val SMART_ROUTING_RESP: Byte = 0x11
+        const val SEND_CONNECTED_MAC: Byte = 0x14
     }
+
+    private val HEADER_BYTES = byteArrayOf(0x04, 0x00, 0x04, 0x00)
+
+    data class ControlCommandStatus(
+        val identifier: ControlCommandIdentifiers,
+        val value: ByteArray,
+    ) {
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as ControlCommandStatus
+
+            if (identifier != other.identifier) return false
+            if (!value.contentEquals(other.value)) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            var result: Int = identifier.hashCode()
+            result = 31 * result + value.contentHashCode()
+            return result
+        }
+    }
+
+    enum class ControlCommandIdentifiers(val value: Byte) {
+        MIC_MODE(0x01),
+        BUTTON_SEND_MODE(0x05),
+        VOICE_TRIGGER(0x12),
+        SINGLE_CLICK_MODE(0x14),
+        DOUBLE_CLICK_MODE(0x15),
+        CLICK_HOLD_MODE(0x16),
+        DOUBLE_CLICK_INTERVAL(0x17),
+        CLICK_HOLD_INTERVAL(0x18),
+        LISTENING_MODE_CONFIGS(0x1A),
+        ONE_BUD_ANC_MODE(0x1B),
+        CROWN_ROTATION_DIRECTION(0x1C),
+        LISTENING_MODE(0x0D),
+        AUTO_ANSWER_MODE(0x1E),
+        CHIME_VOLUME(0x1F),
+        VOLUME_SWIPE_INTERVAL(0x23),
+        CALL_MANAGEMENT_CONFIG(0x24),
+        VOLUME_SWIPE_MODE(0x25),
+        ADAPTIVE_VOLUME_CONFIG(0x26),
+        SOFTWARE_MUTE_CONFIG(0x27),
+        CONVERSATION_DETECT_CONFIG(0x28),
+        SSL(0x29),
+        HEARING_AID(0x2C),
+        AUTO_ANC_STRENGTH(0x2E),
+        HPS_GAIN_SWIPE(0x2F),
+        HRM_STATE(0x30),
+        IN_CASE_TONE_CONFIG(0x31),
+        SIRI_MULTITONE_CONFIG(0x32),
+        HEARING_ASSIST_CONFIG(0x33),
+        ALLOW_OFF_OPTION(0x34),
+        STEM_CONFIG(0x39),
+        SLEEP_DETECTION_CONFIG(0x35),
+        ALLOW_AUTO_CONNECT(0x36), // Unknown
+        EAR_DETECTION_CONFIG(0x0A),
+        AUTOMATIC_CONNECTION_CONFIG(0x20),
+        OWNS_CONNECTION(0x06),
+        PPE_TOGGLE_CONFIG(0x37),
+        PPE_CAP_LEVEL_CONFIG(0x38);
+
+        companion object {
+            fun fromByte(byte: Byte): ControlCommandIdentifiers? =
+                ControlCommandIdentifiers.entries.find { it.value == byte }
+        }
+    }
+
+    enum class ProximityKeyType(val value: Byte) {
+        IRK(0x01),
+        ENC_KEY(0x04);
+
+        companion object {
+            fun fromByte(byte: Byte): ProximityKeyType? =
+                ProximityKeyType.entries.find { it.value == byte }
+        }
+    }
+
+    enum class StemPressType(val value: Byte) {
+        SINGLE_PRESS(0x05),
+        DOUBLE_PRESS(0x06),
+        TRIPLE_PRESS(0x07),
+        LONG_PRESS(0x08);
+
+        companion object {
+            fun fromByte(byte: Byte): StemPressType? = entries.find { it.value == byte }
+        }
+    }
+
+    enum class StemPressBudType(val value: Byte) {
+        LEFT(0x01),
+        RIGHT(0x02);
+
+        companion object {
+            fun fromByte(byte: Byte): StemPressBudType? = entries.find { it.value == byte }
+        }
+    }
+
+    enum class AudioSourceType(val value: Byte) {
+        NONE(0x00),
+        CALL(0x01),
+        MEDIA(0x02);
+
+        companion object {
+            fun fromByte(byte: Byte): AudioSourceType? = entries.find { it.value == byte }
+        }
+    }
+
+    data class AudioSource(val mac: String, val type: AudioSourceType)
+
+    data class ConnectedDevice(val mac: String, val info1: Byte, val info2: Byte, var type: String?)
 }

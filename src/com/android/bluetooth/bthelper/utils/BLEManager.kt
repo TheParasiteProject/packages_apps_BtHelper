@@ -167,7 +167,7 @@ class BLEManager(private val context: Context, private val keyStorageManager: Ke
     }
 
     @OptIn(ExperimentalEncodingApi::class)
-    private fun getKeyFromPreferences(type: AACPManager.Companion.ProximityKeyType): ByteArray? {
+    private fun getKeyFromPreferences(type: AACPManager.ProximityKeyType): ByteArray? {
         val encryptedKeyBase64 = sharedPreferences.getString(type.name + "_encrypted", null)
         val ivBase64 = sharedPreferences.getString(type.name + "_iv", null)
 
@@ -219,7 +219,7 @@ class BLEManager(private val context: Context, private val keyStorageManager: Ke
             if (manufacturerData.size <= 20) return
 
             if (!verifiedAddresses.contains(address)) {
-                val irk = getKeyFromPreferences(AACPManager.Companion.ProximityKeyType.IRK)
+                val irk = getKeyFromPreferences(AACPManager.ProximityKeyType.IRK)
                 if (irk == null || !BluetoothCryptography.verifyRPA(address, irk)) {
                     return
                 }
@@ -229,8 +229,7 @@ class BLEManager(private val context: Context, private val keyStorageManager: Ke
             processedAddresses.add(address)
             lastBroadcastTime = System.currentTimeMillis()
 
-            val encryptionKey =
-                getKeyFromPreferences(AACPManager.Companion.ProximityKeyType.ENC_KEY)
+            val encryptionKey = getKeyFromPreferences(AACPManager.ProximityKeyType.ENC_KEY)
             val decryptedData =
                 if (encryptionKey != null) decryptLastBytes(manufacturerData, encryptionKey)
                 else null

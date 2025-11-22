@@ -24,14 +24,13 @@ class CameraStateMonitor(private val context: Context) {
 
     private val handler = Handler(Looper.getMainLooper())
 
-    private val cameraManager: CameraManager? by lazy {
-        context.getSystemService(CameraManager::class.java)
-    }
+    private var cameraManager: CameraManager? = null
 
-    private var listeners: MutableList<Listener> = emptyList()
+    private var listeners: HashSet<Listener> = HashSet()
     private var listenersLock: Any = Any()
 
     fun onCreate() {
+        cameraManager = context.getSystemService(CameraManager::class.java)
         cameraManager?.registerAvailabilityCallback(availabilityCallback, handler)
     }
 
@@ -56,8 +55,8 @@ class CameraStateMonitor(private val context: Context) {
             }
 
             override fun onCameraAvailable(cameraId: String) {
-                val listenersCopy: List<Listener>
-                synchronized(listenersLock) { listenersCopy = List(listeners) }
+                val listenersCopy: HashSet<Listener>
+                synchronized(listenersLock) { listenersCopy = HashSet(listeners) }
 
                 listenersCopy.forEach { listener -> listener.onCameraClosed() }
             }
@@ -69,8 +68,8 @@ class CameraStateMonitor(private val context: Context) {
         val foregroundPackage = foregroundPackageName
 
         if (foregroundPackage != null && CAMERA_PACKAGE_WHITELIST.contains(foregroundPackage)) {
-            val listenersCopy: List<Listener>
-            synchronized(listenersLock) { listenersCopy = List(listeners) }
+            val listenersCopy: HashSet<Listener>
+            synchronized(listenersLock) { listenersCopy = HashSet(listeners) }
 
             listenersCopy.forEach { listener -> listener.onCameraOpened() }
         }

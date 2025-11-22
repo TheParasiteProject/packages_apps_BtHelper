@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
 import android.os.ParcelUuid
 import android.util.Log
+import com.android.bluetooth.bthelper.Constants
 import java.io.InputStream
 import java.io.OutputStream
 import java.util.concurrent.LinkedBlockingQueue
@@ -18,6 +19,8 @@ import java.util.concurrent.TimeUnit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 /* This is a very basic ATT (Attribute Protocol) implementation. I have only implemented
@@ -188,6 +191,7 @@ class ATTManager(private val serviceScope: CoroutineScope) {
         } catch (e: InterruptedException) {
             Thread.currentThread().interrupt()
         }
+        return null
     }
 
     @Synchronized

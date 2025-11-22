@@ -133,7 +133,7 @@ fun sendHearingAidSettings(
         serviceScope.launch {
             delay(100)
             try {
-                val currentData = attManager.read(ATTHandles.HEARING_AID)
+                val currentData = attManager.read(ATTHandles.HEARING_AID) ?: return@launch
                 if (currentData.size < 104) {
                     return@launch
                 }
