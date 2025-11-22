@@ -16,7 +16,7 @@ import kotlin.io.encoding.ExperimentalEncodingApi
  * handling the L2CAP socket management, constructing and parsing packets for communication with
  * Apple accessories.
  */
-class AACPManager {
+object AACPManager {
 
     var controlCommandStatusList: MutableList<ControlCommandStatus> =
         mutableListOf<ControlCommandStatus>()

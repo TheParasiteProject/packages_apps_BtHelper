@@ -162,7 +162,6 @@ class PodsService :
     @Volatile private var isModelDataSet = false
 
     private var bluetoothAdapter: BluetoothAdapter? = null
-    private var aacpManager: AACPManager? = null
     private var sharedPreferences: SharedPreferences? = null
 
     private var inputManager: InputManager? = null
@@ -411,8 +410,8 @@ class PodsService :
 
     override fun onOwnershipToFalseRequest(sender: String, reasonReverseTapped: Boolean) {
         val senderName =
-            aacpManager.connectedDevices.find { it.mac == sender }?.type ?: "Other device"
-        aacpManager.sendControlCommand(
+            AACPManager.connectedDevices.find { it.mac == sender }?.type ?: "Other device"
+        AACPManager.sendControlCommand(
             AACPManager.Companion.ControlCommandIdentifiers.OWNS_CONNECTION.value,
             byteArrayOf(0x00),
         )
@@ -427,7 +426,7 @@ class PodsService :
 
     override fun onShowNearbyUI(sender: String) {
         val senderName =
-            aacpManager.connectedDevices.find { it.mac == sender }?.type ?: "Other device"
+            AACPManager.connectedDevices.find { it.mac == sender }?.type ?: "Other device"
     }
 
     override fun onHeadTrackingReceived(headTracking: ByteArray) {
@@ -438,7 +437,7 @@ class PodsService :
     }
 
     override fun onProximityKeysReceived(proximityKeys: ByteArray) {
-        val keys = aacpManager?.parseProximityKeysResponse(proximityKeys) ?: return
+        val keys = AACPManager.parseProximityKeysResponse(proximityKeys) ?: return
         val keyStorageManager = this.keyStorageManager ?: return
         sharedPreferences?.edit {
             for (key in keys) {
@@ -451,7 +450,7 @@ class PodsService :
     }
 
     override fun onStemPressReceived(stemPress: ByteArray) {
-        val (stemPressType, bud) = aacpManager?.parseStemPressResponse(stemPress) ?: return
+        val (stemPressType, bud) = AACPManager.parseStemPressResponse(stemPress) ?: return
 
         val action = getActionFor(bud, stemPressType)
 
@@ -465,10 +464,10 @@ class PodsService :
 
     override fun onAudioSourceReceived(audioSource: ByteArray) {
         if (
-            aacpManager.audioSource?.type != AACPManager.Companion.AudioSourceType.NONE &&
-                aacpManager.audioSource?.mac != localMac
+            AACPManager.audioSource?.type != AACPManager.Companion.AudioSourceType.NONE &&
+                AACPManager.audioSource?.mac != localMac
         ) {
-            aacpManager.sendControlCommand(
+            AACPManager.sendControlCommand(
                 AACPManager.Companion.ControlCommandIdentifiers.OWNS_CONNECTION.value,
                 byteArrayOf(0x00),
             )
@@ -481,7 +480,7 @@ class PodsService :
         val newDevices =
             connectedDevices.filter { newDevice ->
                 val notInOld =
-                    aacpManager.oldConnectedDevices.none { oldDevice ->
+                    AACPManager.oldConnectedDevices.none { oldDevice ->
                         oldDevice.mac == newDevice.mac
                     }
                 val notLocal = newDevice.mac != localMac
@@ -489,11 +488,11 @@ class PodsService :
             }
 
         for (device in newDevices) {
-            aacpManager.sendMediaInformationNewDevice(
+            AACPManager.sendMediaInformationNewDevice(
                 selfMacAddress = localMac,
                 targetMacAddress = device.mac,
             )
-            aacpManager.sendAddTiPiDevice(selfMacAddress = localMac, targetMacAddress = device.mac)
+            AACPManager.sendAddTiPiDevice(selfMacAddress = localMac, targetMacAddress = device.mac)
         }
     }
 
@@ -736,7 +735,7 @@ class PodsService :
         val config = config ?: return
         when (key) {
             Constants.KEY_CONVERSATIONAL_AWARENESS ->
-                aacpManager?.sendControlCommand(
+                AACPManager.sendControlCommand(
                     AACPManager.Companion.ControlCommandIdentifiers.CONVERSATION_DETECT_CONFIG
                         .value,
                     preferences.getBoolean(key, true),
@@ -839,7 +838,7 @@ class PodsService :
                 if (intent.hasExtra(Constants.EXTRA_MODE)) {
                     val mode = intent.getIntExtra(Constants.EXTRA_MODE, -1)
                     if (mode in 1..4) {
-                        aacpManager?.sendControlCommand(
+                        AACPManager.sendControlCommand(
                             AACPManager.Companion.ControlCommandIdentifiers.LISTENING_MODE.value,
                             mode,
                         )
@@ -848,7 +847,7 @@ class PodsService :
                 }
                 val currentMode = ancNotif.status
                 val allowOffModeValue =
-                    aacpManager?.controlCommandStatusList?.find {
+                    AACPManager.controlCommandStatusList?.find {
                         it.identifier ==
                             AACPManager.Companion.ControlCommandIdentifiers.ALLOW_OFF_OPTION
                     }
@@ -874,7 +873,7 @@ class PodsService :
                         }
                     }
 
-                aacpManager?.sendControlCommand(
+                AACPManager.sendControlCommand(
                     AACPManager.Companion.ControlCommandIdentifiers.LISTENING_MODE.value,
                     nextMode,
                 )
@@ -906,13 +905,11 @@ class PodsService :
 
         bluetoothAdapter = (getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager).adapter
 
-        aacpManager = AACPManager()
-        aacpManager?.setPacketCallback(this)
+        AACPManager.setPacketCallback(this)
 
         bluetoothSocketManager =
             BluetoothSocketManager(
                 serviceScope,
-                aacpManager!!,
                 { startHeadTracking() },
                 { stopHeadTracking() },
                 { setupStemActions() },
@@ -1083,7 +1080,7 @@ class PodsService :
                 isCustomAction(config.rightLongPressAction, longPressDefault) ||
                 (cameraActive && config.cameraAction == StemPressType.LONG_PRESS)
 
-        aacpManager?.sendStemConfigPacket(
+        AACPManager.sendStemConfigPacket(
             singlePressCustomized,
             doublePressCustomized,
             triplePressCustomized,
@@ -1211,7 +1208,7 @@ class PodsService :
             return
         }
 
-        aacpManager?.sendRename(name)
+        AACPManager.sendRename(name)
     }
 
     override fun onDestroy() {
@@ -1235,7 +1232,6 @@ class PodsService :
 
         config = null
         bluetoothSocketManager = null
-        aacpManager = null
         sharedPreferences = null
         bleManager = null
         MediaController.onDestroy()
@@ -1252,6 +1248,8 @@ class PodsService :
         a2dpReceiver = null
         keyStorageManager = null
 
+        AACPManager.disconnected()
+
         serviceScope.cancel()
 
         super.onDestroy()
@@ -1261,14 +1259,14 @@ class PodsService :
     fun startHeadTracking() {
         val config = config ?: return
         isHeadTrackingActive = true
-        aacpManager?.sendStartHeadTracking(config.useAlternatePackets)
+        AACPManager.sendStartHeadTracking(config.useAlternatePackets)
         HeadTracking.reset()
     }
 
     @Synchronized
     fun stopHeadTracking() {
         val config = config ?: return
-        aacpManager?.sendStopHeadTracking(config.useAlternatePackets)
+        AACPManager.sendStopHeadTracking(config.useAlternatePackets)
         isHeadTrackingActive = false
     }
 

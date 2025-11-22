@@ -112,10 +112,13 @@ class ATTManager(private val serviceScope: CoroutineScope) {
             }
     }
 
+    @Synchronized
     fun disconnect() {
         try {
             notificationJob?.cancel()
+            notificationJob = null
             currentSocket?.close()
+            currentSocket = null
         } catch (e: Exception) {}
     }
 

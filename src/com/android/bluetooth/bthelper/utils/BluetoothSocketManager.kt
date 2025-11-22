@@ -31,13 +31,14 @@ class BluetoothSocketManager(
 
     private var currentSocket: BluetoothSocket? = null
     private var socketJob: Job? = null
+    private var attManager: ATTManager? = null
 
     init {
         HiddenApiBypass.addHiddenApiExemptions(Constants.HIDDEN_API_BLUETOOTH_SOCKET)
     }
 
     @Synchronized
-    fun connectToSocket(device: BluetoothDevice?, aacpManager: AACPManager) {
+    fun connectToSocket(device: BluetoothDevice?) {
         if (device == null) return
         if (BluetoothConnectionManager.isConnected) return
 
@@ -59,13 +60,16 @@ class BluetoothSocketManager(
                     currentSocket.connect()
                     BluetoothConnectionManager.isConnected = true
                     BluetoothConnectionManager.currentSocket = currentSocket
+
+                    attManager = ATTManager(serviceScope)
+                    attManager?.connect()
                 }
             }
 
-            aacpManager.sendPacket(aacpManager.createHandshakePacket())
-            aacpManager.sendSetFeatureFlagsPacket()
-            aacpManager.sendNotificationRequest()
-            aacpManager.sendRequestProximityKeys(
+            AACPManager.sendPacket(AACPManager.createHandshakePacket())
+            AACPManager.sendSetFeatureFlagsPacket()
+            AACPManager.sendNotificationRequest()
+            AACPManager.sendRequestProximityKeys(
                 (AACPManager.Companion.ProximityKeyType.IRK.value +
                         AACPManager.Companion.ProximityKeyType.ENC_KEY.value)
                     .toByte()
@@ -73,13 +77,13 @@ class BluetoothSocketManager(
 
             socketJob =
                 serviceScope.launch {
-                    aacpManager.sendPacket(aacpManager.createHandshakePacket())
+                    AACPManager.sendPacket(AACPManager.createHandshakePacket())
                     delay(200)
-                    aacpManager.sendSetFeatureFlagsPacket()
+                    AACPManager.sendSetFeatureFlagsPacket()
                     delay(200)
-                    aacpManager.sendNotificationRequest()
+                    AACPManager.sendNotificationRequest()
                     delay(200)
-                    aacpManager.sendRequestProximityKeys(
+                    AACPManager.sendRequestProximityKeys(
                         (AACPManager.Companion.ProximityKeyType.IRK.value +
                                 AACPManager.Companion.ProximityKeyType.ENC_KEY.value)
                             .toByte()
@@ -89,10 +93,10 @@ class BluetoothSocketManager(
                     Handler(Looper.getMainLooper())
                         .postDelayed(
                             {
-                                aacpManager.sendPacket(aacpManager.createHandshakePacket())
-                                aacpManager.sendSetFeatureFlagsPacket()
-                                aacpManager.sendNotificationRequest()
-                                aacpManager.sendRequestProximityKeys(
+                                AACPManager.sendPacket(AACPManager.createHandshakePacket())
+                                AACPManager.sendSetFeatureFlagsPacket()
+                                AACPManager.sendNotificationRequest()
+                                AACPManager.sendRequestProximityKeys(
                                     AACPManager.Companion.ProximityKeyType.IRK.value
                                 )
                                 onCallReceived()
@@ -108,14 +112,16 @@ class BluetoothSocketManager(
                             val bytesRead = currentSocket.inputStream.read(buffer)
                             if (bytesRead > 0) {
                                 val data = buffer.copyOfRange(0, bytesRead)
-                                aacpManager.receivePacket(data)
+                                AACPManager.receivePacket(data)
                             } else if (bytesRead == -1) {
                                 currentSocket.close()
+                                destroyATTManager()
                                 break
                             }
                         } catch (e: Exception) {
                             Log.e(TAG, "Error reading from socket", e)
                             currentSocket.close()
+                            destroyATTManager()
                             break
                         }
                     }
@@ -124,11 +130,13 @@ class BluetoothSocketManager(
             Log.e(TAG, "Error connecting to socket", e)
             try {
                 currentSocket.close()
+                destroyATTManager()
             } catch (closeException: Exception) {
                 Log.e(TAG, "Error closing socket", closeException)
             }
         } finally {
             onSocketClosed()
+            destroyATTManager()
         }
     }
 
@@ -155,10 +163,19 @@ class BluetoothSocketManager(
     }
 
     @Synchronized
+    fun destroyATTManager() {
+        attManager?.disconnect()
+        attManager = null
+    }
+
+    @Synchronized
     fun disconnect() {
         try {
             socketJob?.cancel()
+            socketJob = null
             currentSocket?.close()
+            currentSocket = null
+            destroyATTManager()
         } catch (e: Exception) {
             Log.e(TAG, "Error closing socket", e)
         }
