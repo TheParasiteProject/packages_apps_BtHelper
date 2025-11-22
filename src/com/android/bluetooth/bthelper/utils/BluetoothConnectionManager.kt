@@ -8,8 +8,13 @@
 package com.android.bluetooth.bthelper.utils
 
 import android.bluetooth.BluetoothSocket
+import com.android.bluetooth.bthelper.utils.models.IPods
 
 object BluetoothConnectionManager {
+    var currentModel: IPods? = null
+        @Synchronized get
+        @Synchronized set
+
     var currentSocket: BluetoothSocket? = null
         @Synchronized get
         @Synchronized set

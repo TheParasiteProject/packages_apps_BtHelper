@@ -7,6 +7,7 @@
 
 package com.android.bluetooth.bthelper.utils
 
+import android.bluetooth.BluetoothDevice
 import android.os.Parcel
 import android.os.Parcelable
 
@@ -19,8 +20,9 @@ enum class Enums(val value: ByteArray) {
 }
 
 object BatteryComponent {
-    const val LEFT = 4
+    const val HEADSET = 1
     const val RIGHT = 2
+    const val LEFT = 4
     const val CASE = 8
 }
 
@@ -33,6 +35,7 @@ object BatteryStatus {
 data class Battery(val component: Int, val level: Int, val status: Int) : Parcelable {
     fun getComponentName(): String? {
         return when (component) {
+            BatteryComponent.HEADSET -> "HEADSET"
             BatteryComponent.LEFT -> "LEFT"
             BatteryComponent.RIGHT -> "RIGHT"
             BatteryComponent.CASE -> "CASE"
@@ -137,12 +140,33 @@ class AirPodsNotifications {
     }
 
     class BatteryNotification {
-        private var first: Battery = Battery(BatteryComponent.LEFT, 0, BatteryStatus.DISCONNECTED)
-        private var second: Battery = Battery(BatteryComponent.RIGHT, 0, BatteryStatus.DISCONNECTED)
-        private var case: Battery = Battery(BatteryComponent.CASE, 0, BatteryStatus.DISCONNECTED)
+        private var first: Battery =
+            Battery(
+                BatteryComponent.LEFT,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BatteryStatus.DISCONNECTED,
+            )
+        private var second: Battery =
+            Battery(
+                BatteryComponent.RIGHT,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BatteryStatus.DISCONNECTED,
+            )
+        private var case: Battery =
+            Battery(
+                BatteryComponent.CASE,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BatteryStatus.DISCONNECTED,
+            )
+        private var headset: Battery =
+            Battery(
+                BatteryComponent.HEADSET,
+                BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+                BatteryStatus.DISCONNECTED,
+            )
 
         fun isBatteryData(data: ByteArray): Boolean {
-            if (data.size != 22) {
+            if (data.size != 12 && data.size != 22) {
                 return false
             }
             return data.joinToString("") { "%02x".format(it) }.startsWith("040004000400")
@@ -174,21 +198,47 @@ class AirPodsNotifications {
                     caseLevel,
                     if (caseCharging) BatteryStatus.CHARGING else BatteryStatus.NOT_CHARGING,
                 )
+
+            val unifiedLevel =
+                when {
+                    leftLevel != BluetoothDevice.BATTERY_LEVEL_UNKNOWN -> leftLevel
+                    rightLevel != BluetoothDevice.BATTERY_LEVEL_UNKNOWN -> rightLevel
+                    caseLevel != BluetoothDevice.BATTERY_LEVEL_UNKNOWN -> caseLevel
+                    else -> BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+                }
+
+            headset =
+                Battery(
+                    BatteryComponent.HEADSET,
+                    unifiedLevel,
+                    if (leftCharging || rightCharging || caseCharging) BatteryStatus.CHARGING
+                    else BatteryStatus.NOT_CHARGING,
+                )
         }
 
         fun setBattery(data: ByteArray) {
+            if (data.size == 12) {
+                headset =
+                    if (data[10].toInt() == BatteryStatus.DISCONNECTED) {
+                        Battery(headset.component, headset.level, BatteryStatus.DISCONNECTED)
+                    } else {
+                        Battery(headset.component, data[9].toInt(), data[10].toInt())
+                    }
+                return
+            }
+
             if (data.size != 22) {
                 return
             }
             first =
                 if (data[10].toInt() == BatteryStatus.DISCONNECTED) {
-                    Battery(first.component, first.level, data[10].toInt())
+                    Battery(first.component, first.level, BatteryStatus.DISCONNECTED)
                 } else {
                     Battery(data[7].toInt(), data[9].toInt(), data[10].toInt())
                 }
             second =
                 if (data[15].toInt() == BatteryStatus.DISCONNECTED) {
-                    Battery(second.component, second.level, data[15].toInt())
+                    Battery(second.component, second.level, BatteryStatus.DISCONNECTED)
                 } else {
                     Battery(data[12].toInt(), data[14].toInt(), data[15].toInt())
                 }
@@ -197,16 +247,34 @@ class AirPodsNotifications {
                     data[20].toInt() == BatteryStatus.DISCONNECTED &&
                         case.status != BatteryStatus.DISCONNECTED
                 ) {
-                    Battery(case.component, case.level, data[20].toInt())
+                    Battery(case.component, case.level, BatteryStatus.DISCONNECTED)
                 } else {
                     Battery(data[17].toInt(), data[19].toInt(), data[20].toInt())
                 }
+
+            val unifiedLevel =
+                when {
+                    first.level != BluetoothDevice.BATTERY_LEVEL_UNKNOWN -> first.level
+                    second.level != BluetoothDevice.BATTERY_LEVEL_UNKNOWN -> second.level
+                    case.level != BluetoothDevice.BATTERY_LEVEL_UNKNOWN -> case.level
+                    else -> BluetoothDevice.BATTERY_LEVEL_UNKNOWN
+                }
+
+            val unifiedStatus =
+                when {
+                    first.status != BatteryStatus.DISCONNECTED -> first.status
+                    second.status != BatteryStatus.DISCONNECTED -> second.status
+                    case.status != BatteryStatus.DISCONNECTED -> case.status
+                    else -> BatteryStatus.DISCONNECTED
+                }
+
+            headset = Battery(headset.component, unifiedLevel, unifiedStatus)
         }
 
         fun getBattery(): List<Battery> {
             val left = if (first.component == BatteryComponent.LEFT) first else second
             val right = if (first.component == BatteryComponent.LEFT) second else first
-            return listOf(left, right, case)
+            return listOf(left, right, case, headset)
         }
     }
 

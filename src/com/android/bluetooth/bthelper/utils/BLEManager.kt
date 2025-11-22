@@ -38,11 +38,13 @@ class BLEManager(private val context: Context, private val keyStorageManager: Ke
         val leftBattery: Int = BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
         val rightBattery: Int = BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
         val caseBattery: Int = BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
+        val headsetBattery: Int = BluetoothDevice.BATTERY_LEVEL_UNKNOWN,
         val isLeftInEar: Boolean = false,
         val isRightInEar: Boolean = false,
         val isLeftCharging: Boolean = false,
         val isRightCharging: Boolean = false,
         val isCaseCharging: Boolean = false,
+        val isHeadsetCharging: Boolean = false,
         val lidOpen: Boolean = false,
         val connectionState: String = Constants.STATE_UNKNOWN,
     )
@@ -52,15 +54,15 @@ class BLEManager(private val context: Context, private val keyStorageManager: Ke
     }
 
     interface AirPodsStatusListener {
-        fun onDeviceStatusChanged(device: AirPodsStatus, previousStatus: AirPodsStatus?)
+        fun onDeviceStatusChanged(currStatus: AirPodsStatus, prevStatus: AirPodsStatus?)
 
-        fun onBroadcastFromNewAddress(device: AirPodsStatus)
+        fun onBroadcastFromNewAddress(status: AirPodsStatus)
 
-        fun onLidStateChanged(device: AirPodsStatus?, lidOpen: Boolean)
+        fun onLidStateChanged(status: AirPodsStatus?, lidOpen: Boolean)
 
-        fun onEarStateChanged(device: AirPodsStatus, leftInEar: Boolean, rightInEar: Boolean)
+        fun onEarStateChanged(status: AirPodsStatus, leftInEar: Boolean, rightInEar: Boolean)
 
-        fun onBatteryChanged(device: AirPodsStatus)
+        fun onBatteryChanged(status: AirPodsStatus)
     }
 
     private var bluetoothLeScanner: BluetoothLeScanner? = null
