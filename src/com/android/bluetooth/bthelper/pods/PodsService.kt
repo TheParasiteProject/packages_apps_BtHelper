@@ -70,6 +70,7 @@ import com.android.bluetooth.bthelper.utils.BatteryComponent
 import com.android.bluetooth.bthelper.utils.BatteryStatus
 import com.android.bluetooth.bthelper.utils.BluetoothConnectionManager
 import com.android.bluetooth.bthelper.utils.BluetoothSocketManager
+import com.android.bluetooth.bthelper.utils.CameraStateMonitor
 import com.android.bluetooth.bthelper.utils.GestureDetector
 import com.android.bluetooth.bthelper.utils.HeadTracking
 import com.android.bluetooth.bthelper.utils.KeyStorageManager
@@ -118,7 +119,8 @@ class PodsService :
     AACPManager.PacketCallback,
     BLEManager.AirPodsStatusListener,
     PodsA2dpListener,
-    OnMetadataChangedListener {
+    OnMetadataChangedListener,
+    CameraStateMonitor.Listener {
 
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -175,6 +177,7 @@ class PodsService :
                 handleCallStateChange(state)
             }
         }
+    private var cameraStateMonitor: CameraStateMonitor? = null
 
     private var incomingCallJob: Job? = null
     var cameraActive = false
@@ -921,6 +924,10 @@ class PodsService :
 
         bleManager = BLEManager(this, keyStorageManager!!)
         bleManager?.setAirPodsStatusListener(this)
+
+        cameraStateMonitor = CameraStateMonitor(this)
+        cameraStateMonitor?.onCreate()
+        cameraStateMonitor?.registerListener(this)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -1040,12 +1047,12 @@ class PodsService :
         }
     }
 
-    fun cameraOpened() {
+    override fun onCameraOpened() {
         cameraActive = true
         setupStemActions()
     }
 
-    fun cameraClosed() {
+    override fun onCameraClosed() {
         cameraActive = false
         setupStemActions()
     }
@@ -1209,6 +1216,10 @@ class PodsService :
 
     override fun onDestroy() {
         sharedPreferences?.unregisterOnSharedPreferenceChangeListener(this)
+
+        cameraStateMonitor?.unregisterListener(this)
+        cameraStateMonitor?.onDestroy()
+        cameraStateMonitor = null
 
         unregisterReceiver(shutdownReceiver)
         unregisterReceiver(ancModeReceiver)
