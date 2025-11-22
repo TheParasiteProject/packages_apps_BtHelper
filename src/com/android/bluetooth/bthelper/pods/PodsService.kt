@@ -754,6 +754,8 @@ class PodsService :
                 config.disconnectWhenNotWearing = preferences.getBoolean(key, false)
             Constants.KEY_CONVERSATIONAL_AWARENESS_VOLUME ->
                 config.conversationalAwarenessVolume = preferences.getInt(key, 43)
+            Constants.KEY_USE_ALTERNATE_HEAD_TRACKING_PACKETS ->
+                config.conversationalAwarenessVolume = preferences.getBoolean(key, false)
             Constants.KEY_LEFT_SINGLE_PRESS_ACTION -> {
                 config.leftSinglePressAction =
                     StemAction.fromString(
