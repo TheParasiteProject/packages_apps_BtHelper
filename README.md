@@ -15,8 +15,7 @@ This project depends on AOSP components.<br>
 You need to add these commits to corresponding repositories.
 
 * packages/modules/Bluetooth:
-  * [l2cap: Remove the code that sents extra packets](https://github.com/TheParasiteProject/packages_modules_Bluetooth/commit/b99e3d32ef2dc89fb257fd1e8fd41830232aedec)
-  * [l2cap: Restore l2cu_send_peer_info_req](https://github.com/TheParasiteProject-Staging/packages_modules_Bluetooth/commit/9433a6d5f454f09ababbfcdeb88a43d80313f223)
+  * [l2cap: Use basic mode for edge case devices](https://github.com/TheParasiteProject/packages_modules_Bluetooth/commit/15355234accd0bb1a90c09fa61b8de6f5ec1f292)
 * vendor repository (e.g. vendor/aosp): [vendor: config: common: Build BtHelper](https://github.com/TheParasiteProject/vendor_aosp/commit/424bca6b12a9f1d5fd56374ba6ae4310ea98cde3)
 
 After that clone this repo:<br>
