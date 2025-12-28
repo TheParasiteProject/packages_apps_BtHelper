@@ -26,6 +26,8 @@ import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
 import android.hardware.input.InputManager
 import android.net.Uri
 import android.os.Handler
@@ -92,7 +94,6 @@ import com.android.bluetooth.bthelper.utils.setMetadataUri
 import com.android.bluetooth.bthelper.utils.setMetadataValue
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.io.encoding.Base64
@@ -1296,11 +1297,41 @@ class PodsService :
         }
 
         try {
-            FileOutputStream(iconFile).use { out ->
-                drawable.toBitmap().compress(Bitmap.CompressFormat.PNG, 100, out)
+            val drawableWidth = drawable.intrinsicWidth
+            val drawableHeight = drawable.intrinsicHeight
+            if (drawableWidth <= 0 || drawableHeight <= 0) {
+                Log.e(TAG, "Drawable has invalid intrinsic dimensions.")
+                FileOutputStream(iconFile).use { out ->
+                    drawable.toBitmap().compress(Bitmap.CompressFormat.PNG, 100, out)
+                }
+                return iconFile
             }
-        } catch (e: IOException) {
-            Log.e(TAG, "Error writing icon to file", e)
+
+            val squareSize = maxOf(drawableWidth, drawableHeight)
+
+            val paddedBitmap = Bitmap.createBitmap(squareSize, squareSize, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(paddedBitmap)
+
+            canvas.drawColor(Color.TRANSPARENT)
+
+            val offsetX = (squareSize - drawableWidth) / 2f
+            val offsetY = (squareSize - drawableHeight) / 2f
+
+            drawable.setBounds(
+                offsetX.toInt(),
+                offsetY.toInt(),
+                offsetX.toInt() + drawableWidth,
+                offsetY.toInt() + drawableHeight,
+            )
+            drawable.draw(canvas)
+
+            FileOutputStream(iconFile).use { out ->
+                paddedBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            }
+
+            paddedBitmap.recycle()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error processing icon bitmap", e)
             return null
         }
 
