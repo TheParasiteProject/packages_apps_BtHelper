@@ -55,7 +55,7 @@ object AACPManager {
         value: ByteArray,
     ) {
         val existingStatus = getControlCommandStatus(identifier)
-        if (existingStatus == value) {
+        if (existingStatus?.value?.contentEquals(value) == true) {
             controlCommandStatusList.remove(existingStatus)
         }
         if (existingStatus != null) {
